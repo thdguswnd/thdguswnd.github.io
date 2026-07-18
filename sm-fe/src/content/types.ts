@@ -53,6 +53,7 @@ export interface InvitationContent {
   directions: {
     venueName: string;
     address: string;
+    mapQuery?: string;
     tel?: string;
     lat?: number;
     lng?: number;

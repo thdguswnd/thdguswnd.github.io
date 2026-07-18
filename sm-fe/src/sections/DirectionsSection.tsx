@@ -48,9 +48,11 @@ export function DirectionsSection() {
         {directions.tel && <div style={{ marginTop: 8 }}>Tel. {directions.tel}</div>}
       </div>
 
-      {/* 카카오 지도 */}
+      {/* 카카오 지도 (주소 지오코딩 → 마커+말풍선, 실패 시 lat/lng 폴백) */}
       <KakaoMap
         appkey={directions.kakaoJsKey}
+        address={directions.mapQuery ?? directions.address}
+        venueName={directions.venueName}
         lat={directions.lat ?? 37.5665}
         lng={directions.lng ?? 126.978}
       />

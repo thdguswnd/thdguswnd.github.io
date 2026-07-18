@@ -59,7 +59,8 @@
     "lat": 37.5665,
     "lng": 126.978,
     "mapImage": "/local-assets/map.png",
-    "kakaoJsKey": "",
+    "mapQuery": "서울 양천구 오목로 344",
+    "kakaoJsKey": "6206ed51d627bc602bd6ac3a19048765",
     "sketchMapPdf": "/local-assets/loftgarden344.pdf",
     "appLinks": {
       "naver": { "deepLink": "nmap://place?lat=37.5665&lng=126.978", "webUrl": "https://naver.me/xyTG8t3T" },
