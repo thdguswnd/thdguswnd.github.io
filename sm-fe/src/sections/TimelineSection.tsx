@@ -1,5 +1,6 @@
 import { useContent } from '../content/ContentProvider';
 import { SectionContainer } from '../components/SectionContainer';
+import { SmartImage } from '../components/SmartImage';
 import type { TimelineEntry } from '../content/types';
 
 /** FR-06: 타임라인. 이미지 + 텍스트가 좌우로 번갈아 배치되는 세로 타임라인. */
@@ -34,7 +35,7 @@ function TimelineRow({ entry, imageRight }: { entry: TimelineEntry; imageRight: 
   const image = (
     <div style={{ flex: 1, minWidth: 0 }}>
       {entry.image && (
-        <img
+        <SmartImage
           src={entry.image}
           alt={entry.title}
           loading="lazy"

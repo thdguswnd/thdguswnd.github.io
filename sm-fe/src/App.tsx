@@ -4,7 +4,6 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { Skeleton } from './components/Skeleton';
 import { HeroSection } from './sections/HeroSection';
 import { GreetingSection } from './sections/GreetingSection';
-import { ContactSection } from './sections/ContactSection';
 import { TimelineSection } from './sections/TimelineSection';
 import { CalendarSection } from './sections/CalendarSection';
 import { DirectionsSection } from './sections/DirectionsSection';
@@ -22,7 +21,6 @@ export default function App() {
       <ContentProvider>
         <HeroSection />
         <GreetingSection />
-        <ContactSection />
         <TimelineSection />
         <CalendarSection />
         <DirectionsSection />

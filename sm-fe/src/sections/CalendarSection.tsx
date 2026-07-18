@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useContent } from '../content/ContentProvider';
 import { SectionContainer } from '../components/SectionContainer';
+import { LabelDivider } from '../components/LabelDivider';
 import { buildMonthGrid, isWeddingDay } from '../lib/calendar';
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
@@ -71,15 +72,13 @@ export function CalendarSection() {
     return wd === 0 || wd === 6 || holidays.has(iso);
   }
 
-  const bride = calendar.countdown?.bride ?? '';
-  const groom = calendar.countdown?.groom ?? '';
-
   return (
     <SectionContainer id="calendar">
+      <LabelDivider text="Wedding Day" />
       {/* 상단 일시 */}
       <div style={{ textAlign: 'center', marginBottom: 20 }}>
         <div style={{ fontSize: '1.4rem', letterSpacing: '0.05em' }}>
-          {y}.{pad(mo)}.{pad(d)}
+          {y}년 {mo}월 {d}일
         </div>
         <div style={{ color: 'var(--color-muted)', marginTop: 6, fontSize: '0.9rem' }}>
           {formatDateTime(weddingDate, calendar.ceremonyTime)}
@@ -89,7 +88,7 @@ export function CalendarSection() {
       {/* 달력 */}
       <table
         data-testid="calendar"
-        style={{ width: '100%', textAlign: 'center', borderCollapse: 'collapse', borderTop: '1px solid #e5ddd4', borderBottom: '1px solid #e5ddd4' }}
+        style={{ width: '100%', textAlign: 'center', borderCollapse: 'collapse' }}
       >
         <thead>
           <tr>
@@ -155,9 +154,6 @@ export function CalendarSection() {
           <span style={{ color: 'var(--color-muted)' }}>:</span>
           <span>{pad(rem.secs)}</span>
         </div>
-        <p style={{ marginTop: 16, fontSize: '0.9rem' }}>
-          {bride}, {groom}의 혼식이 {rem.days}일 남았습니다.
-        </p>
       </div>
     </SectionContainer>
   );

@@ -34,16 +34,22 @@
       "image": "/local-assets/timeline01.jpeg"
     },
     {
+      "date": "2025-02-09",
+      "title": "첫 여행",
+      "description": "첫 여행으로 삿포로를 갔어요.",
+      "image": "/local-assets/timeline02.jpeg"
+    },
+    {
       "date": "2025-10-18",
-      "title": "프로포즈",
-      "description": "이집트 사막에서 일출을 보며 프로포즈 했어요.",
-      "image": "/local-assets/timeline02.jpg"
+      "title": "프러포즈",
+      "description": "이집트 사막에서 일출을 보며 프러포즈 했어요.",
+      "image": "/local-assets/timeline03.jpg"
     },
     {
       "date": "2026-11-15",
-      "title": "W-DAY",
+      "title": "첫 결혼",
       "description": "이제 저희는 부부라는 이름으로 새로운 시작을 함께합니다.",
-      "image": "/local-assets/timeline03.jpeg"
+      "image": "/local-assets/timeline04.jpeg"
     }
   ],
   "calendar": {
@@ -56,22 +62,22 @@
     "venueName": "로프트가든344 10층 메인홀",
     "address": "서울특별시 양천구 오목로 344 청학빌딩 10층",
     "tel": "02-2644-7823",
-    "lat": 37.5665,
-    "lng": 126.978,
+    "lat": 37.5237531,
+    "lng": 126.8751431,
     "mapImage": "/local-assets/map.png",
     "mapQuery": "서울 양천구 오목로 344",
     "kakaoJsKey": "6206ed51d627bc602bd6ac3a19048765",
-    "sketchMapPdf": "/local-assets/loftgarden344.pdf",
+    "sketchMapImage": "/local-assets/loftgarden344.jpg",
     "appLinks": {
-      "naver": { "deepLink": "nmap://place?lat=37.5665&lng=126.978", "webUrl": "https://naver.me/xyTG8t3T" },
-      "kakaoNavi": { "deepLink": "kakaonavi://navigate?dest=37.5665,126.978", "webUrl": "https://place.map.kakao.com/7885407" },
-      "tmap": { "deepLink": "tmap://route?goalx=126.978&goaly=37.5665", "webUrl": "https://tmap.life/39b6a25c" }
+      "naver": { "deepLink": "nmap://route/car?dlat=37.5237531&dlng=126.8751431&dname=로프트가든344&appname=thdguswnd.github.io", "webUrl": "https://naver.me/xyTG8t3T" },
+      "kakaoNavi": { "deepLink": "kakaonavi://navigate?name=로프트가든344&x=126.8751431&y=37.5237531&coord_type=wgs84", "webUrl": "https://place.map.kakao.com/7885407" },
+      "tmap": { "deepLink": "tmap://route?goalname=로프트가든344&goalx=126.8751431&goaly=37.5237531", "webUrl": "https://tmap.life/39b6a25c" }
     }
   },
   "gift": {
     "message": "참석이 어려워 직접 축하를 전하지 못하는\n분들을 위해 계좌번호를 기재하였습니다.\n넓은 마음으로 양해 부탁드립니다.",
     "groomAccounts": [
-      { "role": "신랑", "holder": "송현중", "bank": "신한은행", "number": "110421816339", "kakaoPayUrl": "https://qr.kakaopay.com/groom" },
+      { "role": "신랑", "holder": "송현중", "bank": "하나은행", "number": "41091059640007", "kakaoPayUrl": "https://qr.kakaopay.com/groom" },
       { "role": "아버님", "holder": "송창용", "bank": "기업은행", "number": "123412341234", "kakaoPayUrl": "https://qr.kakaopay.com/groom-father" },
       { "role": "어머님", "holder": "오재순", "bank": "기업은행", "number": "123412341234", "kakaoPayUrl": "https://qr.kakaopay.com/groom-mother" }
     ],

@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useContent } from '../content/ContentProvider';
 import { ScrollReveal } from '../components/ScrollReveal';
+import { LabelDivider } from '../components/LabelDivider';
+import { SmartImage } from '../components/SmartImage';
 
 /** FR-10: 웨딩 갤러리. 2열 그리드로 표시, '더보기'로 나머지 사진 확장. */
 export function GallerySection() {
@@ -15,9 +17,9 @@ export function GallerySection() {
   return (
     <ScrollReveal id="gallery">
       {/* 헤더 */}
+      <LabelDivider text="Gallery" />
       <div style={{ textAlign: 'center', marginBottom: 20 }}>
-        <div style={{ letterSpacing: '0.25em', fontSize: '0.72rem', color: 'var(--color-accent)' }}>GALLERY</div>
-        <h2 style={{ color: 'var(--color-accent)', fontWeight: 500, marginTop: 8 }}>웨딩 갤러리</h2>
+        <h2 style={{ color: 'var(--color-accent)', fontWeight: 500 }}>웨딩 갤러리</h2>
       </div>
 
       {/* 2열 그리드 (초기 2x3 = 6장) */}
@@ -27,7 +29,7 @@ export function GallerySection() {
       >
         {visible.map((img, i) => {
           const el = (
-            <img
+            <SmartImage
               src={img.src}
               alt={`웨딩 갤러리 ${i + 1}`}
               loading="lazy"

@@ -60,7 +60,7 @@ export interface InvitationContent {
     parking?: string;
     mapImage?: string;
     kakaoJsKey?: string;
-    sketchMapPdf?: string;
+    sketchMapImage?: string;
     appLinks: { naver?: AppLink; kakaoNavi?: AppLink; tmap?: AppLink };
   };
   gift: { message?: string; groomAccounts: Account[]; brideAccounts: Account[] };
