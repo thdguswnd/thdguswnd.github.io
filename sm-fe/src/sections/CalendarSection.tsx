@@ -85,11 +85,19 @@ export function CalendarSection() {
         </div>
       </div>
 
-      {/* 달력 */}
-      <table
-        data-testid="calendar"
-        style={{ width: '100%', textAlign: 'center', borderCollapse: 'collapse' }}
+      {/* 달력 (반투명 흰색 둥근 카드 위에 표시) */}
+      <div
+        style={{
+          background: 'rgba(255, 255, 255, 0.75)',
+          border: '1px solid rgba(255, 255, 255, 0.9)',
+          borderRadius: 16,
+          padding: '10px 12px',
+        }}
       >
+        <table
+          data-testid="calendar"
+          style={{ width: '100%', textAlign: 'center', borderCollapse: 'collapse' }}
+        >
         <thead>
           <tr>
             {WEEKDAYS.map((w, i) => (
@@ -135,7 +143,8 @@ export function CalendarSection() {
             </tr>
           ))}
         </tbody>
-      </table>
+        </table>
+      </div>
 
       {/* 실시간 카운트다운 */}
       <div style={{ marginTop: 24, textAlign: 'center' }}>

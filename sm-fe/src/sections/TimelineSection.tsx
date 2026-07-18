@@ -1,6 +1,7 @@
 import { useContent } from '../content/ContentProvider';
 import { SectionContainer } from '../components/SectionContainer';
 import { SmartImage } from '../components/SmartImage';
+import { RevealDiv } from '../components/RevealDiv';
 import type { TimelineEntry } from '../content/types';
 
 /** FR-06: 타임라인. 이미지 + 텍스트가 좌우로 번갈아 배치되는 세로 타임라인. */
@@ -24,7 +25,9 @@ export function TimelineSection() {
           }}
         />
         {timeline.map((entry, i) => (
-          <TimelineRow key={i} entry={entry} imageRight={i % 2 === 0} />
+          <RevealDiv key={i}>
+            <TimelineRow entry={entry} imageRight={i % 2 === 0} />
+          </RevealDiv>
         ))}
       </div>
     </SectionContainer>
