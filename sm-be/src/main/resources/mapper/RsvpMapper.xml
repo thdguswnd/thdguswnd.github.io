@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wedding.invitation.rsvp.repository.RsvpMapper">
+
+  <resultMap id="rsvpResultMap" type="com.wedding.invitation.rsvp.domain.Rsvp">
+    <id property="id" column="id"/>
+    <result property="name" column="name"/>
+    <result property="contact" column="contact"/>
+    <result property="side" column="side"/>
+    <result property="attendance" column="attendance"/>
+    <result property="adultCount" column="adult_count"/>
+    <result property="childCount" column="child_count"/>
+    <result property="mealOption" column="meal_option"/>
+    <result property="privacyConsent" column="privacy_consent"/>
+    <result property="createdAt" column="created_at"/>
+    <result property="updatedAt" column="updated_at"/>
+  </resultMap>
+
+  <select id="findByContact" resultMap="rsvpResultMap">
+    SELECT id, name, contact, side, attendance, adult_count, child_count, meal_option,
+           privacy_consent, created_at, updated_at
+    FROM rsvp
+    WHERE contact = #{contact}
+  </select>
+
+  <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+    INSERT INTO rsvp (name, contact, side, attendance, adult_count, child_count, meal_option,
+                      privacy_consent, created_at, updated_at)
+    VALUES (#{name}, #{contact}, #{side}, #{attendance}, #{adultCount}, #{childCount},
+            #{mealOption}, #{privacyConsent}, #{createdAt}, #{updatedAt})
+  </insert>
+
+  <update id="updateByContact">
+    UPDATE rsvp
+    SET name = #{name},
+        side = #{side},
+        attendance = #{attendance},
+        adult_count = #{adultCount},
+        child_count = #{childCount},
+        meal_option = #{mealOption},
+        privacy_consent = #{privacyConsent},
+        updated_at = #{updatedAt}
+    WHERE contact = #{contact}
+  </update>
+
+  <select id="findAll" resultMap="rsvpResultMap">
+    SELECT id, name, contact, side, attendance, adult_count, child_count, meal_option,
+           privacy_consent, created_at, updated_at
+    FROM rsvp
+    ORDER BY created_at DESC
+  </select>
+
+  <update id="anonymizeOlderThan">
+    UPDATE rsvp
+    SET name = '(익명)',
+        contact = CONCAT('anon-', id),
+        updated_at = #{now}
+    WHERE created_at &lt; #{threshold}
+      AND name &lt;&gt; '(익명)'
+  </update>
+
+</mapper>

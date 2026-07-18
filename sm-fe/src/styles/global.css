@@ -1,0 +1,64 @@
+:root {
+  --color-bg: #fdfbf7;
+  --color-text: #3a3a3a;
+  --color-accent: #c8a2a2;
+  --color-muted: #8a8a8a;
+  --max-width: 480px;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  background: #eee;
+  color: var(--color-text);
+  font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+  line-height: 1.6;
+  /* 스크롤은 유지하되 스크롤바 숨김 (모바일 화면) */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+
+#root {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  background: var(--color-bg);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+.section {
+  padding: 48px 24px;
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 0.8s ease,
+    transform 0.8s ease;
+}
+
+.section.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.section-title {
+  text-align: center;
+  font-size: 1.25rem;
+  color: var(--color-accent);
+  margin-bottom: 24px;
+  letter-spacing: 0.1em;
+}

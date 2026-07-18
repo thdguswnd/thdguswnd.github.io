@@ -1,0 +1,40 @@
+# GCP 전용: Workload Identity 서비스 계정 + Cloud SQL 연결 환경.
+# 시크릿(DB 비밀번호, Instagram 토큰)은 Secret Manager(CSI) 또는 K8s Secret 으로 주입.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sm-be
+spec:
+  template:
+    spec:
+      serviceAccountName: sm-be-gsa # Workload Identity 바인딩된 KSA
+      containers:
+        - name: sm-be
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "gcp"
+            - name: DB_URL
+              valueFrom:
+                secretKeyRef:
+                  name: sm-be-secrets
+                  key: db-url
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: sm-be-secrets
+                  key: db-username
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: sm-be-secrets
+                  key: db-password
+            - name: GCS_BUCKET
+              valueFrom:
+                secretKeyRef:
+                  name: sm-be-secrets
+                  key: gcs-bucket
+            - name: INSTAGRAM_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: sm-be-secrets
+                  key: instagram-token

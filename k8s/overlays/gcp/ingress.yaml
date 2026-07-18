@@ -1,0 +1,28 @@
+# GKE Ingress (외부 HTTPS LB). /api/* 는 백엔드, 그 외는 프론트엔드(sm-fe)로 라우팅.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: wedding-ingress
+  annotations:
+    kubernetes.io/ingress.class: "gce"
+    networking.gke.io/managed-certificates: "sm-managed-cert"
+    kubernetes.io/ingress.allow-http: "false"
+spec:
+  rules:
+    - host: wedding.example.com
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: sm-be
+                port:
+                  number: 80
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: sm-fe
+                port:
+                  number: 80

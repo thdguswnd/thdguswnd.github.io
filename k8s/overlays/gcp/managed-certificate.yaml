@@ -1,0 +1,8 @@
+# GKE Google-managed TLS 인증서
+apiVersion: networking.gke.io/v1
+kind: ManagedCertificate
+metadata:
+  name: sm-managed-cert
+spec:
+  domains:
+    - wedding.example.com

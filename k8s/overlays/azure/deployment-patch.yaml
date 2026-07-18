@@ -1,0 +1,62 @@
+# Azure 전용 패치: azure 프로파일 + Azure Database for PostgreSQL + Key Vault(CSI) 시크릿 + Workload Identity.
+# 시크릿은 secretproviderclass.yaml(SecretProviderClass)의 secretObjects 가 K8s Secret `sm-be-secrets` 로 동기화한다.
+# (동기화 트리거를 위해 아래 CSI 볼륨을 반드시 마운트해야 함)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sm-be
+spec:
+  template:
+    metadata:
+      labels:
+        # AKS Workload Identity: 파드가 사용자 할당 매니지드 ID 토큰을 사용
+        azure.workload.identity/use: "true"
+    spec:
+      serviceAccountName: sm-be
+      containers:
+        - name: sm-be
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "azure"
+            - name: DB_URL
+              valueFrom:
+                secretKeyRef:
+                  name: sm-be-secrets
+                  key: db-url
+            - name: DB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: sm-be-secrets
+                  key: db-username
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: sm-be-secrets
+                  key: db-password
+            - name: AZURE_BLOB_CONTAINER
+              valueFrom:
+                secretKeyRef:
+                  name: sm-be-secrets
+                  key: blob-container
+            - name: AZURE_STORAGE_ACCOUNT
+              valueFrom:
+                secretKeyRef:
+                  name: sm-be-secrets
+                  key: storage-account
+            - name: INSTAGRAM_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: sm-be-secrets
+                  key: instagram-token
+          volumeMounts:
+            - name: secrets-store
+              mountPath: /mnt/secrets-store
+              readOnly: true
+      volumes:
+        # Secrets Store CSI Driver 볼륨 — 마운트 시 Key Vault → K8s Secret 동기화 발생
+        - name: secrets-store
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: sm-be-kv

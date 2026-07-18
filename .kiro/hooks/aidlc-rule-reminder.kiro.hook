@@ -1,0 +1,13 @@
+{
+  "enabled": true,
+  "name": "AIDLC Rule Reminder",
+  "description": "AIDLC workflow 진행 중 매 prompt마다 핵심 rule을 리마인드합니다. Context window가 길어질 때 rule attention 감소를 방지합니다.",
+  "version": "1",
+  "when": {
+    "type": "promptSubmit"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "AIDLC workflow 진행 중입니다. 다음 핵심 rule을 준수하세요:\n1. 질문은 반드시 md 파일로 생성 (chat에서 직접 질문 금지)\n2. 각 stage 완료 시 승인 메시지를 제시하고 사용자 명시적 승인 대기\n3. audit.md에 모든 user input을 원문 그대로 기록 (append only, 덮어쓰기 금지)\n4. plan 파일의 checkbox를 작업 완료 즉시 업데이트\n5. aidlc-state.md의 stage progress를 동기화\n6. 질문 선택지에 Recommend 표시 포함\n7. 산출물은 한국어로 작성 (기술 용어·코드 식별자·파일 경로 제외)\n\n[새 TASK 시작 감지 시 필수 체크]\n8. 새 TASK 시작(새 요구사항 접수) 시 반드시 Workspace Detection부터 실행할 것 (ALWAYS 실행 규칙)\n9. Workspace Detection 시 aidlc-output/_shared/reverse-engineering/ 하위 RE 산출물 존재 여부 확인 후, 존재하면 반드시 사용자에게 재수행 여부 질문 파일(Q01_re-confirm.md) 생성하고 답변 대기할 것 (reverse-engineering-governance.md 규칙)\n10. Workflow Planning 없이 Code Generation을 제안하지 말 것 — 반드시 실행/스킵 단계를 문서화하고 사용자 승인을 받을 것"
+  }
+}

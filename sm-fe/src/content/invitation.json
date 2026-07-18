@@ -1,0 +1,94 @@
+{
+  "main": {
+    "heroImage": "/local-assets/main.jpeg",
+    "title": "함께해,",
+    "titleSecondary": "우리의 새로운 시작을",
+    "subtitle": "2026. 11. 15. SUN"
+  },
+  "greeting": {
+    "label": "INVITATION",
+    "title": "소중한 분들을 초대합니다",
+    "poem": "저절로 웃음이 났다.\n웃는 남자를 보고 여자도 웃었다.\n마음에 꽃이 피는 것 같았다.\n정말로 봄이었다.",
+    "poemSource": "정현주 < 다시, 사랑 > 중에서",
+    "message": "둘이 함께 맞이하는 3번째 봄,\n저희 두 사람 결혼합니다.\n앞으로 맞이할 저희의 봄날을 축복해주세요.",
+    "groom": { "name": "송현중", "parents": { "father": "송창용", "mother": "오재순" } },
+    "bride": { "name": "조나영", "parents": { "father": "조진범", "mother": "김  진" } }
+  },
+  "contacts": {
+    "groom": [
+      { "role": "신랑", "name": "송현중", "phone": "010-5571-2806" },
+      { "role": "아버지", "name": "송창용", "phone": "010-9069-2806" },
+      { "role": "어머니", "name": "오재순", "phone": "010-9879-2806" }
+    ],
+    "bride": [
+      { "role": "신부", "name": "조나영", "phone": "010-4849-9436" },
+      { "role": "아버지", "name": "조진범", "phone": "010-9358-9436" },
+      { "role": "어머니", "name": "김진", "phone": "010-2222-3333" }
+    ]
+  },
+  "timeline": [
+    {
+      "date": "2024-04-25",
+      "title": "첫 만남",
+      "description": "저희는 크로스핏하다가 처음 만났어요.",
+      "image": "/local-assets/timeline01.jpeg"
+    },
+    {
+      "date": "2025-10-18",
+      "title": "프로포즈",
+      "description": "이집트 사막에서 일출을 보며 프로포즈 했어요.",
+      "image": "/local-assets/timeline02.jpg"
+    },
+    {
+      "date": "2026-11-15",
+      "title": "W-DAY",
+      "description": "이제 저희는 부부라는 이름으로 새로운 시작을 함께합니다.",
+      "image": "/local-assets/timeline03.jpeg"
+    }
+  ],
+  "calendar": {
+    "weddingDate": "2026-11-15",
+    "ceremonyTime": "11:00",
+    "holidays": [],
+    "countdown": { "bride": "나영", "groom": "현중" }
+  },
+  "directions": {
+    "venueName": "로프트가든344 10층 메인홀",
+    "address": "서울특별시 양천구 오목로 344 청학빌딩 10층",
+    "tel": "02-2644-7823",
+    "lat": 37.5665,
+    "lng": 126.978,
+    "mapImage": "/local-assets/map.png",
+    "kakaoJsKey": "",
+    "sketchMapPdf": "/local-assets/loftgarden344.pdf",
+    "appLinks": {
+      "naver": { "deepLink": "nmap://place?lat=37.5665&lng=126.978", "webUrl": "https://naver.me/xyTG8t3T" },
+      "kakaoNavi": { "deepLink": "kakaonavi://navigate?dest=37.5665,126.978", "webUrl": "https://place.map.kakao.com/7885407" },
+      "tmap": { "deepLink": "tmap://route?goalx=126.978&goaly=37.5665", "webUrl": "https://tmap.life/39b6a25c" }
+    }
+  },
+  "gift": {
+    "message": "참석이 어려워 직접 축하를 전하지 못하는\n분들을 위해 계좌번호를 기재하였습니다.\n넓은 마음으로 양해 부탁드립니다.",
+    "groomAccounts": [
+      { "role": "신랑", "holder": "송현중", "bank": "신한은행", "number": "110421816339", "kakaoPayUrl": "https://qr.kakaopay.com/groom" },
+      { "role": "아버님", "holder": "송창용", "bank": "기업은행", "number": "123412341234", "kakaoPayUrl": "https://qr.kakaopay.com/groom-father" },
+      { "role": "어머님", "holder": "오재순", "bank": "기업은행", "number": "123412341234", "kakaoPayUrl": "https://qr.kakaopay.com/groom-mother" }
+    ],
+    "brideAccounts": [
+      { "role": "신부", "holder": "조나영", "bank": "기업은행", "number": "098765432109", "kakaoPayUrl": "https://qr.kakaopay.com/bride" },
+      { "role": "아버님", "holder": "조진범", "bank": "기업은행", "number": "098765432109", "kakaoPayUrl": "https://qr.kakaopay.com/bride-father" },
+      { "role": "어머님", "holder": "김진", "bank": "기업은행", "number": "098765432109", "kakaoPayUrl": "https://qr.kakaopay.com/bride-mother" }
+    ]
+  },
+  "gallery": {
+    "initialCount": 6,
+    "images": [
+      { "src": "/local-assets/gallery/01.jpg" },
+      { "src": "/local-assets/gallery/02.jpg" },
+      { "src": "/local-assets/gallery/03.jpg" },
+      { "src": "/local-assets/gallery/04.jpg" },
+      { "src": "/local-assets/gallery/05.jpg" },
+      { "src": "/local-assets/gallery/06.jpg" }
+    ]
+  }
+}

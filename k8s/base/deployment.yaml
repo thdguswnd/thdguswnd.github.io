@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sm-be
+  labels:
+    app: sm-be
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: sm-be
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: sm-be
+    spec:
+      # 멀티존 분산 스케줄링 (single-region multi-zone)
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: sm-be
+      containers:
+        - name: sm-be
+          image: sm-be:latest # overlay 에서 불변 태그로 치환
+          ports:
+            - containerPort: 7080
+          envFrom:
+            - configMapRef:
+                name: sm-be-config
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "512Mi"
+            limits:
+              cpu: "500m"
+              memory: "768Mi"
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 7080
+            initialDelaySeconds: 30
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 7080
+            initialDelaySeconds: 20
+            periodSeconds: 10
