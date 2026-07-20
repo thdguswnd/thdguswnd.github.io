@@ -2,11 +2,11 @@ import { useEffect, useState } from 'react';
 import { useContent } from '../content/ContentProvider';
 import { extractPalette, applyPalette } from '../lib/theme';
 
-// src/assets/main/ 내 jpg·jpeg 를 모두 수집 → 접속 시 랜덤 1장 사용.
-// (폴더에 파일을 추가하면 자동 포함. 빌드 시 imagetools 가 리사이즈+webp 최적화. 없으면 콘텐츠 heroImage 폴백)
-const mainImages = import.meta.glob('../assets/main/*.{jpg,jpeg,JPG,JPEG}', {
+// src/assets/main/ 내 이미지 수집 → 접속 시 랜덤 1장 사용.
+// webp 는 `yarn optimize:images` 로 미리 최적화된 파일. 없으면 콘텐츠 heroImage 로 폴백.
+const mainImages = import.meta.glob('../assets/main/*.{webp,jpg,jpeg,png,JPG,JPEG,PNG}', {
   eager: true,
-  query: { w: 1600, format: 'webp', quality: 80 },
+  query: '?url',
   import: 'default',
 }) as Record<string, string>;
 const heroUrls = Object.values(mainImages);
