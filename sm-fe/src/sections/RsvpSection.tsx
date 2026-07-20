@@ -138,9 +138,21 @@ export function RsvpSection() {
   const attending = attendance === 'ATTENDING';
   const selected = attendance !== null; // 가능/불가 중 하나 선택됨
   const nameEntered = name.trim() !== '';
-  // 대인 인원 값에 따라 아이콘/문구 변경
+  // 대인 인원 값에 따라 아이콘 개수/문구 변경 (인원 수만큼 사람 아이콘)
   const adultLabel =
-    adultCount === 0 ? '🍽️ 식사 안 해요' : adultCount === 1 ? '🧍 혼자 가요' : '👫 같이 가요';
+    adultCount === 0
+      ? '🍽️ 식사 안 해요'
+      : `${'🧍'.repeat(adultCount)} ${adultCount === 1 ? '혼자 가요' : '같이 가요'}`;
+  // 어린이 인원 수만큼 아이 아이콘 (0명이면 아이콘 없음)
+  const childLabel = `${childCount > 0 ? '🧒'.repeat(childCount) + ' ' : ''}아이도 가요 (6~12세)`;
+
+  // 가능/불가 선택 시 RSVP 섹션을 화면 최상단으로 스크롤(키보드 튐 방지)
+  function selectAttendance(a: Attendance) {
+    setAttendance(a);
+    requestAnimationFrame(() => {
+      document.getElementById('rsvp')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -172,14 +184,14 @@ export function RsvpSection() {
           <ChoiceBox
             testId="rsvp-attendance-yes"
             selected={attending}
-            onClick={() => setAttendance('ATTENDING')}
+            onClick={() => selectAttendance('ATTENDING')}
             label="가능"
             icon="🎉"
           />
           <ChoiceBox
             testId="rsvp-attendance-no"
             selected={attendance === 'NOT_ATTENDING'}
-            onClick={() => setAttendance('NOT_ATTENDING')}
+            onClick={() => selectAttendance('NOT_ATTENDING')}
             label="불가"
             icon="🙏"
           />
@@ -245,7 +257,7 @@ export function RsvpSection() {
                   {adultCount > 0 && (
                     <div style={{ borderTop: `1px solid ${LINE}` }}>
                       <Stepper
-                        label="👶 아이도 가요 (6~12세)"
+                        label={childLabel}
                         value={childCount}
                         onChange={setChildCount}
                         testId="rsvp-child"

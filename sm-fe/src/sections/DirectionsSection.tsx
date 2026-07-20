@@ -76,7 +76,7 @@ export function DirectionsSection() {
             fontSize: '0.9rem',
           }}
         >
-          오시는 길
+          찾아오시는 방법
         </button>
       )}
 
@@ -106,12 +106,12 @@ export function DirectionsSection() {
         )}
       </div>
 
-      {/* 오시는 길 약도 이미지 모달 */}
+      {/* 찾아오시는 방법 약도 이미지 모달 (이미지만) */}
       {showMap && (
-        <Modal title="오시는 길" onClose={() => setShowMap(false)}>
+        <Modal onClose={() => setShowMap(false)}>
           <SmartImage
             src={directions.sketchMapImage}
-            alt="오시는 길 약도"
+            alt="찾아오시는 방법"
             style={{ width: '100%', display: 'block', borderRadius: 8 }}
           />
         </Modal>

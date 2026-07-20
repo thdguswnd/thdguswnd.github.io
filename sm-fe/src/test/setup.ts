@@ -15,3 +15,6 @@ class MockIntersectionObserver implements IntersectionObserver {
 
 globalThis.IntersectionObserver =
   MockIntersectionObserver as unknown as typeof IntersectionObserver;
+
+// jsdom 에는 scrollIntoView 가 구현돼 있지 않아 호출 시 에러 → no-op 스텁
+window.HTMLElement.prototype.scrollIntoView = () => {};

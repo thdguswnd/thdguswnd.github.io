@@ -9,7 +9,7 @@ export function Modal({
   onClose,
   children,
 }: {
-  title: string;
+  title?: string;
   onClose: () => void;
   children: ReactNode;
 }) {
@@ -58,8 +58,8 @@ export function Modal({
           border: `1px solid ${LINE}`,
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', marginBottom: 12 }}>
-          <h3 style={{ fontWeight: 600 }}>{title}</h3>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', marginBottom: title ? 12 : 4, minHeight: 24 }}>
+          {title && <h3 style={{ fontWeight: 600 }}>{title}</h3>}
           <button
             type="button"
             onClick={onClose}
