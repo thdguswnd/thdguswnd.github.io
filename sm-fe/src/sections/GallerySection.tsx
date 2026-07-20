@@ -3,11 +3,13 @@ import { ScrollReveal } from '../components/ScrollReveal';
 import { LabelDivider } from '../components/LabelDivider';
 import { RevealDiv } from '../components/RevealDiv';
 
-// gallery 디렉토리의 모든 이미지 수집 (파일명 순). 폴더에 추가하면 자동 포함.
-const galleryModules = import.meta.glob(
-  '../../public/local-assets/gallery/*.{jpg,jpeg,png,JPG,JPEG,PNG}',
-  { eager: true, query: '?url', import: 'default' },
-) as Record<string, string>;
+// src/assets/gallery/ 의 모든 이미지 수집 (파일명 순). 폴더에 추가하면 자동 포함.
+// 빌드 시 imagetools 가 리사이즈(w=1200)+webp 로 최적화(원본 파일은 그대로).
+const galleryModules = import.meta.glob('../assets/gallery/*.{jpg,jpeg,png,JPG,JPEG,PNG}', {
+  eager: true,
+  query: { w: 1200, format: 'webp', quality: 80 },
+  import: 'default',
+}) as Record<string, string>;
 const galleryUrls = Object.entries(galleryModules)
   .sort(([a], [b]) => a.localeCompare(b))
   .map(([, url]) => url);
