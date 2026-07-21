@@ -1,19 +1,13 @@
-import { lazy, Suspense } from 'react';
 import { ContentProvider } from './content/ContentProvider';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import { Skeleton } from './components/Skeleton';
 import { HeroSection } from './sections/HeroSection';
 import { GreetingSection } from './sections/GreetingSection';
 import { TimelineSection } from './sections/TimelineSection';
 import { CalendarSection } from './sections/CalendarSection';
 import { DirectionsSection } from './sections/DirectionsSection';
 import { RsvpSection } from './sections/RsvpSection';
+import { GallerySection } from './sections/GallerySection';
 import { GiftSection } from './sections/GiftSection';
-
-// 하단 무거운 섹션은 지연 로드 (코드 스플리팅)
-const GallerySection = lazy(() =>
-  import('./sections/GallerySection').then((m) => ({ default: m.GallerySection })),
-);
 
 export default function App() {
   return (
@@ -25,9 +19,7 @@ export default function App() {
         <CalendarSection />
         <DirectionsSection />
         <RsvpSection />
-        <Suspense fallback={<Skeleton />}>
-          <GallerySection />
-        </Suspense>
+        <GallerySection />
         <GiftSection />
       </ContentProvider>
     </ErrorBoundary>

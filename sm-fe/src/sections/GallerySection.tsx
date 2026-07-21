@@ -48,7 +48,6 @@ export function GallerySection() {
                   key={ci}
                   src={src}
                   alt={`웨딩 갤러리 ${ri * 2 + ci + 1}`}
-                  loading="lazy"
                   style={{ width: '100%', aspectRatio: '4 / 5', objectFit: 'cover', borderRadius: 8, display: 'block' }}
                 />
               ))}

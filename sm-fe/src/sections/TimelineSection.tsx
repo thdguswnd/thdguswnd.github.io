@@ -41,8 +41,7 @@ function TimelineRow({ entry, imageRight }: { entry: TimelineEntry; imageRight: 
         <SmartImage
           src={entry.image}
           alt={entry.title}
-          loading="lazy"
-          style={{ width: '100%', borderRadius: 12, objectFit: 'cover', display: 'block' }}
+          style={{ width: '100%', aspectRatio: '4 / 5', borderRadius: 12, objectFit: 'cover', display: 'block' }}
         />
       )}
     </div>
