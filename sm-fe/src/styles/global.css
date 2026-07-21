@@ -16,7 +16,7 @@ html,
 body {
   background: #eee;
   color: var(--color-text);
-  font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+  font-family: var(--font-family, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif);
   line-height: 1.6;
   /* 스크롤은 유지하되 스크롤바 숨김 (모바일 화면) */
   scrollbar-width: none; /* Firefox */
