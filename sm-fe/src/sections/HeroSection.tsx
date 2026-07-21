@@ -1,22 +1,15 @@
 import { useEffect, useState } from 'react';
 import { useContent } from '../content/ContentProvider';
 import { extractPalette, applyPalette } from '../lib/theme';
+import { currentSet, mainImages } from '../lib/imageSets';
 
-// src/assets/main/ 내 이미지 수집 → 접속 시 랜덤 1장 사용.
-// webp 는 `yarn optimize:images` 로 미리 최적화된 파일. 없으면 콘텐츠 heroImage 로 폴백.
-const mainImages = import.meta.glob('../assets/main/*.{webp,jpg,jpeg,png,JPG,JPEG,PNG}', {
-  eager: true,
-  query: '?url',
-  import: 'default',
-}) as Record<string, string>;
-const heroUrls = Object.values(mainImages);
-
-/** FR-01: 메인 사진(랜덤) 배경 + 제목 오버레이. 이미지 key color 로 전체 테마 설정. */
+/** FR-01: 메인 사진(현재 세트에서 랜덤) 배경 + 제목 오버레이. 이미지 key color 로 전체 테마 설정. */
 export function HeroSection() {
   const { main } = useContent();
-  const [heroSrc] = useState(() =>
-    heroUrls.length ? heroUrls[Math.floor(Math.random() * heroUrls.length)] : main.heroImage,
-  );
+  const [heroSrc] = useState(() => {
+    const urls = mainImages(currentSet());
+    return urls.length ? urls[Math.floor(Math.random() * urls.length)] : main.heroImage;
+  });
 
   useEffect(() => {
     let cancelled = false;

@@ -2,13 +2,18 @@
 // src/assets/{main,gallery} 의 jpg/jpeg/png 를 리사이즈 + webp 로 변환하고 원본(대용량)은 제거한다.
 // 사진을 새로 추가한 뒤 `yarn optimize:images` 로 실행하면 배포용 경량 webp 가 만들어진다.
 import sharp from 'sharp';
-import { readdirSync, unlinkSync } from 'fs';
+import { readdirSync, unlinkSync, existsSync } from 'fs';
 import { join, extname, basename } from 'path';
 
-const targets = [
-  { dir: 'src/assets/main', width: 1600 },
-  { dir: 'src/assets/gallery', width: 1200 },
-];
+// 세트별 폴더(src/assets/sets/<세트>/{main,gallery}) 를 모두 최적화.
+const setsRoot = 'src/assets/sets';
+const targets = [];
+if (existsSync(setsRoot)) {
+  for (const set of readdirSync(setsRoot)) {
+    targets.push({ dir: join(setsRoot, set, 'main'), width: 1600 });
+    targets.push({ dir: join(setsRoot, set, 'gallery'), width: 1200 });
+  }
+}
 
 for (const { dir, width } of targets) {
   let files;
