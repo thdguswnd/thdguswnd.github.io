@@ -2,11 +2,13 @@ import { useContent } from '../content/ContentProvider';
 import { SectionContainer } from '../components/SectionContainer';
 import { SmartImage } from '../components/SmartImage';
 import { RevealDiv } from '../components/RevealDiv';
+import { currentSet, timelineImages } from '../lib/imageSets';
 import type { TimelineEntry } from '../content/types';
 
 /** FR-06: 타임라인. 이미지 + 텍스트가 좌우로 번갈아 배치되는 세로 타임라인. */
 export function TimelineSection() {
   const { timeline } = useContent();
+  const images = timelineImages(currentSet()); // 세트별 타임라인 이미지(엔트리 순서)
 
   return (
     <SectionContainer id="timeline" title="그리고 지금까지.">
@@ -26,7 +28,7 @@ export function TimelineSection() {
         />
         {timeline.map((entry, i) => (
           <RevealDiv key={i}>
-            <TimelineRow entry={entry} imageRight={i % 2 === 0} />
+            <TimelineRow entry={entry} image={images[i] ?? entry.image} imageRight={i % 2 === 0} />
           </RevealDiv>
         ))}
       </div>
@@ -34,12 +36,20 @@ export function TimelineSection() {
   );
 }
 
-function TimelineRow({ entry, imageRight }: { entry: TimelineEntry; imageRight: boolean }) {
+function TimelineRow({
+  entry,
+  image: imageSrc,
+  imageRight,
+}: {
+  entry: TimelineEntry;
+  image?: string;
+  imageRight: boolean;
+}) {
   const image = (
     <div style={{ flex: 1, minWidth: 0 }}>
-      {entry.image && (
+      {imageSrc && (
         <SmartImage
-          src={entry.image}
+          src={imageSrc}
           alt={entry.title}
           style={{ width: '100%', aspectRatio: '4 / 5', borderRadius: 12, objectFit: 'cover', display: 'block' }}
         />

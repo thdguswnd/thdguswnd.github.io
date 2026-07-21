@@ -12,6 +12,7 @@ if (existsSync(setsRoot)) {
   for (const set of readdirSync(setsRoot)) {
     targets.push({ dir: join(setsRoot, set, 'main'), width: 1600 });
     targets.push({ dir: join(setsRoot, set, 'gallery'), width: 1200 });
+    targets.push({ dir: join(setsRoot, set, 'timeline'), width: 1200 });
   }
 }
 

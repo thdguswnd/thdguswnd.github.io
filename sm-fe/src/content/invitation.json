@@ -30,26 +30,22 @@
     {
       "date": "2024-04-25",
       "title": "첫 만남",
-      "description": "저희는 크로스핏하다가 처음 만났어요.",
-      "image": "/local-assets/timeline01.jpeg"
+      "description": "저희는 크로스핏하다가 처음 만났어요."
     },
     {
       "date": "2025-02-09",
       "title": "첫 여행",
-      "description": "첫 여행으로 삿포로를 갔어요.",
-      "image": "/local-assets/timeline02.jpeg"
+      "description": "첫 여행으로 삿포로를 갔어요."
     },
     {
       "date": "2025-10-18",
       "title": "프러포즈",
-      "description": "이집트 사막에서 일출을 보며 프러포즈 했어요.",
-      "image": "/local-assets/timeline03.jpg"
+      "description": "이집트 사막에서 일출을 보며 프러포즈 했어요."
     },
     {
       "date": "2026-11-15",
       "title": "첫 결혼",
-      "description": "이제 저희는 부부라는 이름으로 새로운 시작을 함께합니다.",
-      "image": "/local-assets/timeline04.jpeg"
+      "description": "이제 저희는 부부라는 이름으로 새로운 시작을 함께합니다."
     }
   ],
   "calendar": {
