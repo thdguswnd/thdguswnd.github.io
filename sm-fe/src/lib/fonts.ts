@@ -14,8 +14,8 @@ const FONTS: Record<string, FontDef> = {
   default: { family: SYSTEM_STACK },
   // paints 세트: 명조체(데모). 원하는 폰트로 교체 가능.
   paints: {
-    family: `'Nanum Myeongjo', ${SYSTEM_STACK}`,
-    googleUrl: 'https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&display=swap',
+    family: `'Gamja Flower', ${SYSTEM_STACK}`,
+    googleUrl: 'https://fonts.googleapis.com/css2?family=Gamja+Flower&display=swap',
   },
 };
 
