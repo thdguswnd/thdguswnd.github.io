@@ -33,7 +33,10 @@ body::-webkit-scrollbar {
   margin: 0 auto;
   background: var(--color-bg);
   min-height: 100vh;
-  overflow-x: hidden;
+  /* overflow-x: hidden 은 overflow-y 를 auto 로 만들어 #root 가 스크롤 컨테이너가 됨
+     → iOS Safari 스크롤 튐 원인. clip 은 스크롤 컨테이너를 만들지 않음. */
+  overflow-x: hidden; /* 구형 폴백 */
+  overflow-x: clip;
 }
 
 img {
@@ -61,4 +64,12 @@ img {
   color: var(--color-accent);
   margin-bottom: 24px;
   letter-spacing: 0.1em;
+}
+
+/* 히어로 전체 높이. iOS 주소창 리사이즈로 인한 튐 방지 위해 svh 사용(미지원 시 vh 폴백). */
+.hero-full {
+  min-height: 100vh;
+  min-height: 100svh;
+  padding-top: 30vh;
+  padding-top: 30svh;
 }

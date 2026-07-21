@@ -23,15 +23,13 @@ export function HeroSection() {
 
   return (
     <section
-      className="section is-visible"
+      className="section is-visible hero-full"
       data-testid="hero-section"
       style={{
         position: 'relative',
-        minHeight: '100vh',
         display: 'flex',
         alignItems: 'flex-start',
         justifyContent: 'center',
-        paddingTop: '30vh',
         color: '#fff',
         textAlign: 'center',
         backgroundImage: `url(${heroSrc})`,
