@@ -113,6 +113,24 @@ function Stepper({
   );
 }
 
+/** 열림/닫힘에 따라 fade + 높이 전환되는 래퍼. 자식을 항상 마운트해 fade-out 도 자연스럽게. */
+function Collapsible({ open, testId, children }: { open: boolean; testId?: string; children: ReactNode }) {
+  return (
+    <div
+      data-testid={testId}
+      aria-hidden={!open}
+      style={{
+        overflow: 'hidden',
+        maxHeight: open ? 2000 : 0,
+        opacity: open ? 1 : 0,
+        transition: 'max-height 0.5s ease, opacity 0.4s ease',
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
 const labelStyle = { fontSize: '0.85rem', color: 'var(--color-muted)', display: 'block', marginBottom: 6 } as const;
 const inputStyle = {
   width: '100%',
@@ -138,13 +156,11 @@ export function RsvpSection() {
   const attending = attendance === 'ATTENDING';
   const selected = attendance !== null; // 가능/불가 중 하나 선택됨
   const nameEntered = name.trim() !== '';
-  // 대인 인원 값에 따라 아이콘 개수/문구 변경 (인원 수만큼 사람 아이콘)
+  // 대인: 혼자(1명) 아이콘 / 2명 이상은 두 명 아이콘 고정
   const adultLabel =
-    adultCount === 0
-      ? '🍽️ 식사 안 해요'
-      : `${'🧍'.repeat(adultCount)} ${adultCount === 1 ? '혼자 가요' : '같이 가요'}`;
-  // 어린이 인원 수만큼 아이 아이콘 (0명이면 아이콘 없음)
-  const childLabel = `${childCount > 0 ? '🧒'.repeat(childCount) + ' ' : ''}아이도 가요 (6~12세)`;
+    adultCount === 0 ? '🍽️ 식사 안 해요' : adultCount === 1 ? '🧍 혼자 가요' : '👫 같이 가요';
+  // 아이: 인원과 무관하게 아이콘 하나 고정
+  const childLabel = '👶 아이도 가요 (6~12세)';
 
   // 가능/불가 선택 시 RSVP 섹션을 화면 최상단으로 스크롤(키보드 튐 방지)
   function selectAttendance(a: Attendance) {
@@ -238,9 +254,10 @@ export function RsvpSection() {
           </div>
         )}
 
-        {/* 성함 입력 후 → (가능일 때) 식사여부 + 안내문구 + 전달 버튼 */}
-        {selected && nameEntered && (
-          <>
+        {/* 성함 입력 시 fade-in (지우면 fade-out). 가능일 때만 식사여부 표시 */}
+        {selected && (
+          <Collapsible open={nameEntered} testId="rsvp-details">
+            <div style={{ display: 'grid', gap: 22 }}>
             {attending && (
               <div>
                 <label style={labelStyle}>{req}식사 여부</label>
@@ -297,9 +314,7 @@ export function RsvpSection() {
                   cursor: state === 'submitting' ? 'not-allowed' : 'pointer',
                 }}
               >
-                {state === 'submitting'
-                  ? '전송 중...'
-                  : `${attending ? '😊' : '😢'} 신랑 & 신부에게 전달하기`}
+                {state === 'submitting' ? '전송 중...' : '신랑 & 신부에게 전달하기'}
               </button>
               {message && (
                 <p
@@ -310,7 +325,8 @@ export function RsvpSection() {
                 </p>
               )}
             </div>
-          </>
+            </div>
+          </Collapsible>
         )}
       </form>
     </SectionContainer>

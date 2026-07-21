@@ -9,39 +9,35 @@ describe('RsvpSection', () => {
     expect(screen.getByTestId('rsvp-attendance-yes')).toBeInTheDocument();
     expect(screen.getByTestId('rsvp-attendance-no')).toBeInTheDocument();
     expect(screen.queryByTestId('rsvp-name')).not.toBeInTheDocument();
-    expect(screen.queryByTestId('rsvp-submit')).not.toBeInTheDocument();
+    expect(screen.queryByTestId('rsvp-details')).not.toBeInTheDocument();
   });
 
-  it('가능 선택 시 성함/측만 먼저 보이고, 식사여부·안내문구·버튼은 이름 입력 전 숨겨진다', async () => {
+  it('가능 선택 시 성함/측이 보이고, 상세(식사여부/버튼)는 이름 입력 전 접혀 있다', async () => {
     render(<RsvpSection />);
     await userEvent.click(screen.getByTestId('rsvp-attendance-yes'));
     expect(screen.getByTestId('rsvp-name')).toBeInTheDocument();
     expect(screen.getByTestId('rsvp-side-groom')).toBeInTheDocument();
-    expect(screen.queryByTestId('rsvp-adult')).not.toBeInTheDocument();
-    expect(screen.queryByTestId('rsvp-privacy-notice')).not.toBeInTheDocument();
-    expect(screen.queryByTestId('rsvp-submit')).not.toBeInTheDocument();
+    // 상세 영역은 마운트돼 있으나 접힘(opacity 0)
+    expect(screen.getByTestId('rsvp-details')).toHaveStyle({ opacity: '0' });
   });
 
-  it('가능 + 성함 입력 시 식사여부/안내문구/전달버튼(웃는 아이콘)이 보인다', async () => {
+  it('가능 + 성함 입력 시 상세가 펼쳐지고 식사여부/안내문구/버튼이 보인다', async () => {
     render(<RsvpSection />);
     await userEvent.click(screen.getByTestId('rsvp-attendance-yes'));
     await userEvent.type(screen.getByTestId('rsvp-name'), '홍길동');
+    expect(screen.getByTestId('rsvp-details')).toHaveStyle({ opacity: '1' });
     expect(screen.getByTestId('rsvp-adult')).toHaveTextContent('1'); // 초기값 1
     expect(screen.getByTestId('rsvp-child')).toBeInTheDocument();
     expect(screen.getByTestId('rsvp-privacy-notice')).toBeInTheDocument();
-    const submit = screen.getByTestId('rsvp-submit');
-    expect(submit).toBeEnabled();
-    expect(submit).toHaveTextContent('😊');
+    expect(screen.getByTestId('rsvp-submit')).toBeEnabled();
   });
 
-  it('불가 + 성함 입력 시 식사여부는 숨고 전달버튼(우는 아이콘)이 보인다', async () => {
+  it('불가 + 성함 입력 시 식사여부는 없고 전달 버튼이 보인다', async () => {
     render(<RsvpSection />);
     await userEvent.click(screen.getByTestId('rsvp-attendance-no'));
     await userEvent.type(screen.getByTestId('rsvp-name'), '홍길동');
     expect(screen.queryByTestId('rsvp-adult')).not.toBeInTheDocument();
-    const submit = screen.getByTestId('rsvp-submit');
-    expect(submit).toBeInTheDocument();
-    expect(submit).toHaveTextContent('😢');
+    expect(screen.getByTestId('rsvp-submit')).toBeInTheDocument();
   });
 
   it('대인 스테퍼는 0~10 범위 (초기 1)', async () => {
