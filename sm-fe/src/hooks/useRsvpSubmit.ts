@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { apiClient } from '../lib/apiClient';
 import type { RsvpRequest } from '../lib/types';
 
@@ -21,5 +21,11 @@ export function useRsvpSubmit() {
     }
   }
 
-  return { state, message, submit };
+  // 제출 후 값 수정 시 초기 상태로 되돌림(버튼 복귀)
+  const reset = useCallback(() => {
+    setState('idle');
+    setMessage('');
+  }, []);
+
+  return { state, message, submit, reset };
 }

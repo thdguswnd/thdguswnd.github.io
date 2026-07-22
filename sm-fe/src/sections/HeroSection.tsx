@@ -67,9 +67,12 @@ export function HeroSection() {
         {greeting.bride.name}
       </div>
 
-      {/* 세로 4/5, 가로 1/2: 날짜 */}
-      <div style={layer({ top: '80%', left: '50%', fontSize: '1.25rem', letterSpacing: '0.18em' })}>
+      {/* 세로 5/6, 가로 1/2: 날짜 + 예식장 */}
+      <div style={layer({ top: '83%', left: '50%', fontSize: '1.25rem', letterSpacing: '0.18em' })}>
         {dateStr}
+      </div>
+      <div style={layer({ top: '88%', left: '50%', fontSize: '1rem', letterSpacing: '0.1em' })}>
+        로프트가든344
       </div>
     </section>
   );

@@ -166,7 +166,7 @@ const inputStyle = {
 
 /** FR-09: 참석 의사(RSVP) 폼. 가능/불가 → 성함·측 → (성함 입력 후) 식사여부/전달 버튼 순으로 노출. */
 export function RsvpSection() {
-  const { state, message, submit } = useRsvpSubmit();
+  const { state, message, submit, reset } = useRsvpSubmit();
 
   const [attendance, setAttendance] = useState<Attendance | null>(null);
   const [name, setName] = useState('');
@@ -183,6 +183,12 @@ export function RsvpSection() {
     adultCount === 0 ? '🍽️ 식사 안 해요' : adultCount === 1 ? '🧍 혼자 가요' : '👫 같이 가요';
   // 아이: 인원과 무관하게 아이콘 하나 고정
   const childLabel = '👶 아이도 가요 (6~12세)';
+
+  // 제출 완료/오류 후 값을 수정하면 → 성공 메시지 접고 버튼 다시 노출
+  useEffect(() => {
+    if (state === 'success' || state === 'error') reset();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [name, side, attendance, adultCount, childCount]);
 
   // 가능/불가 선택 시 RSVP 섹션을 화면 최상단으로 스크롤(키보드 튐 방지)
   function selectAttendance(a: Attendance) {
@@ -328,33 +334,41 @@ export function RsvpSection() {
               예식 종료 후 일주일 이내에 모두 삭제됩니다.
             </p>
 
-            {/* 전달 버튼 */}
+            {/* 전달 버튼(제출 중/완료 시 fade-out) + 상태 메시지 */}
             <div>
-              <button
-                type="submit"
-                data-testid="rsvp-submit"
-                disabled={state === 'submitting'}
-                style={{
-                  width: '100%',
-                  padding: '14px',
-                  borderRadius: 10,
-                  border: 'none',
-                  background: ACCENT,
-                  color: '#fff',
-                  fontSize: '0.95rem',
-                  cursor: state === 'submitting' ? 'not-allowed' : 'pointer',
-                }}
+              <Collapsible open={state !== 'submitting' && state !== 'success'} testId="rsvp-submit-wrap">
+                <button
+                  type="submit"
+                  data-testid="rsvp-submit"
+                  style={{
+                    width: '100%',
+                    padding: '14px',
+                    borderRadius: 10,
+                    border: 'none',
+                    background: ACCENT,
+                    color: '#fff',
+                    fontSize: '0.95rem',
+                    cursor: 'pointer',
+                  }}
+                >
+                  신랑 & 신부에게 전달하기
+                </button>
+              </Collapsible>
+              <Collapsible
+                open={state === 'submitting' || state === 'success' || state === 'error'}
+                testId="rsvp-status-wrap"
               >
-                {state === 'submitting' ? '전송 중...' : '신랑 & 신부에게 전달하기'}
-              </button>
-              {message && (
                 <p
                   data-testid="rsvp-message"
-                  style={{ textAlign: 'center', color: state === 'success' ? 'green' : 'crimson', marginTop: 8 }}
+                  style={{
+                    textAlign: 'center',
+                    margin: 0,
+                    color: state === 'success' ? 'green' : state === 'error' ? 'crimson' : 'var(--color-muted)',
+                  }}
                 >
-                  {message}
+                  {state === 'submitting' ? '전송 중...' : message}
                 </p>
-              )}
+              </Collapsible>
             </div>
             </div>
           </Collapsible>

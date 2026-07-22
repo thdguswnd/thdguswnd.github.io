@@ -66,6 +66,7 @@ export function KakaoMap({
       return;
     }
     let cancelled = false;
+    let detachTouch: (() => void) | null = null;
 
     // 지정 좌표에 지도+마커(+말풍선) 렌더
     const render = (kakao: any, latlng: any) => {
@@ -79,6 +80,23 @@ export function KakaoMap({
         }).open(map, new kakao.maps.Marker({ position: latlng }));
       }
       map.setCenter(latlng);
+
+      // 제스처: 한 손가락 팬은 막아 페이지 스크롤 유지, 두 손가락일 때만 지도 드래그(팬) 허용.
+      // 핀치 줌(두 손가락)은 항상 허용. (container touch-action: pan-y 로 한 손가락은 세로 스크롤)
+      map.setDraggable(false);
+      map.setZoomable(true);
+      const el = ref.current;
+      const onTouchStart = (e: TouchEvent) => map.setDraggable(e.touches.length >= 2);
+      const onTouchEnd = (e: TouchEvent) => {
+        if (e.touches.length < 2) map.setDraggable(false);
+      };
+      el.addEventListener('touchstart', onTouchStart, { passive: true });
+      el.addEventListener('touchend', onTouchEnd, { passive: true });
+      detachTouch = () => {
+        el.removeEventListener('touchstart', onTouchStart);
+        el.removeEventListener('touchend', onTouchEnd);
+      };
+
       setStatus('ok');
     };
 
@@ -106,6 +124,7 @@ export function KakaoMap({
 
     return () => {
       cancelled = true;
+      if (detachTouch) detachTouch();
     };
   }, [appkey, address, venueName, lat, lng, level]);
 
@@ -133,5 +152,11 @@ export function KakaoMap({
     );
   }
 
-  return <div ref={ref} data-testid="kakao-map" style={{ height, borderRadius: 8, overflow: 'hidden' }} />;
+  return (
+    <div
+      ref={ref}
+      data-testid="kakao-map"
+      style={{ height, borderRadius: 8, overflow: 'hidden', touchAction: 'pan-y' }}
+    />
+  );
 }
