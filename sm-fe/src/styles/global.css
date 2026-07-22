@@ -44,6 +44,14 @@ img {
   display: block;
 }
 
+/* 폼 요소는 폰트를 기본 상속하지 않으므로 명시적으로 상속 → 세트 폰트가 버튼/입력창에도 적용 */
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+}
+
 .section {
   padding: 48px 24px;
   opacity: 0;
