@@ -59,11 +59,11 @@ export function HeroSection() {
         </div>
       </div>
 
-      {/* 세로 2/3: 신랑(가로 1/3) · 신부(가로 2/3) */}
-      <div style={layer({ top: '66%', left: '33%', fontSize: '1.4rem', letterSpacing: '0.12em' })}>
+      {/* 세로 2/3: 신랑(가로 1/5) · 신부(가로 4/5) */}
+      <div style={layer({ top: '66%', left: '20%', fontSize: '1.4rem', letterSpacing: '0.12em' })}>
         {greeting.groom.name}
       </div>
-      <div style={layer({ top: '66%', left: '66%', fontSize: '1.4rem', letterSpacing: '0.12em' })}>
+      <div style={layer({ top: '66%', left: '80%', fontSize: '1.4rem', letterSpacing: '0.12em' })}>
         {greeting.bride.name}
       </div>
 
