@@ -28,8 +28,7 @@ export function RevealDiv({ children, style }: { children: ReactNode; style?: CS
       ref={ref}
       style={{
         opacity: visible ? 1 : 0,
-        transform: visible ? 'none' : 'translateY(24px)',
-        transition: 'opacity 0.7s ease, transform 0.7s ease',
+        transition: 'opacity 0.7s ease',
         ...style,
       }}
     >
