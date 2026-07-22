@@ -163,7 +163,6 @@ const inputStyle = {
   background: 'transparent',
   outline: 'none',
 } as const;
-const req = <span style={{ color: '#d9534f', marginRight: 4 }}>*</span>;
 
 /** FR-09: 참석 의사(RSVP) 폼. 가능/불가 → 성함·측 → (성함 입력 후) 식사여부/전달 버튼 순으로 노출. */
 export function RsvpSection() {
@@ -240,7 +239,6 @@ export function RsvpSection() {
         {selected && (
           <FadeInOnMount testId="rsvp-side-group">
             <div style={{ textAlign: 'center' }}>
-              <label style={labelStyle}>어느 쪽 하객이신가요?</label>
               <div style={{ display: 'flex', gap: 20, justifyContent: 'center', fontSize: '0.95rem' }}>
                 <label style={{ cursor: 'pointer' }}>
                   <input
@@ -273,7 +271,7 @@ export function RsvpSection() {
             <div style={{ display: 'grid', gap: 22 }}>
               {attending && (
                 <div>
-                  <label style={labelStyle}>{req}식사 여부</label>
+                  <label style={labelStyle}>식사 여부</label>
                   <div style={{ borderTop: `1px solid ${LINE}` }}>
                     <Stepper
                       label={adultLabel}
@@ -325,7 +323,7 @@ export function RsvpSection() {
               data-testid="rsvp-privacy-notice"
               style={{ fontSize: '0.78rem', color: 'var(--color-muted)', lineHeight: 1.5, margin: 0, textAlign: 'center' }}
             >
-              입력하신 성함은 식사·참석 인원 확인 목적으로만 사용되며,
+              입력하신 성함은 인원 확인 목적으로만 사용되며,
               <br />
               예식 종료 후 일주일 이내에 모두 삭제됩니다.
             </p>
