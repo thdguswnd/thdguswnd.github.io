@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { SectionContainer } from '../components/SectionContainer';
 import { useRsvpSubmit } from '../hooks/useRsvpSubmit';
 import type { Attendance, MealOption, RsvpRequest, Side } from '../lib/types';
@@ -131,6 +131,28 @@ function Collapsible({ open, testId, children }: { open: boolean; testId?: strin
   );
 }
 
+/** 마운트되는 순간 fade-in (단계별 등장용). */
+function FadeInOnMount({ testId, children }: { testId?: string; children: ReactNode }) {
+  const [shown, setShown] = useState(false);
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setShown(true));
+    return () => cancelAnimationFrame(id);
+  }, []);
+  return (
+    <div
+      data-testid={testId}
+      style={{
+        overflow: 'hidden',
+        maxHeight: shown ? 2000 : 0,
+        opacity: shown ? 1 : 0,
+        transition: 'max-height 0.5s ease, opacity 0.4s ease',
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
 const labelStyle = { fontSize: '0.85rem', color: 'var(--color-muted)', display: 'block', marginBottom: 6 } as const;
 const inputStyle = {
   width: '100%',
@@ -149,12 +171,13 @@ export function RsvpSection() {
 
   const [attendance, setAttendance] = useState<Attendance | null>(null);
   const [name, setName] = useState('');
-  const [side, setSide] = useState<Side>('GROOM');
+  const [side, setSide] = useState<Side | null>(null); // 신랑측/신부측 (초기 미선택)
   const [adultCount, setAdultCount] = useState(1); // 대인 인원(0~10), 초기 1
   const [childCount, setChildCount] = useState(0); // 어린이(6~12세) 0~10
 
   const attending = attendance === 'ATTENDING';
   const selected = attendance !== null; // 가능/불가 중 하나 선택됨
+  const sideSelected = side !== null; // 신랑측/신부측 중 하나 선택됨
   const nameEntered = name.trim() !== '';
   // 대인: 혼자(1명) 아이콘 / 2명 이상은 두 명 아이콘 고정
   const adultLabel =
@@ -172,7 +195,7 @@ export function RsvpSection() {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!nameEntered || !attendance) return;
+    if (!nameEntered || !attendance || !side) return;
     const payload: RsvpRequest = { name: name.trim(), side, attendance };
     if (attending) {
       // 대인 0명이면 식사안함으로 간주, 1명 이상이면 식사함 + 인원 반영
@@ -213,14 +236,12 @@ export function RsvpSection() {
           />
         </div>
 
-        {/* 가능/불가 선택 후 → 성함 + 측만 먼저 표시 */}
+        {/* 1) 가능/불가 선택 → 신랑측/신부측 (미선택 상태로 fade-in) */}
         {selected && (
-          <div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <label style={labelStyle} htmlFor="rsvp-name">
-                성함
-              </label>
-              <div style={{ display: 'flex', gap: 12, fontSize: '0.85rem' }}>
+          <FadeInOnMount testId="rsvp-side-group">
+            <div style={{ textAlign: 'center' }}>
+              <label style={labelStyle}>어느 쪽 하객이신가요?</label>
+              <div style={{ display: 'flex', gap: 20, justifyContent: 'center', fontSize: '0.95rem' }}>
                 <label style={{ cursor: 'pointer' }}>
                   <input
                     type="radio"
@@ -243,15 +264,26 @@ export function RsvpSection() {
                 </label>
               </div>
             </div>
-            <input
-              id="rsvp-name"
-              data-testid="rsvp-name"
-              style={inputStyle}
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="성함을 입력해 주세요."
-            />
-          </div>
+          </FadeInOnMount>
+        )}
+
+        {/* 2) 측 선택 → 성함 입력 fade-in */}
+        {selected && sideSelected && (
+          <FadeInOnMount testId="rsvp-name-group">
+            <div>
+              <label style={labelStyle} htmlFor="rsvp-name">
+                성함
+              </label>
+              <input
+                id="rsvp-name"
+                data-testid="rsvp-name"
+                style={inputStyle}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="성함을 입력해 주세요."
+              />
+            </div>
+          </FadeInOnMount>
         )}
 
         {/* 성함 입력 시 fade-in (지우면 fade-out). 가능일 때만 식사여부 표시 */}
