@@ -13,10 +13,10 @@ const FONTS: Record<string, FontDef> = {
   // 기본 세트: 현재 시스템 고딕(변화 없음)
   default: {
 //    family: SYSTEM_STACK
-    family: `'Grandiflora One', ${SYSTEM_STACK}`,
-    googleUrl: 'https://fonts.googleapis.com/css2?family=Grandiflora+One&display=swap',
-//    family: `'Bagel Fat One', ${SYSTEM_STACK}`,
-//    googleUrl: 'https://fonts.googleapis.com/css2?family=Bagel+Fat+One&display=swap',
+//    family: `'Grandiflora One', ${SYSTEM_STACK}`,
+//    googleUrl: 'https://fonts.googleapis.com/css2?family=Grandiflora+One&display=swap',
+    family: `'Bagel Fat One', ${SYSTEM_STACK}`,
+    googleUrl: 'https://fonts.googleapis.com/css2?family=Bagel+Fat+One&display=swap',
 //    family: `'Gasoek One', ${SYSTEM_STACK}`,
 //    googleUrl: 'https://fonts.googleapis.com/css2?family=Gasoek+One&display=swap',
 //    family: `'Moirai One', ${SYSTEM_STACK}`,
