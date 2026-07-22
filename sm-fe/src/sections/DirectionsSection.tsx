@@ -50,7 +50,7 @@ export function DirectionsSection() {
         {directions.tel && <div style={{ marginTop: 8 }}>Tel. {directions.tel}</div>}
       </div>
 
-      {/* 카카오 지도 (주소 지오코딩 → 마커+말풍선, 실패 시 lat/lng 폴백) */}
+      {/* 카카오 지도 (정적 미리보기 — 조작은 아래 '크게 보기'로) */}
       <KakaoMap
         appkey={directions.kakaoJsKey}
         address={directions.mapQuery ?? directions.address}
@@ -58,6 +58,19 @@ export function DirectionsSection() {
         lat={directions.lat ?? 37.5665}
         lng={directions.lng ?? 126.978}
       />
+      {appLinks.kakaoNavi?.webUrl && (
+        <div style={{ textAlign: 'center', marginTop: 6 }}>
+          <a
+            href={appLinks.kakaoNavi.webUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            data-testid="map-zoom"
+            style={{ fontSize: '0.82rem', color: 'var(--color-muted)', textDecoration: 'underline' }}
+          >
+            카카오맵에서 크게 보기 →
+          </a>
+        </div>
+      )}
 
       {/* 오시는 길 약도 이미지 보기 */}
       {directions.sketchMapImage && (

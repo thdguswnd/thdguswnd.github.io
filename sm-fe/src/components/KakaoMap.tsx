@@ -66,7 +66,6 @@ export function KakaoMap({
       return;
     }
     let cancelled = false;
-    let detachTouch: (() => void) | null = null;
 
     // 지정 좌표에 지도+마커(+말풍선) 렌더
     const render = (kakao: any, latlng: any) => {
@@ -81,25 +80,10 @@ export function KakaoMap({
       }
       map.setCenter(latlng);
 
-      // 제스처: 한 손가락일 때는 지도 조작(팬/줌)을 모두 꺼서 페이지 스크롤이 되도록,
-      // 두 손가락일 때만 드래그(팬)+핀치 줌을 켠다. (container touch-action: pan-y)
+      // 정적 미리보기: 지도 조작(팬/줌)을 모두 끔 → 페이지 스크롤을 절대 방해하지 않음.
+      // 상세 확인은 아래 '카카오맵에서 크게 보기' 링크로. (지도 컨테이너는 pointer-events: none)
       map.setDraggable(false);
       map.setZoomable(false);
-      const el = ref.current;
-      const setMulti = (on: boolean) => {
-        map.setDraggable(on);
-        map.setZoomable(on);
-      };
-      const onTouchStart = (e: TouchEvent) => setMulti(e.touches.length >= 2);
-      const onTouchEnd = (e: TouchEvent) => {
-        if (e.touches.length < 2) setMulti(false);
-      };
-      el.addEventListener('touchstart', onTouchStart, { passive: true });
-      el.addEventListener('touchend', onTouchEnd, { passive: true });
-      detachTouch = () => {
-        el.removeEventListener('touchstart', onTouchStart);
-        el.removeEventListener('touchend', onTouchEnd);
-      };
 
       setStatus('ok');
     };
@@ -128,7 +112,6 @@ export function KakaoMap({
 
     return () => {
       cancelled = true;
-      if (detachTouch) detachTouch();
     };
   }, [appkey, address, venueName, lat, lng, level]);
 
@@ -160,7 +143,8 @@ export function KakaoMap({
     <div
       ref={ref}
       data-testid="kakao-map"
-      style={{ height, borderRadius: 8, overflow: 'hidden', touchAction: 'pan-y' }}
+      // pointer-events: none → 지도가 터치를 가로채지 않아 페이지 스크롤이 항상 동작(정적 미리보기)
+      style={{ height, borderRadius: 8, overflow: 'hidden', pointerEvents: 'none' }}
     />
   );
 }
