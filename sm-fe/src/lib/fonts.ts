@@ -17,12 +17,12 @@ const FONTS: Record<string, FontDef> = {
 //    googleUrl: 'https://fonts.googleapis.com/css2?family=Grandiflora+One&display=swap',
 //    family: `'Bagel Fat One', ${SYSTEM_STACK}`,
 //    googleUrl: 'https://fonts.googleapis.com/css2?family=Bagel+Fat+One&display=swap',
-    family: `'Gasoek One', ${SYSTEM_STACK}`,
-    googleUrl: 'https://fonts.googleapis.com/css2?family=Gasoek+One&display=swap',
+//    family: `'Gasoek One', ${SYSTEM_STACK}`,
+//    googleUrl: 'https://fonts.googleapis.com/css2?family=Gasoek+One&display=swap',
 //    family: `'Moirai One', ${SYSTEM_STACK}`,
 //    googleUrl: 'https://fonts.googleapis.com/css2?family=Moirai+One&display=swap',
-//    family: `'Diphylleia', ${SYSTEM_STACK}`,
-//    googleUrl: 'https://fonts.googleapis.com/css2?family=Diphylleia&display=swap',
+    family: `'Diphylleia', ${SYSTEM_STACK}`,
+    googleUrl: 'https://fonts.googleapis.com/css2?family=Diphylleia&display=swap',
   },
   // paints 세트: 명조체(데모). 원하는 폰트로 교체 가능.
   paints: {
