@@ -81,14 +81,18 @@ export function KakaoMap({
       }
       map.setCenter(latlng);
 
-      // 제스처: 한 손가락 팬은 막아 페이지 스크롤 유지, 두 손가락일 때만 지도 드래그(팬) 허용.
-      // 핀치 줌(두 손가락)은 항상 허용. (container touch-action: pan-y 로 한 손가락은 세로 스크롤)
+      // 제스처: 한 손가락일 때는 지도 조작(팬/줌)을 모두 꺼서 페이지 스크롤이 되도록,
+      // 두 손가락일 때만 드래그(팬)+핀치 줌을 켠다. (container touch-action: pan-y)
       map.setDraggable(false);
-      map.setZoomable(true);
+      map.setZoomable(false);
       const el = ref.current;
-      const onTouchStart = (e: TouchEvent) => map.setDraggable(e.touches.length >= 2);
+      const setMulti = (on: boolean) => {
+        map.setDraggable(on);
+        map.setZoomable(on);
+      };
+      const onTouchStart = (e: TouchEvent) => setMulti(e.touches.length >= 2);
       const onTouchEnd = (e: TouchEvent) => {
-        if (e.touches.length < 2) map.setDraggable(false);
+        if (e.touches.length < 2) setMulti(false);
       };
       el.addEventListener('touchstart', onTouchStart, { passive: true });
       el.addEventListener('touchend', onTouchEnd, { passive: true });

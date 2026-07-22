@@ -303,57 +303,52 @@ export function RsvpSection() {
                   </div>
                 </div>
               )}
-              <div>
-                <label style={labelStyle} htmlFor="rsvp-name">
-                  성함
-                </label>
-                <input
-                  id="rsvp-name"
-                  data-testid="rsvp-name"
-                  style={inputStyle}
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="성함을 입력해 주세요."
-                />
-              </div>
-            </div>
-          </FadeInOnMount>
-        )}
-
-        {/* 3) 성함 입력 → 안내문구 + 전달 버튼 (성함 지우면 fade-out) */}
-        {selected && (
-          <Collapsible open={nameEntered} testId="rsvp-details">
-            <div style={{ display: 'grid', gap: 22 }}>
-            {/* 개인정보 안내 */}
-            <p
-              data-testid="rsvp-privacy-notice"
-              style={{ fontSize: '0.78rem', color: 'var(--color-muted)', lineHeight: 1.5, margin: 0, textAlign: 'center' }}
-            >
-              입력하신 성함은 인원 확인 목적으로만 사용되며,
-              <br />
-              예식 종료 후 일주일 이내에 모두 삭제됩니다.
-            </p>
-
-            {/* 전달 버튼(제출 중/완료 시 fade-out) + 상태 메시지 */}
-            <div>
-              <Collapsible open={state !== 'submitting' && state !== 'success'} testId="rsvp-submit-wrap">
+              {/* 성함(2/3) + 전달하기(1/3) 한 줄 */}
+              <div style={{ display: 'flex', gap: 10, alignItems: 'flex-end' }}>
+                <div style={{ flex: 2 }}>
+                  <label style={labelStyle} htmlFor="rsvp-name">
+                    성함
+                  </label>
+                  <input
+                    id="rsvp-name"
+                    data-testid="rsvp-name"
+                    style={inputStyle}
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="성함을 입력해 주세요."
+                  />
+                </div>
                 <button
                   type="submit"
                   data-testid="rsvp-submit"
+                  disabled={!nameEntered || state === 'submitting' || state === 'success'}
                   style={{
-                    width: '100%',
-                    padding: '14px',
-                    borderRadius: 10,
+                    flex: 1,
+                    padding: '11px 0',
+                    borderRadius: 8,
                     border: 'none',
-                    background: ACCENT,
-                    color: '#fff',
-                    fontSize: '0.95rem',
-                    cursor: 'pointer',
+                    background: nameEntered && state !== 'submitting' && state !== 'success' ? ACCENT : '#e5ddd4',
+                    color: nameEntered && state !== 'submitting' && state !== 'success' ? '#fff' : '#a99',
+                    fontSize: '0.9rem',
+                    whiteSpace: 'nowrap',
+                    cursor: nameEntered && state !== 'submitting' && state !== 'success' ? 'pointer' : 'not-allowed',
                   }}
                 >
-                  신랑 & 신부에게 전달하기
+                  전달하기
                 </button>
-              </Collapsible>
+              </div>
+
+              {/* 개인정보 안내 */}
+              <p
+                data-testid="rsvp-privacy-notice"
+                style={{ fontSize: '0.78rem', color: 'var(--color-muted)', lineHeight: 1.5, margin: 0, textAlign: 'center' }}
+              >
+                입력하신 성함은 인원 확인 목적으로만 사용되며,
+                <br />
+                예식 종료 후 일주일 이내에 모두 삭제됩니다.
+              </p>
+
+              {/* 상태 메시지(전송 중/완료) */}
               <Collapsible
                 open={state === 'submitting' || state === 'success' || state === 'error'}
                 testId="rsvp-status-wrap"
@@ -370,8 +365,7 @@ export function RsvpSection() {
                 </p>
               </Collapsible>
             </div>
-            </div>
-          </Collapsible>
+          </FadeInOnMount>
         )}
       </form>
     </SectionContainer>
