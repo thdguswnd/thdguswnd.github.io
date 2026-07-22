@@ -267,58 +267,59 @@ export function RsvpSection() {
           </FadeInOnMount>
         )}
 
-        {/* 2) 측 선택 → 성함 입력 fade-in */}
+        {/* 2) 측 선택 → 식사여부(가능일 때) + 성함 함께 fade-in */}
         {selected && sideSelected && (
-          <FadeInOnMount testId="rsvp-name-group">
-            <div>
-              <label style={labelStyle} htmlFor="rsvp-name">
-                성함
-              </label>
-              <input
-                id="rsvp-name"
-                data-testid="rsvp-name"
-                style={inputStyle}
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="성함을 입력해 주세요."
-              />
+          <FadeInOnMount testId="rsvp-mid-group">
+            <div style={{ display: 'grid', gap: 22 }}>
+              {attending && (
+                <div>
+                  <label style={labelStyle}>{req}식사 여부</label>
+                  <div style={{ borderTop: `1px solid ${LINE}` }}>
+                    <Stepper
+                      label={adultLabel}
+                      value={adultCount}
+                      onChange={setAdultCount}
+                      testId="rsvp-adult"
+                      min={0}
+                      max={10}
+                    />
+                    {/* 대인 1명 이상일 때만 어린이 행 표시 */}
+                    {adultCount > 0 && (
+                      <div style={{ borderTop: `1px solid ${LINE}` }}>
+                        <Stepper
+                          label={childLabel}
+                          value={childCount}
+                          onChange={setChildCount}
+                          testId="rsvp-child"
+                          min={0}
+                          max={10}
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+              <div>
+                <label style={labelStyle} htmlFor="rsvp-name">
+                  성함
+                </label>
+                <input
+                  id="rsvp-name"
+                  data-testid="rsvp-name"
+                  style={inputStyle}
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="성함을 입력해 주세요."
+                />
+              </div>
             </div>
           </FadeInOnMount>
         )}
 
-        {/* 성함 입력 시 fade-in (지우면 fade-out). 가능일 때만 식사여부 표시 */}
+        {/* 3) 성함 입력 → 안내문구 + 전달 버튼 (성함 지우면 fade-out) */}
         {selected && (
           <Collapsible open={nameEntered} testId="rsvp-details">
             <div style={{ display: 'grid', gap: 22 }}>
-            {attending && (
-              <div>
-                <label style={labelStyle}>{req}식사 여부</label>
-                <div style={{ borderTop: `1px solid ${LINE}` }}>
-                  <Stepper
-                    label={adultLabel}
-                    value={adultCount}
-                    onChange={setAdultCount}
-                    testId="rsvp-adult"
-                    min={0}
-                    max={10}
-                  />
-                  {/* 대인 1명 이상일 때만 어린이 행 표시 */}
-                  {adultCount > 0 && (
-                    <div style={{ borderTop: `1px solid ${LINE}` }}>
-                      <Stepper
-                        label={childLabel}
-                        value={childCount}
-                        onChange={setChildCount}
-                        testId="rsvp-child"
-                        min={0}
-                        max={10}
-                      />
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-
             {/* 개인정보 안내 */}
             <p
               data-testid="rsvp-privacy-notice"

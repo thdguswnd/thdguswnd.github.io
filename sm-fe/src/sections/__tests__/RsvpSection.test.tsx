@@ -19,31 +19,38 @@ describe('RsvpSection', () => {
     expect(screen.queryByTestId('rsvp-details')).not.toBeInTheDocument();
   });
 
-  it('가능 선택 시 신랑측/신부측이 미선택 상태로 나타나고, 성함은 아직 숨겨진다', async () => {
+  it('가능 선택 시 신랑측/신부측이 미선택 상태로 나타나고, 식사여부/성함은 아직 숨겨진다', async () => {
     render(<RsvpSection />);
     await userEvent.click(screen.getByTestId('rsvp-attendance-yes'));
     expect(screen.getByTestId('rsvp-side-group')).toBeInTheDocument();
     expect(screen.getByTestId('rsvp-side-groom')).not.toBeChecked();
     expect(screen.getByTestId('rsvp-side-bride')).not.toBeChecked();
+    expect(screen.queryByTestId('rsvp-adult')).not.toBeInTheDocument();
     expect(screen.queryByTestId('rsvp-name')).not.toBeInTheDocument();
   });
 
-  it('신랑측/신부측을 선택하면 성함 입력이 나타난다', async () => {
+  it('신랑측/신부측을 선택하면 식사여부와 성함 입력이 함께 나타난다', async () => {
     render(<RsvpSection />);
     await userEvent.click(screen.getByTestId('rsvp-attendance-yes'));
-    expect(screen.queryByTestId('rsvp-name')).not.toBeInTheDocument();
     await userEvent.click(screen.getByTestId('rsvp-side-groom'));
-    expect(screen.getByTestId('rsvp-name')).toBeInTheDocument();
+    expect(screen.getByTestId('rsvp-adult')).toBeInTheDocument(); // 식사여부
+    expect(screen.getByTestId('rsvp-name')).toBeInTheDocument(); // 성함
   });
 
-  it('가능 + 측 + 성함 입력 시 식사여부/안내문구/버튼이 펼쳐진다', async () => {
+  it('성함 입력 시 안내문구/전달 버튼이 펼쳐진다', async () => {
     render(<RsvpSection />);
     await fillToName();
     expect(screen.getByTestId('rsvp-details')).toHaveStyle({ opacity: '1' });
-    expect(screen.getByTestId('rsvp-adult')).toHaveTextContent('1');
-    expect(screen.getByTestId('rsvp-child')).toBeInTheDocument();
     expect(screen.getByTestId('rsvp-privacy-notice')).toBeInTheDocument();
     expect(screen.getByTestId('rsvp-submit')).toBeEnabled();
+  });
+
+  it('성함을 지우면 안내문구/버튼이 사라진다', async () => {
+    render(<RsvpSection />);
+    await fillToName();
+    expect(screen.getByTestId('rsvp-details')).toHaveStyle({ opacity: '1' });
+    await userEvent.clear(screen.getByTestId('rsvp-name'));
+    expect(screen.getByTestId('rsvp-details')).toHaveStyle({ opacity: '0' });
   });
 
   it('불가 + 측 + 성함 입력 시 식사여부는 없고 전달 버튼이 보인다', async () => {
