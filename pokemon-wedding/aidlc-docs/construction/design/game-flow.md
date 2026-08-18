@@ -32,7 +32,7 @@ startBattleTransition():
   ③ 검은 상태에서 setupBattleField() + setScene('battle')
      #scene-battle.opening: clip-path inset(50%→0), 가운데 가로선→위아래 오픈 ~520ms
      (다음 틱에 #fx-black 제거 → 오픈 노출)
-  ④ 배경 .battle-bg: 파란 가로 스트릭이 우→좌 스크롤(streak)
+  ④ 배경 .battle-bg: 파란 가로 스트릭이 우→좌 스크롤(streak) — 자리 잡으면 .settled 로 제거(정적)
   ⑤ slideInTrainers(): 상대(좌상→우상), 나(우하→좌하) translateX 슬라이드 ~620ms
 ```
 
@@ -44,42 +44,40 @@ startBattleTransition():
 - `toEnding()`: 흰 화면 fade → 신랑(송현중)·신부(조나영) frontImg 가운데로 모임 → ENDING_LINES → `showEndMenu()`(재시작/종료 팝업)
   - 재시작=`location.reload()`, 종료=`window.close()`→실패 시 `invitationUrl`
 
-### (구버전 참고) 트레이너 → 포켓몬 → 전투
+### 배틀 상세 (포켓몬 없음, 트레이너 Q&A)
 ```
 afterTrainersIn():
-  showMessages([battleIntro])                 // "신부 조나영(이)가 승부를 걸어왔다!"
-  → 상대 포켓몬 등장: "<상대>은/는 <상대포켓몬>을/를 내보냈다!"
-      enemyArea 트레이너 → 상대 포켓몬 front(우상), 상대 HP박스 표시
-  → 내 포켓몬 등장: sendOutText("나와라 파이리!"/"나와라 밴드왕!")
-      allyArea 트레이너 → 내 포켓몬 back(좌하), 내 HP박스 표시
-  → openMoveMenu()  // 명령 바(하단 좌 프롬프트 + 우 4보기) 표시
+  el.battleBg.add('settled')   // 자리 잡으면 움직이는 스트릭 제거(정적 배경)
+  showMessages([battleIntro])  // "{상대}에게 궁금한 걸 물어보자!"
+  → 양쪽 HP박스 표시(상대=우상, 나=좌하) + openMoveMenu()
 
-명령 바(스샷1): 좌 #cmd-prompt="무엇을 물어볼까?", 우 #move-menu 2x2 질문형 보기
-  신혼집 어디야? / 신혼여행 언제가? / 미정 / 미정
-  (선택 시 #cmd-bar 숨기고 #dialog-box 로 내레이션)
+명령 바(스샷1): 좌 #cmd-prompt(프롬프트), 우 #move-menu 2x2 보기
+  신혼집 어디야? / 신혼여행 어디가? / 밴드왕이 뭐야? / 도망친다
 
-턴 루프:
-  onUseMove(i): 질문 대사 → allyArea lunge → enemyArea shake + enemyHp -=25% → afterMove()
-  afterMove(): enemyHp<=0 ? victory() : showMessages(["효과가 굉장했다!"]) → openMoveMenu()
-  (사용한 보기는 disabled)
+onUseMove(질문):
+  내 캐릭터(좌하) lunge → 상대 체력 감소 → showMessages([ask])
+  → 상대 캐릭터(우상) lunge → 내 체력 감소 → showMessages(answer[])
+  → hpPct('song')<=0 ? songDown() : openMoveMenu()
+
+체력(인물 기준): 송현중 1/3씩(3대=0), 조나영 1/6씩(6대=0)
+  · 질문 시 상대 감소, 대답 시 나 감소  → 질문 3개면 송현중이 0
 ```
 
-### 5) 승리 → 엔딩 (청첩장 마무리)
+### 종료/엔딩
 ```
-victory():
-  상대 포켓몬이 아래로 내려가며 사라짐(translateY 120% + opacity 0)
-  showMessages(["궁금증이 조금은 해소되었다!"])   // "쓰러졌다" 대신
-  → endingSequence()
+songDown():  // 송현중 체력 0 (질문 3개 완료)
+  송현중을 표시 중인 영역이 아래로 사라짐(translateY 120% + opacity 0)
+  showMessages(["준비된 질문이 끝났다!"]) → toEnding()
 
-endingSequence():
-  포켓몬 → 트레이너 복귀(상대 우상 정면 / 나 좌하 뒷모습)
-  showMessages(["좋은 질문이었어! 이제 결혼식만 남았네."])
-  → 트레이너 퇴장: 상대 오른쪽, 나 왼쪽으로 슬라이드 아웃
-  → #fx-white fade-in (화면 하얗게)
-  → setScene('ending') + 신랑(송현중 front, 좌)·신부(조나영 front, 우)를
-     화면 밖 → 가운데로 모으기(translateX -200%/200% → 0), 흰 화면 걷힘
-  → showMessages(["결혼식날 뵙겠습니다. 감사합니다!", "송현중 ♥ 조나영"])
-  → 대화창에 "청첩장 보러가기 ▶" CTA(사이트 루트)
+fleeSequence():  // 도망친다
+  나(좌하) 왼쪽으로 사라짐 + showMessages(["질문을 그만두고 도망쳤다!"]) → toEnding()
+
+toEnding():
+  #fx-white fade-in → setScene('ending')
+  → 신랑(송현중 front, 좌)·신부(조나영 front, 우)를 화면 밖→가운데로 모음
+  → showMessages(ENDING_LINES)  // "나머지 이야기는…보고싶었습니다!" / "결혼식날 뵙겠습니다. 감사합니다!"
+  → showEndMenu(): 대화창 오른쪽 위 가로 팝업 [다시 시작][끝내기]
+     · 다시 시작 = location.reload(), 끝내기 = window.close()
 ```
 - 엔딩 커플 이미지는 CHARACTERS.song/jo 의 frontImg 재사용(assets 있으면 사진, 없으면 SVG).
 
@@ -90,7 +88,6 @@ endingSequence():
 
 ## 조사(은/는·을/를) 처리
 - `data.js`의 `josa(word, 받침O, 받침X)`로 이름 끝 받침을 판정해 자동 선택.
-- 단, `battleIntro`의 "(이)가"는 원작 스타일을 살리려 의도적으로 고정 표기.
 
 ## 연출 타이머(대략)
 flash 520 → black 470 → open 520 → slide 620 (ms). 공격 lunge 300/shake 450.
