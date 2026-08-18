@@ -235,7 +235,9 @@ html, body {
 .hp-box.hidden-v { visibility: hidden; }
 .hp-top { display: flex; align-items: baseline; gap: .18em; line-height: 1; }
 .hp-name { font-size: 1.35em; color: #4b4d48; letter-spacing: 0; }
-.hp-gender { color: #40bfe5; font-size: .85em; }
+.hp-gender { font-size: .85em; }
+.hp-gender.male { color: #40bfe5; }
+.hp-gender.female { color: #ef9fb2; }
 .hp-level { margin-left: auto; font-size: 1.02em; color: #4b4d48; }
 .hp-row { display: flex; align-items: center; gap: .16em; margin-left: 23%; margin-top: .1em; }
 .hp-label { color: #f0a424; font-size: .88em; font-weight: bold; line-height: 1; text-shadow: 1px 0 #405940; }
@@ -247,8 +249,11 @@ html, body {
 .exp-row i { display: block; flex: 1; height: .28em; background: repeating-linear-gradient(90deg, #d7cd81 0 4px, #fff3a7 4px 6px); }
 
 /* 공격 연출 */
-@keyframes shake { 0%,100%{transform:translateX(0);} 20%{transform:translateX(-6%);} 40%{transform:translateX(6%);} 60%{transform:translateX(-4%);} 80%{transform:translateX(4%);} }
-.shake { animation: shake .4s ease; }
+@keyframes bob { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-3%);} }
+@keyframes hitBlink { 0%,100%{opacity:1;} 16%,49%,82%{opacity:0;} 33%,66%{opacity:1;} }
+#scene-battle.choosing .ally-area,
+#scene-battle.choosing .hp-box.ally { animation: bob .72s ease-in-out infinite; }
+.hit-blink { animation: hitBlink .42s steps(1) 1; }
 @keyframes lunge { 0%,100%{transform:translateX(0);} 50%{transform:translateX(18%);} }
 .lunge { animation: lunge .35s ease; }
 
@@ -261,31 +266,32 @@ html, body {
 }
 .cmd-bar.hidden { display: none; }
 .cmd-prompt {
-  order: 2;
-  flex: 0 0 31%;
-  background: #fff;
-  border: 4px solid #6d6a98; border-radius: 3px;
-  box-shadow: inset 0 0 0 5px #eceaf7;
-  padding: .8em .8em; color: #4b4d48;
+  order: 1;
+  flex: 0 0 50%;
+  background: var(--bdlg-fill);
+  border: 4px solid var(--bdlg-gold); border-radius: 3px;
+  box-shadow: inset 0 0 0 5px #e8edf1;
+  padding: .85em .9em; color: #f2f6fa;
   display: flex; align-items: flex-start;
   white-space: pre-line;
   font-size: 1.08em;
+  line-height: 1.55;
 }
 .move-menu {
-  order: 1;
+  order: 2;
   flex: 1 1 auto;
   background: #fff;
   border: 4px solid #6d6a98; border-radius: 3px;
   box-shadow: inset 0 0 0 5px #eceaf7;
-  padding: .82em 1.1em;
+  padding: .75em 1em;
   display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr;
-  gap: .05em 1.6em;
+  gap: .05em 1.25em;
 }
 .move-menu.hidden { display: none; }
 .move-item {
   display: flex; align-items: center; padding-left: 1.1em;
   position: relative; cursor: pointer; color: #4b4d48;
-  font-size: 1.08em; white-space: nowrap;
+  font-size: 1.02em; white-space: nowrap;
 }
 .move-item::before {
   content: ''; position: absolute; left: .1em; top: 50%;

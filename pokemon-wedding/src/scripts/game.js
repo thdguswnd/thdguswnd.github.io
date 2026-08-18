@@ -37,6 +37,8 @@
     el.allyHpBox = $('ally-hp-box');
     el.enemyHpName = $('enemy-hp-name');
     el.allyHpName = $('ally-hp-name');
+    el.enemyHpGender = $('enemy-hp-gender');
+    el.allyHpGender = $('ally-hp-gender');
     el.enemyHpFill = $('enemy-hp-fill');
     el.allyHpFill = $('ally-hp-fill');
     el.allyHpValue = $('ally-hp-value');
@@ -223,6 +225,21 @@
     if (pct <= 25) fillEl.classList.add('low');
     else if (pct <= 50) fillEl.classList.add('mid');
   }
+
+  function setGender(elm, key) {
+    if (!elm) return;
+    var female = key === 'jo';
+    elm.textContent = female ? '♀' : '♂';
+    elm.className = 'hp-gender ' + (female ? 'female' : 'male');
+  }
+
+  function blinkHit(target) {
+    if (!target) return;
+    target.classList.remove('hit-blink');
+    void target.offsetWidth;
+    target.classList.add('hit-blink');
+    setTimeout(function () { target.classList.remove('hit-blink'); }, 460);
+  }
   function updateBars() {
     var me = CHARACTERS[state.charKey];
     var enemyPct = hpPct(me.opponentKey);
@@ -276,6 +293,8 @@
     showMessages([ch.battleIntro], function () {
       el.enemyHpName.textContent = ch.opponentName;
       el.allyHpName.textContent = ch.name;
+      setGender(el.enemyHpGender, ch.opponentKey);
+      setGender(el.allyHpGender, ch.key);
       updateBars();
       el.enemyHpBox.classList.remove('hidden-v');
       el.allyHpBox.classList.remove('hidden-v');
@@ -286,7 +305,9 @@
   // ================= 배틀(기술) =================
   function openMoveMenu() {
     el.battle.classList.add('is-fighting');
-    if (el.cmdPrompt) el.cmdPrompt.textContent = DATA.BATTLE_PROMPT;
+    el.battle.classList.add('choosing');
+    var me = CHARACTERS[state.charKey];
+    if (el.cmdPrompt) el.cmdPrompt.textContent = DATA.josa(me.name, '은', '는') + '\n무엇을 물어볼까?';
     el.moveMenu.innerHTML = '';
     DATA.MOVES.forEach(function (mv, i) {
       var item = document.createElement('div');
@@ -304,6 +325,7 @@
   function onUseMove(index) {
     if (state.busy) return;
     var mv = DATA.MOVES[index];
+    el.battle.classList.remove('choosing');
     if (mv.flee) { el.cmdBar.classList.add('hidden'); fleeSequence(); return; }
     if (state.usedMoves[mv.id]) return;
     state.usedMoves[mv.id] = true;
@@ -316,12 +338,14 @@
     setTimeout(function () { el.allyArea.classList.remove('lunge'); }, 400);
     state.hits[opp.key] += 1;
     updateBars();
+    blinkHit(el.enemyArea);
     showMessages([mv.ask(me.name)], function () {
       // 상대 대답(반격): 우상 인물이 돌진 → 내 체력 감소
       el.enemyArea.classList.add('lunge');
       setTimeout(function () { el.enemyArea.classList.remove('lunge'); }, 400);
       state.hits[me.key] += 1;
       updateBars();
+      blinkHit(el.allyArea);
       showMessages(mv.answer(opp.name), function () {
         // 질문 3개가 끝나 송현중 체력이 0이면 종료 연출
         if (hpPct('song') <= 0) { songDown(); return; }
