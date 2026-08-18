@@ -1,309 +1,281 @@
 /*
- * game.css — 포켓몬 레드풍 UI (가로 모드 전용)
- * 화면은 3:2 비율 컨테이너(#screen)를 뷰포트에 맞춰 레터박스로 중앙 배치.
- * 저작권: 실제 게임 에셋 미사용. 색/레이아웃은 클래식 포켓몬 UI 오마주.
+ * game.css — 포켓몬(FRLG풍) UI + 인트로/배틀 전환 연출 (가로 모드 전용)
+ * 크기/회전은 game.js layout()이 visualViewport 기준으로 설정.
+ * 저작권: 실제 게임 에셋 미포함. UI 스타일/연출 오마주 + assets/*.png 사용자 제공.
  */
 
-/* 한글 도트 폰트 Galmuri(jsdelivr) — @import 로 로드. 오프라인이면 monospace 폴백 */
 @import url('https://cdn.jsdelivr.net/npm/galmuri/dist/galmuri.css');
 
 :root {
-  --pk-ink: #202020;
-  --pk-paper: #f8f8f8;
-  --pk-box: #ffffff;
-  --pk-border-dark: #283593;   /* 대화창 진한 파랑 테두리 */
-  --pk-border-light: #7986cb;
-  --pk-hp-green: #5ecb5e;
-  --pk-hp-yellow: #f2c94c;
-  --pk-hp-red: #e05a4a;
-  --pk-hp-track: #4a4a4a;
-  --pk-select: #e23b3b;        /* 선택 커서(레드) */
-  --font-pixel: 'Galmuri11', 'Galmuri', 'DungGeunMo', monospace;
+  --font-pixel: 'Galmuri11', 'Galmuri', monospace;
+  --pk-select: #e23b3b;
+  /* 인트로 대화창(라이트) */
+  --dlg-fill: #f7fafc;
+  --dlg-border: #8fb0d6;
+  --dlg-border2: #cddcee;
+  --dlg-text: #4a4a4a;
+  /* 배틀 대화창(골드/네이비) */
+  --bdlg-fill: #16496a;
+  --bdlg-gold: #d9a441;
+  --bdlg-text: #f2f6fa;
+  /* HP */
+  --hp-green: #58c153; --hp-yellow: #f0c33c; --hp-red: #e0574a; --hp-track: #3a3a3a;
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
 html, body {
-  margin: 0;
-  height: 100%;
-  background: #101010;
-  color: var(--pk-ink);
+  margin: 0; height: 100%;
+  background: #000; color: var(--dlg-text);
   font-family: var(--font-pixel);
-  overflow: hidden;
-  user-select: none;
-  -webkit-user-select: none;
+  overflow: hidden; user-select: none; -webkit-user-select: none;
   touch-action: manipulation;
 }
 
-/* 뷰포트 = 화면 전체, 게임 화면을 중앙에 배치 */
-#viewport {
-  position: fixed;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+#viewport { position: fixed; inset: 0; overflow: hidden; }
 
-/* 게임 화면 — 3:2, 뷰포트에 맞춰 최대 크기 */
+/* 항상 가로 3:2. 크기/회전/폰트는 JS(layout). 아래는 폴백. */
 #screen {
-  position: relative;
-  width: min(100vw, 150vh);
-  height: min(66.667vw, 100vh);
-  background: var(--pk-paper);
-  overflow: hidden;
+  position: absolute; left: 50%; top: 50%;
+  width: min(100dvw, 150dvh); height: min(66.667dvw, 100dvh);
+  transform: translate(-50%, -50%); transform-origin: center center;
+  background: #dff0ea; overflow: hidden;
   image-rendering: pixelated;
-  box-shadow: 0 0 0 4px #000, 0 8px 40px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 0 0 4px #000, 0 8px 40px rgba(0,0,0,.6);
+  font-size: 18px; line-height: 1.5;
 }
 
-/* 컨테이너 내부 텍스트 스케일: 화면 높이 기준 */
-#screen { font-size: clamp(11px, 3.4vh, 26px); line-height: 1.5; }
-
-/* ===== 인트로/확인 장면 (흰 화면 + 오박사) ===== */
 .scene { position: absolute; inset: 0; }
 .scene.hidden { display: none; }
 
-#oak-sprite {
-  position: absolute;
-  left: 50%;
-  top: 46%;
-  width: 26%;
-  height: 52%;
-  transform: translate(-50%, -50%);
-  transition: opacity 0.4s ease;
-}
-#oak-sprite.dim { opacity: 0.15; }
+/* 스프라이트 이미지/폴백 공통 */
+.sprite-img { width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; }
+.sprite-wrap svg { display: block; width: 100%; height: 100%; }
 
-/* 선택지: 대화창 우측 위에 오버랩 */
-.choice-box {
-  position: absolute;
-  right: 3%;
-  bottom: 30%;
-  min-width: 34%;
-  background: var(--pk-box);
-  border: 3px solid var(--pk-border-dark);
+/* ===================== 인트로 장면 ===================== */
+/* 배경: 위 밝은 민트 → 지평선 → 아래 청록 (스샷1) */
+#scene-intro {
+  background:
+    linear-gradient(#e9f4ef 0%, #d8ede4 46%, #cfe7dd 61%,
+      #74b6a6 61%, #5aa294 74%, #3f8579 100%);
+}
+.platform {
+  position: absolute; left: 50%; bottom: 30%;
+  width: 46%; height: 9%;
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse at center, #e9f6ef 0%, #cfe8dd 70%, rgba(207,232,221,0) 72%);
+  border-radius: 50%;
+}
+/* 캐릭터 슬롯(오박사/선택캐릭터 공용) — 발판 위에 서 있게 */
+#char-slot {
+  position: absolute; left: 50%; bottom: 32%;
+  width: 24%; height: 52%;
+  transform: translateX(-50%);
+  opacity: 0; transition: opacity .55s ease;
+  display: flex; align-items: flex-end; justify-content: center;
+}
+#char-slot.show { opacity: 1; }
+
+/* ===================== 하단 대화창 ===================== */
+.dialog-box {
+  position: absolute; left: 2.5%; right: 2.5%; bottom: 3.2%;
+  height: 25%;
+  background: var(--dlg-fill);
+  border: 3px solid var(--dlg-border);
+  border-radius: 12px;
+  box-shadow: inset 0 0 0 3px var(--dlg-fill), inset 0 0 0 5px var(--dlg-border2);
+  padding: 0.6em 0.9em;
+  display: flex; align-items: flex-start;
+  cursor: pointer; z-index: 20;
+}
+.dialog-box.hidden { display: none; }
+.dialog-text { white-space: pre-line; color: var(--dlg-text); }
+.dialog-text a.cta {
+  display: inline-block; margin-top: .5em; padding: .35em .8em;
+  background: var(--dlg-border); color: #fff; border-radius: 6px;
+  text-decoration: none; font-size: .9em;
+}
+.dialog-arrow {
+  position: absolute; right: .9em; bottom: .6em;
+  width: 0; height: 0;
+  border-left: .4em solid transparent; border-right: .4em solid transparent;
+  border-top: .5em solid var(--pk-select); opacity: 0;
+}
+.dialog-arrow.blink { animation: blink .8s steps(2) infinite; }
+@keyframes blink { 0%,50%{opacity:1;} 50.01%,100%{opacity:0;} }
+
+/* 배틀 대화창(골드/네이비) */
+.dialog-box.battle {
+  background: var(--bdlg-fill);
+  border: 4px solid var(--bdlg-gold);
+  border-radius: 8px;
+  box-shadow: inset 0 0 0 3px var(--bdlg-fill), inset 0 0 0 5px #eef2f6;
+}
+.dialog-box.battle .dialog-text { color: var(--bdlg-text); }
+.dialog-box.battle .dialog-arrow { border-top-color: var(--pk-select); }
+
+/* ===================== 선택 창(신랑/신부, 네/아니오) ===================== */
+.choice-box, .yesno-box {
+  position: absolute; right: 3%; bottom: 31%;
+  background: #fff;
+  border: 3px solid #58627a;
   border-radius: 6px;
-  box-shadow: 0 0 0 3px var(--pk-box), 0 0 0 5px var(--pk-border-light);
-  padding: 0.5em 0.4em;
-  z-index: 5;
+  box-shadow: 0 0 0 2px #fff, 0 0 0 4px #b7c0d0;
+  padding: .45em .5em; z-index: 22;
 }
-.choice-box.hidden { display: none; }
-
+.choice-box.hidden, .yesno-box.hidden { display: none; }
 .choice-item {
-  display: flex;
-  align-items: center;
-  gap: 0.4em;
-  padding: 0.3em 0.5em 0.3em 1.4em;
-  position: relative;
-  cursor: pointer;
-  white-space: nowrap;
+  display: flex; align-items: center;
+  padding: .28em .6em .28em 1.3em;
+  position: relative; cursor: pointer; white-space: nowrap;
+  color: #3a3a3a;
 }
 .choice-item::before {
-  content: '';
-  position: absolute;
-  left: 0.4em;
-  top: 50%;
-  width: 0.6em;
-  height: 0.6em;
+  content: ''; position: absolute; left: .35em; top: 50%;
+  width: .55em; height: .55em;
   transform: translateY(-50%) rotate(45deg) scale(0);
-  background: var(--pk-select);
-  transition: transform 0.08s ease;
+  background: var(--pk-select); transition: transform .08s ease;
 }
-.choice-item:hover::before,
-.choice-item.active::before { transform: translateY(-50%) rotate(45deg) scale(1); }
-.choice-item:active { background: #f0f0f0; }
+.choice-item:hover::before, .choice-item.active::before { transform: translateY(-50%) rotate(45deg) scale(1); }
+.choice-item:active { background: #eef1f6; }
 
-/* ===== 배틀 장면 ===== */
-#scene-battle { background: var(--pk-paper); }
+/* ===================== 배틀 장면 ===================== */
+#scene-battle { background: #f7f8f2; overflow: hidden; }
+/* 배틀 열림 클립(가운데 가로선 → 위아래로) */
+#scene-battle.opening { animation: openBattle .5s ease forwards; }
+@keyframes openBattle {
+  from { clip-path: inset(50% 0 50% 0); }
+  to   { clip-path: inset(0 0 0 0); }
+}
 
-/* 상대 포켓몬 (우측 상단) */
-.enemy-area {
-  position: absolute;
-  right: 4%;
-  top: 6%;
-  width: 30%;
-  height: 42%;
+/* 배경: 따뜻한 상단 + 파란 가로 스트릭이 우→좌로 흐름 (스샷9~12) */
+.battle-bg {
+  position: absolute; inset: 0; overflow: hidden;
+  background:
+    repeating-linear-gradient(0deg, rgba(150,190,230,.08) 0 2px, transparent 2px 9px),
+    linear-gradient(#fbf6dc 0%, #fdfdfa 14%, #eef4f6 100%);
 }
-.enemy-area svg { display: block; width: 100%; height: 100%; }
+.streak {
+  position: absolute; height: 2.2%;
+  background: linear-gradient(90deg, rgba(120,175,225,0), rgba(120,175,225,.55), rgba(120,175,225,0));
+  border-radius: 2px;
+  animation: streak linear infinite;
+}
+@keyframes streak {
+  from { transform: translateX(120%); }
+  to   { transform: translateX(-260%); }
+}
 
-/* 우리 포켓몬 (좌측 하단) */
-.ally-area {
-  position: absolute;
-  left: 4%;
-  bottom: 30%;
-  width: 34%;
-  height: 44%;
+/* 트레이너/포켓몬 배치 영역 */
+.enemy-area, .ally-area {
+  position: absolute; transition: transform .55s ease, opacity .4s ease;
 }
-.ally-area svg { display: block; width: 100%; height: 100%; }
+.enemy-area { right: 5%; top: 7%; width: 26%; height: 40%; }
+.ally-area  { left: 5%;  bottom: 29%; width: 32%; height: 44%; }
+/* 슬라이드 시작 오프셋(우상=오른쪽에서, 좌하=왼쪽에서 들어옴은 JS에서 지정) */
 
-/* 공격 흔들림 애니메이션 */
-@keyframes shake {
-  0%,100% { transform: translateX(0); }
-  20% { transform: translateX(-6%); }
-  40% { transform: translateX(6%); }
-  60% { transform: translateX(-4%); }
-  80% { transform: translateX(4%); }
+/* 발판(배틀) */
+.b-platform {
+  position: absolute; border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(180,205,195,.55), rgba(180,205,195,0) 72%);
 }
-.shake { animation: shake 0.4s ease; }
-@keyframes lunge {
-  0%,100% { transform: translateX(0); }
-  50% { transform: translateX(22%); }
-}
-.lunge { animation: lunge 0.35s ease; }
+.b-platform.enemy { right: 4%; top: 40%; width: 30%; height: 8%; }
+.b-platform.ally  { left: 3%; bottom: 26%; width: 36%; height: 9%; }
 
 /* HP 박스 */
 .hp-box {
-  position: absolute;
-  background: var(--pk-box);
-  border: 3px solid var(--pk-border-dark);
-  border-radius: 6px;
-  padding: 0.35em 0.6em;
-  min-width: 34%;
+  position: absolute; background: #f7f4e6;
+  border: 3px solid #4a5540; border-radius: 6px;
+  padding: .3em .55em; min-width: 33%; z-index: 8;
 }
 .hp-box.enemy { left: 4%; top: 6%; }
-.hp-box.ally { right: 4%; bottom: 30%; }
-.hp-name { font-size: 0.9em; margin-bottom: 0.2em; }
-.hp-row { display: flex; align-items: center; gap: 0.4em; }
-.hp-label { color: #d4a017; font-size: 0.75em; }
-.hp-track {
-  flex: 1;
-  height: 0.6em;
-  background: var(--pk-hp-track);
-  border-radius: 3px;
-  overflow: hidden;
-  border: 1px solid #222;
-}
-.hp-fill {
-  height: 100%;
-  width: 100%;
-  background: var(--pk-hp-green);
-  transition: width 0.5s ease, background 0.3s ease;
-}
-.hp-fill.mid { background: var(--pk-hp-yellow); }
-.hp-fill.low { background: var(--pk-hp-red); }
+.hp-box.ally  { right: 4%; bottom: 29%; }
+.hp-box.hidden-v { visibility: hidden; }
+.hp-name { font-size: .82em; margin-bottom: .18em; color: #33372c; }
+.hp-row { display: flex; align-items: center; gap: .35em; }
+.hp-label { color: #c99a1e; font-size: .7em; font-weight: bold; }
+.hp-track { flex: 1; height: .55em; background: var(--hp-track); border-radius: 3px; border: 1px solid #222; overflow: hidden; }
+.hp-fill { height: 100%; width: 100%; background: var(--hp-green); transition: width .5s ease, background .3s ease; }
+.hp-fill.mid { background: var(--hp-yellow); } .hp-fill.low { background: var(--hp-red); }
 
-/* ===== 하단 대화창 ===== */
-.dialog-box {
-  position: absolute;
-  left: 2.5%;
-  right: 2.5%;
-  bottom: 3%;
-  height: 24%;
-  background: var(--pk-box);
-  border: 4px solid var(--pk-border-dark);
-  border-radius: 8px;
-  box-shadow: inset 0 0 0 3px var(--pk-box), inset 0 0 0 6px var(--pk-border-light);
-  padding: 0.7em 1em;
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  z-index: 6;
-}
-.dialog-text { white-space: pre-line; }
-.dialog-arrow {
-  position: absolute;
-  right: 1em;
-  bottom: 0.5em;
-  width: 0;
-  height: 0;
-  border-left: 0.4em solid transparent;
-  border-right: 0.4em solid transparent;
-  border-top: 0.5em solid var(--pk-border-dark);
-  opacity: 0;
-}
-.dialog-arrow.blink { animation: blink 0.8s steps(2) infinite; }
-@keyframes blink { 0%,50% { opacity: 1; } 50.01%,100% { opacity: 0; } }
+/* 공격 연출 */
+@keyframes shake { 0%,100%{transform:translateX(0);} 20%{transform:translateX(-6%);} 40%{transform:translateX(6%);} 60%{transform:translateX(-4%);} 80%{transform:translateX(4%);} }
+.shake { animation: shake .4s ease; }
+@keyframes lunge { 0%,100%{transform:translateX(0);} 50%{transform:translateX(18%);} }
+.lunge { animation: lunge .35s ease; }
 
-/* 확인(네/아니오) 미니 창 */
-.yesno-box {
-  position: absolute;
-  right: 3%;
-  bottom: 30%;
-  background: var(--pk-box);
-  border: 3px solid var(--pk-border-dark);
-  border-radius: 6px;
-  box-shadow: 0 0 0 3px var(--pk-box), 0 0 0 5px var(--pk-border-light);
-  padding: 0.4em 0.3em;
-  z-index: 7;
+/* 배틀 명령 바: 좌 프롬프트 패널 + 우 4보기 패널 (스샷1) */
+.cmd-bar {
+  position: absolute; left: 2.5%; right: 2.5%; bottom: 3.2%; height: 25%;
+  display: flex; gap: 2%; z-index: 21;
 }
-.yesno-box.hidden { display: none; }
-
-/* ===== 배틀 기술 메뉴 (2x2) — 대화창 오른쪽 절반 오버레이 ===== */
+.cmd-bar.hidden { display: none; }
+.cmd-prompt {
+  flex: 0 0 40%;
+  background: var(--bdlg-fill);
+  border: 4px solid var(--bdlg-gold); border-radius: 8px;
+  box-shadow: inset 0 0 0 3px var(--bdlg-fill), inset 0 0 0 5px #eef2f6;
+  padding: .6em .8em; color: var(--bdlg-text);
+  display: flex; align-items: flex-start;
+}
 .move-menu {
-  position: absolute;
-  left: 2.5%;
-  right: 2.5%;
-  bottom: 3%;
-  height: 24%;
-  background: var(--pk-box);
-  border: 4px solid var(--pk-border-dark);
-  border-radius: 8px;
-  box-shadow: inset 0 0 0 3px var(--pk-box), inset 0 0 0 6px var(--pk-border-light);
-  padding: 0.7em 1em;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: 1fr 1fr;
-  gap: 0.2em 1.2em;
-  z-index: 6;
+  flex: 1 1 auto;
+  background: var(--bdlg-fill);
+  border: 4px solid var(--bdlg-gold); border-radius: 8px;
+  box-shadow: inset 0 0 0 3px var(--bdlg-fill), inset 0 0 0 5px #eef2f6;
+  padding: .5em .6em;
+  display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr;
+  gap: .05em .5em;
 }
 .move-menu.hidden { display: none; }
 .move-item {
-  display: flex;
-  align-items: center;
-  padding-left: 1.4em;
-  position: relative;
-  cursor: pointer;
+  display: flex; align-items: center; padding-left: 1.1em;
+  position: relative; cursor: pointer; color: var(--bdlg-text);
+  font-size: .82em; white-space: nowrap;
 }
 .move-item::before {
-  content: '';
-  position: absolute;
-  left: 0.2em;
-  top: 50%;
-  width: 0.55em;
-  height: 0.55em;
-  transform: translateY(-50%) rotate(45deg) scale(0);
-  background: var(--pk-select);
-  transition: transform 0.08s ease;
+  content: ''; position: absolute; left: .1em; top: 50%;
+  width: .45em; height: .45em; transform: translateY(-50%) rotate(45deg) scale(0);
+  background: var(--pk-select); transition: transform .08s ease;
 }
 .move-item:hover:not(.disabled)::before { transform: translateY(-50%) rotate(45deg) scale(1); }
-.move-item.disabled { color: #b0b0b0; cursor: default; text-decoration: line-through; }
+.move-item.disabled { color: #8aa0b4; cursor: default; text-decoration: line-through; }
 
-/* 승리 후 CTA 버튼 */
-.cta {
-  display: inline-block;
-  margin-top: 0.6em;
-  padding: 0.4em 0.9em;
-  background: var(--pk-border-dark);
-  color: #fff;
-  border-radius: 6px;
-  text-decoration: none;
-  font-size: 0.9em;
+/* ===================== 엔딩 장면 (신랑·신부 나란히) ===================== */
+#scene-ending {
+  background: linear-gradient(#ffffff 0%, #fdf3f6 70%, #f6e6ec 100%);
 }
+.couple {
+  position: absolute; bottom: 16%; width: 30%; height: 60%;
+  display: flex; align-items: flex-end; justify-content: center;
+}
+#couple-left { left: 19%; }   /* 신랑 송현중 */
+#couple-right { right: 19%; } /* 신부 조나영 */
 
-/* 세로 모드 안내 (가로로 돌려주세요) */
-#rotate-hint {
-  position: fixed;
-  inset: 0;
-  display: none;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 1em;
-  background: #101010;
-  color: #f8f8f8;
-  text-align: center;
-  padding: 2em;
-  z-index: 100;
+/* ===================== 전환 연출 오버레이 ===================== */
+/* 흰 화면 fade (엔딩 진입) */
+#fx-white {
+  position: absolute; inset: 0; background: #fff;
+  opacity: 0; pointer-events: none; z-index: 42;
+  transition: opacity .5s ease;
 }
-#rotate-hint .phone {
-  font-size: 3rem;
-  animation: rotatePhone 1.6s ease-in-out infinite;
-}
-@keyframes rotatePhone {
-  0%,40% { transform: rotate(0deg); }
-  60%,100% { transform: rotate(90deg); }
-}
+#fx-white.show { opacity: 1; }
 
-@media (orientation: portrait) {
-  #rotate-hint { display: flex; }
-  #viewport { display: none; }
+/* 회색 화면 깜빡임 (스샷7) */
+#fx-flash {
+  position: absolute; inset: 0; background: #6d716d;
+  opacity: 0; pointer-events: none; z-index: 40; display: none;
 }
+#fx-flash.play { display: block; animation: grayBlink .5s steps(1) forwards; }
+@keyframes grayBlink {
+  0%{opacity:0;} 12%{opacity:1;} 30%{opacity:0;}
+  50%{opacity:1;} 70%{opacity:0;} 100%{opacity:0;}
+}
+/* 바깥→안쪽 블랙아웃 (스샷8) */
+#fx-black {
+  position: absolute; inset: 0; pointer-events: none; z-index: 41;
+  box-shadow: inset 0 0 0 0 #000; background: transparent; display: none;
+}
+#fx-black.closing { display: block; animation: closeIn .45s ease forwards; }
+#fx-black.full { display: block; box-shadow: inset 0 0 0 80vmax #000; }
+@keyframes closeIn { from { box-shadow: inset 0 0 0 0 #000; } to { box-shadow: inset 0 0 0 80vmax #000; } }

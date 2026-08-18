@@ -126,11 +126,97 @@
     '<path d="M36 37 q4 3 8 0" fill="none" stroke="#a05a3a" stroke-width="2" stroke-linecap="round"/>'
   );
 
+  // ===== 트레이너 대체 아트 (오리지널, 실제 게임 스프라이트 아님) =====
+  // assets/*.png 가 없을 때만 표시되는 폴백.
+
+  // 남자 트레이너 정면 — 빨간 모자
+  var trainerMaleFront = wrap('0 0 80 116',
+    '<path d="M40 46 L22 112 L58 112 Z" fill="#3a4a63" stroke="#20293a" stroke-width="2"/>' + // 하의
+    '<path d="M40 44 L26 78 L54 78 Z" fill="#c0392b" stroke="#7d241b" stroke-width="2"/>' +   // 상의(빨강)
+    '<path d="M30 50 L20 80" stroke="#e6b98f" stroke-width="6" stroke-linecap="round"/>' +
+    '<path d="M50 50 L60 80" stroke="#e6b98f" stroke-width="6" stroke-linecap="round"/>' +
+    '<circle cx="40" cy="30" r="14" fill="#f2c199" stroke="#c2895c" stroke-width="2"/>' +     // 얼굴
+    '<path d="M24 28 Q26 12 40 12 Q54 12 56 28 L56 26 Q40 18 24 26 Z" fill="#c0392b" stroke="#7d241b" stroke-width="2"/>' + // 모자
+    '<rect x="22" y="26" width="36" height="4" rx="2" fill="#ffffff" stroke="#c9ced6" stroke-width="1"/>' + // 모자챙
+    '<circle cx="35" cy="31" r="2.2" fill="#2b2b2b"/>' +
+    '<circle cx="45" cy="31" r="2.2" fill="#2b2b2b"/>'
+  );
+
+  // 여자 트레이너 정면 — 하얀 모자
+  var trainerFemaleFront = wrap('0 0 80 116',
+    '<path d="M40 48 L24 84 L56 84 Z" fill="#e05a7a" stroke="#a63a56" stroke-width="2"/>' +   // 치마
+    '<path d="M40 108 L34 84 L46 84 Z" fill="#5aa0d0"/>' +                                     // 다리 사이
+    '<path d="M40 46 L28 74 L52 74 Z" fill="#4aa3d6" stroke="#2f6d92" stroke-width="2"/>' +   // 상의(파랑)
+    '<path d="M30 50 L21 76" stroke="#f3caa8" stroke-width="6" stroke-linecap="round"/>' +
+    '<path d="M50 50 L59 76" stroke="#f3caa8" stroke-width="6" stroke-linecap="round"/>' +
+    '<path d="M22 40 Q40 44 58 40 L54 60 Q40 66 26 60 Z" fill="#6b4a34"/>' +                   // 긴 머리
+    '<circle cx="40" cy="30" r="14" fill="#f8d2ad" stroke="#d3a377" stroke-width="2"/>' +
+    '<ellipse cx="40" cy="20" rx="20" ry="7" fill="#ffffff" stroke="#c9ced6" stroke-width="2"/>' + // 모자챙
+    '<path d="M28 20 Q40 4 52 20 Z" fill="#ffffff" stroke="#c9ced6" stroke-width="2"/>' +
+    '<circle cx="35" cy="31" r="2.2" fill="#2b2b2b"/>' +
+    '<circle cx="45" cy="31" r="2.2" fill="#2b2b2b"/>'
+  );
+
+  // 남자 트레이너 뒷모습 — 모자 뒤 + 배낭
+  var trainerMaleBack = wrap('0 0 80 116',
+    '<path d="M40 48 L22 112 L58 112 Z" fill="#3a4a63" stroke="#20293a" stroke-width="2"/>' +
+    '<path d="M40 44 L26 82 L54 82 Z" fill="#c0392b" stroke="#7d241b" stroke-width="2"/>' +
+    '<rect x="30" y="52" width="20" height="34" rx="6" fill="#e0b24a" stroke="#a67f2a" stroke-width="2"/>' + // 배낭
+    '<path d="M30 50 L21 80" stroke="#e6b98f" stroke-width="6" stroke-linecap="round"/>' +
+    '<path d="M50 50 L59 80" stroke="#e6b98f" stroke-width="6" stroke-linecap="round"/>' +
+    '<circle cx="40" cy="30" r="14" fill="#8a6b4a"/>' +                                        // 뒤통수
+    '<path d="M24 30 Q24 12 40 12 Q56 12 56 30 Q40 22 24 30 Z" fill="#c0392b" stroke="#7d241b" stroke-width="2"/>' +
+    '<rect x="36" y="24" width="12" height="6" rx="2" fill="#ffffff"/>'                        // 모자 조절부
+  );
+
+  // 여자 트레이너 뒷모습 — 모자 뒤 + 배낭 + 포니테일
+  var trainerFemaleBack = wrap('0 0 80 116',
+    '<path d="M40 48 L24 100 L56 100 Z" fill="#e05a7a" stroke="#a63a56" stroke-width="2"/>' +
+    '<path d="M40 44 L28 82 L52 82 Z" fill="#4aa3d6" stroke="#2f6d92" stroke-width="2"/>' +
+    '<rect x="31" y="52" width="18" height="30" rx="6" fill="#e0b24a" stroke="#a67f2a" stroke-width="2"/>' +
+    '<path d="M30 50 L21 78" stroke="#f3caa8" stroke-width="6" stroke-linecap="round"/>' +
+    '<path d="M50 50 L59 78" stroke="#f3caa8" stroke-width="6" stroke-linecap="round"/>' +
+    '<circle cx="40" cy="30" r="14" fill="#6b4a34"/>' +                                        // 뒤통수(머리)
+    '<path d="M40 40 Q52 52 46 74 L36 72 Q42 54 40 40 Z" fill="#6b4a34"/>' +                    // 포니테일
+    '<ellipse cx="40" cy="22" rx="18" ry="7" fill="#ffffff" stroke="#c9ced6" stroke-width="2"/>'
+  );
+
+  // 파이리(오마주) — 주황 도마뱀 + 꼬리 불꽃 (오리지널, 실제 스프라이트 아님)
+  var charmander = wrap('0 0 110 122',
+    // 꼬리 + 불꽃
+    '<path d="M78 86 Q104 84 100 60" fill="none" stroke="#e07a1e" stroke-width="9" stroke-linecap="round"/>' +
+    '<path d="M100 62 q-9 -16 3 -26 q2 12 10 12 q-2 12 -13 14 Z" fill="#ff8a1e" stroke="#e0651a" stroke-width="2"/>' +
+    '<path d="M101 58 q-4 -9 2 -15 q1 7 6 7 q-1 7 -8 8 Z" fill="#ffd24a"/>' +
+    // 다리
+    '<ellipse cx="42" cy="106" rx="11" ry="8" fill="#f2952a" stroke="#c26f16" stroke-width="2"/>' +
+    '<ellipse cx="66" cy="106" rx="11" ry="8" fill="#f2952a" stroke="#c26f16" stroke-width="2"/>' +
+    // 몸통
+    '<ellipse cx="54" cy="74" rx="26" ry="30" fill="#f79a2b" stroke="#c26f16" stroke-width="2.5"/>' +
+    // 배(크림)
+    '<ellipse cx="54" cy="82" rx="15" ry="18" fill="#ffe0a6"/>' +
+    // 팔
+    '<path d="M32 70 q-8 4 -8 12" fill="none" stroke="#f79a2b" stroke-width="7" stroke-linecap="round"/>' +
+    '<path d="M76 70 q8 4 8 12" fill="none" stroke="#f79a2b" stroke-width="7" stroke-linecap="round"/>' +
+    // 머리
+    '<circle cx="54" cy="40" r="24" fill="#f79a2b" stroke="#c26f16" stroke-width="2.5"/>' +
+    // 눈
+    '<ellipse cx="45" cy="37" rx="4.5" ry="6" fill="#fff"/><circle cx="45" cy="38" r="2.6" fill="#1f2933"/>' +
+    '<ellipse cx="63" cy="37" rx="4.5" ry="6" fill="#fff"/><circle cx="63" cy="38" r="2.6" fill="#1f2933"/>' +
+    // 콧구멍/입
+    '<circle cx="50" cy="47" r="1.2" fill="#8a5216"/><circle cx="58" cy="47" r="1.2" fill="#8a5216"/>' +
+    '<path d="M47 52 q7 5 14 0" fill="none" stroke="#8a5216" stroke-width="2" stroke-linecap="round"/>'
+  );
+
   window.GAME_SPRITES = {
     oak: oak,
     magikarp: magikarp,
+    charmander: charmander,
     bandwang: bandwang,
     bride: bride,
     groom: groom,
+    trainerMaleFront: trainerMaleFront,
+    trainerFemaleFront: trainerFemaleFront,
+    trainerMaleBack: trainerMaleBack,
+    trainerFemaleBack: trainerFemaleBack,
   };
 })();
