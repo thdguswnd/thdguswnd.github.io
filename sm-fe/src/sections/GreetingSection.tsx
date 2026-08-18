@@ -2,12 +2,23 @@ import { useState } from 'react';
 import { useContent } from '../content/ContentProvider';
 import { ScrollReveal } from '../components/ScrollReveal';
 import { ContactModal } from '../components/ContactModal';
+import { HandwritingCarousel, type CarouselPerson } from '../components/HandwritingCarousel';
 
-/** FR-03: 인사말 (INVITATION 헤더 + 시 인용 + 초대 문구 + 양가 부모님/신랑·신부 + 연락하기). */
+/** FR-03: 인사말 (INVITATION 헤더 + 시 인용 + 초대 문구 + 손글씨 카드 + 양가 부모님/신랑·신부 + 연락하기). */
 export function GreetingSection() {
   const { greeting, contacts } = useContent();
   const { groom, bride } = greeting;
   const [contactOpen, setContactOpen] = useState(false);
+
+  // 손글씨 카드 순서: 신랑부 → 신랑모 → 신랑 → 신부부 → 신부모 → 신부 (루프)
+  const people: CarouselPerson[] = [
+    { key: 'groom-father', name: groom.parents.father ?? '' },
+    { key: 'groom-mother', name: groom.parents.mother ?? '' },
+    { key: 'groom', name: groom.name },
+    { key: 'bride-father', name: bride.parents.father ?? '' },
+    { key: 'bride-mother', name: bride.parents.mother ?? '' },
+    { key: 'bride', name: bride.name },
+  ];
 
   return (
     <ScrollReveal id="greeting">
@@ -45,6 +56,9 @@ export function GreetingSection() {
       >
         {greeting.message}
       </p>
+
+      {/* 손글씨 카드 (옆으로 넘김, 경로에 따라 첫 카드 결정) */}
+      <HandwritingCarousel people={people} />
 
       {/* 구분선 */}
       <div style={{ width: 40, height: 1, background: '#d8d0c8', margin: '28px auto' }} />
