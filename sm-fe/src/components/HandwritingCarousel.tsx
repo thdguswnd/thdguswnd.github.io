@@ -76,37 +76,37 @@ export function HandwritingCarousel({ people }: { people: CarouselPerson[] }) {
                 flex: '0 0 100%',
                 minWidth: 0,
                 display: 'flex',
-                alignItems: 'center',
                 justifyContent: 'center',
-                height: 200,
-                padding: '0 8px',
+                padding: '0 12px',
               }}
             >
-              {handwritingUrls[i] ? (
-                <img
-                  src={handwritingUrls[i]}
-                  alt={`${p.name} 손글씨`}
-                  style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain', display: 'block' }}
-                />
-              ) : (
-                <div
-                  style={{
-                    width: '78%',
-                    maxWidth: 300,
-                    height: 170,
-                    border: '1px dashed var(--color-accent)',
-                    borderRadius: 12,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: 8,
-                  }}
-                >
-                  <div style={{ fontSize: '1.5rem', color: 'var(--color-text)' }}>{p.name}</div>
-                  <div style={{ fontSize: '0.72rem', color: 'var(--color-muted)' }}>손글씨 이미지 예정</div>
-                </div>
-              )}
+              {/* 3:4 세로 카드 영역 (이비스 페인트 캔버스도 3:4 권장) */}
+              <div style={{ width: '80%', maxWidth: 300, aspectRatio: '3 / 4' }}>
+                {handwritingUrls[i] ? (
+                  <img
+                    src={handwritingUrls[i]}
+                    alt={`${p.name} 손글씨`}
+                    style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
+                  />
+                ) : (
+                  <div
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      border: '1px dashed var(--color-accent)',
+                      borderRadius: 12,
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 8,
+                    }}
+                  >
+                    <div style={{ fontSize: '1.5rem', color: 'var(--color-text)' }}>{p.name}</div>
+                    <div style={{ fontSize: '0.72rem', color: 'var(--color-muted)' }}>손글씨 이미지 예정</div>
+                  </div>
+                )}
+              </div>
             </div>
           ))}
         </div>
