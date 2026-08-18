@@ -59,6 +59,19 @@
 - 전체 자동 플레이 endState: enemyHp 0%, ending 씬, 커플 스프라이트 2개, CTA OK
 - node --check 로 data/sprites/game.js 문법 무오류
 
+## Verification Log (v5, 2026-08-18 — 대사/Q&A 배틀/엔딩 개편)
+- 인트로: 오박사 자기소개 줄 삭제("안녕!" 다음 바로 환영)
+- 확인 대사: 마곡 LG CNS / 홍대 크레아 스튜디오 + '네' 후 반응 대사(postConfirm) 재생
+- 배틀 인트로: "~~에게 궁금한 걸 물어보자!" 로 변경
+- 포켓몬 제거 → 트레이너(송현중/조나영)끼리 직접 진행
+- 보기: 신혼집 어디야? / 신혼여행 어디가? / 밴드왕이 뭐야? / 도망친다
+- 각 질문 = 내가 물음(공격, 왼쪽 아래 돌진) → 상대가 답함(반격, 오른쪽 위 돌진), HP 100→67→33→0
+- 답변 다중 줄(신혼여행 2줄 / 밴드왕 4줄) 순차 출력 확인
+- 도망친다 → 나 왼쪽 퇴장 + "질문을 그만두고 도망쳤다!" → 엔딩 전환
+- 엔딩: 신랑·신부 가운데 모임 → ENDING_LINES → 재시작/종료 팝업(청첩장 CTA 제거)
+  - 재시작=location.reload, 종료=window.close()→실패 시 invitationUrl 이동
+- node --check 문법 무오류, 전체 자동 플레이 endState 정상(ending + end-menu[재시작/종료])
+
 ## Open Items / Next
 - [ ] `/pokemon` 배포 연결: `src/` 를 `sm-fe/public/pokemon/` 로 복사(문서: construction/plans/implementation-plan.md)
 - [ ] '미정' 2칸을 실제 항목으로 교체(예: 예물/스드메 등) — data.js MOVES 수정

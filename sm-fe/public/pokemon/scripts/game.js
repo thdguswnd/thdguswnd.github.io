@@ -41,6 +41,7 @@
     el.moveMenu = $('move-menu');
     el.cmdBar = $('cmd-bar');
     el.cmdPrompt = $('cmd-prompt');
+    el.endMenu = $('end-menu');
     el.fxFlash = $('fx-flash');
     el.fxBlack = $('fx-black');
   }
@@ -160,7 +161,9 @@
     el.yesnoBox.innerHTML = '';
     el.yesnoBox.appendChild(makeChoice('네', function () {
       el.yesnoBox.classList.add('hidden');
-      startBattleTransition();
+      var ch = CHARACTERS[state.charKey];
+      // '네' 이후 오박사 반응 → 배틀 전환
+      showMessages(ch.postConfirm, startBattleTransition);
     }));
     el.yesnoBox.appendChild(makeChoice('아니오', function () {
       el.yesnoBox.classList.add('hidden');
@@ -208,14 +211,15 @@
 
   function setupBattleField() {
     var ch = CHARACTERS[state.charKey];
-    state.enemyHp = 100; state.usedMoves = {};
+    state.enemyHp = 100; state.usedMoves = {}; state.questionsAsked = 0;
     el.dialog.classList.add('battle');
-    // HP 이름은 각 포켓몬 등장 시 설정된다(afterTrainersIn).
+    // HP 이름은 배틀 인트로 후 설정된다(afterTrainersIn).
     updateEnemyHp();
     el.enemyHpBox.classList.add('hidden-v');
     el.allyHpBox.classList.add('hidden-v');
     el.cmdBar.classList.add('hidden');
     el.enemyArea.style.opacity = '1';
+    el.allyArea.style.opacity = '1';
 
     // 상대(우상)=oppImg, 나(좌하)=backImg
     renderSprite(el.enemyArea, ch.oppImg);
@@ -237,29 +241,15 @@
     setTimeout(afterTrainersIn, 620);
   }
 
-  function myPokemonOf(ch) { return DATA.POKEMON[ch.pokemon]; }
-  function oppPokemonOf(ch) { return DATA.POKEMON[CHARACTERS[ch.opponentKey].pokemon]; }
-
   function afterTrainersIn() {
     var ch = CHARACTERS[state.charKey];
-    var myPoke = myPokemonOf(ch);
-    var oppPoke = oppPokemonOf(ch);
+    // 포켓몬 없이 트레이너끼리 직접 진행
     showMessages([ch.battleIntro], function () {
-      // 상대가 먼저 포켓몬을 내보낸다(트레이너 → 포켓몬 정면, 우상)
-      showMessages([DATA.josa(ch.opponentName, '은', '는') + ' ' + DATA.josa(oppPoke.name, '을', '를') + '\n내보냈다!'], function () {
-        renderSprite(el.enemyArea, oppPoke.frontImg);
-        el.enemyHpName.textContent = oppPoke.name;
-        el.enemyHpBox.classList.remove('hidden-v');
-        // 내가 포켓몬을 내보낸다(트레이너 → 포켓몬 뒷모습, 좌하)
-        showMessages([ch.sendOutText], function () {
-          renderSprite(el.allyArea, myPoke.backImg);
-          el.allyArea.classList.add('lunge');
-          setTimeout(function () { el.allyArea.classList.remove('lunge'); }, 400);
-          el.allyHpName.textContent = myPoke.name;
-          el.allyHpBox.classList.remove('hidden-v');
-          openMoveMenu();
-        });
-      });
+      el.enemyHpName.textContent = ch.opponentName;
+      el.allyHpName.textContent = ch.name;
+      el.enemyHpBox.classList.remove('hidden-v');
+      el.allyHpBox.classList.remove('hidden-v');
+      openMoveMenu();
     });
   }
 
@@ -283,96 +273,74 @@
   function onUseMove(index) {
     if (state.busy) return;
     var mv = DATA.MOVES[index];
+    if (mv.flee) { el.cmdBar.classList.add('hidden'); fleeSequence(); return; }
     if (state.usedMoves[mv.id]) return;
     state.usedMoves[mv.id] = true;
-    el.cmdBar.classList.add('hidden');       // 명령 바 숨기고 내레이션으로
-    var ch = CHARACTERS[state.charKey];
-    showMessages([mv.text(myPokemonOf(ch).name)], function () {
-      el.allyArea.classList.add('lunge');
-      setTimeout(function () {
-        el.allyArea.classList.remove('lunge');
-        el.enemyArea.classList.add('shake');
-        state.enemyHp = Math.max(0, state.enemyHp - CFG.damagePerMove);
-        updateEnemyHp();
-        setTimeout(function () {
-          el.enemyArea.classList.remove('shake');
-          afterMove();
-        }, 450);
-      }, 300);
-    });
-  }
-
-  function afterMove() {
-    var ch = CHARACTERS[state.charKey];
-    if (state.enemyHp <= 0) { victory(ch); return; }
-    showMessages(['효과가 굉장했다!'], openMoveMenu);
-  }
-
-  function victory(ch) {
     el.cmdBar.classList.add('hidden');
-    // 상대 포켓몬 기절: 아래로 내려가며 사라짐
-    el.enemyArea.style.transition = 'transform .6s ease, opacity .6s ease';
-    el.enemyArea.style.transform = 'translateY(120%)';
-    el.enemyArea.style.opacity = '0';
-    // 청첩장 버전: "쓰러졌다" 대신
-    showMessages(['궁금증이 조금은 해소되었다!'], function () {
-      endingSequence(ch);
+    var me = CHARACTERS[state.charKey];
+    var opp = CHARACTERS[me.opponentKey];
+    // 내 공격(질문): 왼쪽 아래 인물이 돌진
+    el.allyArea.classList.add('lunge');
+    setTimeout(function () { el.allyArea.classList.remove('lunge'); }, 400);
+    showMessages([mv.ask(me.name)], function () {
+      // 상대 반격(대답): 오른쪽 위 인물이 돌진 + 궁금증(HP) 감소
+      el.enemyArea.classList.add('lunge');
+      setTimeout(function () { el.enemyArea.classList.remove('lunge'); }, 400);
+      state.questionsAsked = (state.questionsAsked || 0) + 1;
+      state.enemyHp = Math.max(0, Math.round(100 * (3 - state.questionsAsked) / 3));
+      updateEnemyHp();
+      showMessages(mv.answer(opp.name), openMoveMenu);
     });
   }
 
-  // 배틀 종료 → 트레이너 복귀/퇴장 → 흰 화면 → 신랑·신부 나란히 → 마무리 메시지
-  function endingSequence(ch) {
-    // 포켓몬 → 트레이너 복귀(상대 우상 정면, 나 좌하 뒷모습)
-    el.enemyArea.style.transition = 'none';
-    el.enemyArea.style.opacity = '1';
-    el.enemyArea.style.transform = 'translateX(0)';
-    el.allyArea.style.transition = 'none';
-    el.allyArea.style.transform = 'translateX(0)';
-    renderSprite(el.enemyArea, ch.oppImg);
-    renderSprite(el.allyArea, ch.backImg);
+  // 도망친다: 나(좌하)가 왼쪽으로 사라지고 → 엔딩으로
+  function fleeSequence() {
+    state.busy = true;
+    el.allyArea.style.transition = 'transform .5s ease, opacity .5s ease';
+    el.allyArea.style.transform = 'translateX(-340%)';
+    el.allyArea.style.opacity = '0';
+    showMessages(['질문을 그만두고\n도망쳤다!'], toEnding);
+  }
 
-    showMessages(['좋은 질문이었어!\n이제 결혼식만 남았네.'], function () {
-      // 트레이너 퇴장: 상대는 오른쪽, 나는 왼쪽으로
-      el.enemyArea.style.transition = 'transform .6s ease';
-      el.allyArea.style.transition = 'transform .6s ease';
-      el.enemyArea.style.transform = 'translateX(340%)';
-      el.allyArea.style.transform = 'translateX(-340%)';
-      el.dialog.classList.add('hidden');
+  // 배틀 다음 화면: 흰 화면 → 신랑·신부 나란히 → 멘트 → 재시작/종료 팝업
+  function toEnding() {
+    el.dialog.classList.add('hidden');
+    el.fxWhite.classList.add('show');
+    setTimeout(function () {
+      setScene('ending');
+      el.dialog.classList.remove('battle');
+      renderSprite(el.coupleLeft, CHARACTERS.song.frontImg);
+      renderSprite(el.coupleRight, CHARACTERS.jo.frontImg);
+      el.coupleLeft.style.transition = 'none';
+      el.coupleRight.style.transition = 'none';
+      el.coupleLeft.style.transform = 'translateX(-200%)';
+      el.coupleRight.style.transform = 'translateX(200%)';
       setTimeout(function () {
-        // 흰 화면 fade
-        el.fxWhite.classList.add('show');
+        el.fxWhite.classList.remove('show');
+        void el.coupleLeft.offsetWidth;
+        el.coupleLeft.style.transition = 'transform .8s ease';
+        el.coupleRight.style.transition = 'transform .8s ease';
+        el.coupleLeft.style.transform = 'translateX(0)';
+        el.coupleRight.style.transform = 'translateX(0)';
         setTimeout(function () {
-          setScene('ending');
-          el.dialog.classList.remove('battle'); // 라이트 대화창
-          // 신랑(좌)·신부(우) 준비 — 화면 밖에서 시작
-          renderSprite(el.coupleLeft, CHARACTERS.song.frontImg);
-          renderSprite(el.coupleRight, CHARACTERS.jo.frontImg);
-          el.coupleLeft.style.transition = 'none';
-          el.coupleRight.style.transition = 'none';
-          el.coupleLeft.style.transform = 'translateX(-200%)';
-          el.coupleRight.style.transform = 'translateX(200%)';
-          setTimeout(function () {
-            // 흰 화면 걷고, 양쪽에서 가운데로 모이기
-            el.fxWhite.classList.remove('show');
-            void el.coupleLeft.offsetWidth;
-            el.coupleLeft.style.transition = 'transform .8s ease';
-            el.coupleRight.style.transition = 'transform .8s ease';
-            el.coupleLeft.style.transform = 'translateX(0)';
-            el.coupleRight.style.transform = 'translateX(0)';
-            setTimeout(function () {
-              showMessages(
-                ['결혼식날 뵙겠습니다.\n감사합니다!', '송현중  ♥  조나영'],
-                function () {
-                  el.dialogText.innerHTML =
-                    '와주셔서 감사합니다 💐\n' +
-                    '<a class="cta" href="' + CFG.invitationUrl + '">청첩장 보러가기 ▶</a>';
-                }
-              );
-            }, 900);
-          }, 80);
-        }, 520);
-      }, 680);
-    });
+          showMessages(DATA.ENDING_LINES, showEndMenu);
+        }, 900);
+      }, 80);
+    }, 520);
+  }
+
+  // 엔딩 팝업(재시작 / 종료) — 선택창 스타일
+  function showEndMenu() {
+    el.endMenu.innerHTML = '';
+    el.endMenu.appendChild(makeChoice('재시작', function () {
+      location.reload();
+    }));
+    el.endMenu.appendChild(makeChoice('종료', function () {
+      // 모바일 청첩장에서 새 창으로 열린 경우 닫기 → 실패 시 청첩장으로 이동
+      window.close();
+      setTimeout(function () { location.href = CFG.invitationUrl; }, 300);
+    }));
+    el.endMenu.classList.remove('hidden');
   }
 
   function updateEnemyHp() {

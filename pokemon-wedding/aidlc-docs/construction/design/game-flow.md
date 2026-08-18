@@ -36,7 +36,15 @@ startBattleTransition():
   ⑤ slideInTrainers(): 상대(좌상→우상), 나(우하→좌하) translateX 슬라이드 ~620ms
 ```
 
-### 4) 트레이너 → 포켓몬 → 전투
+### (개편) 확인 → 배틀 → Q&A → 도망 → 엔딩
+- 확인 '네' 후 `postConfirm`(오박사 반응) 재생 → 배틀 전환
+- 배틀은 **포켓몬 없이 트레이너끼리**: 인트로 "{상대}에게 궁금한 걸 물어보자!" → 양쪽 HP박스 + 명령 바
+- 질문 선택 시: 내(좌하) 돌진+ask → 상대(우상) 돌진+answer(여러 줄) → HP 감소 → 명령 바 복귀
+- `도망친다`: 나 왼쪽 퇴장 + "질문을 그만두고 도망쳤다!" → `toEnding()`
+- `toEnding()`: 흰 화면 fade → 신랑(송현중)·신부(조나영) frontImg 가운데로 모임 → ENDING_LINES → `showEndMenu()`(재시작/종료 팝업)
+  - 재시작=`location.reload()`, 종료=`window.close()`→실패 시 `invitationUrl`
+
+### (구버전 참고) 트레이너 → 포켓몬 → 전투
 ```
 afterTrainersIn():
   showMessages([battleIntro])                 // "신부 조나영(이)가 승부를 걸어왔다!"

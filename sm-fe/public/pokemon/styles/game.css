@@ -124,6 +124,8 @@ html, body {
   padding: .45em .5em; z-index: 22;
 }
 .choice-box.hidden, .yesno-box.hidden { display: none; }
+/* 엔딩 팝업은 가운데 상단(대화창 위)으로 */
+#end-menu { left: 50%; right: auto; transform: translateX(-50%); bottom: 32%; }
 .choice-item {
   display: flex; align-items: center;
   padding: .28em .6em .28em 1.3em;
