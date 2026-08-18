@@ -74,9 +74,17 @@ export function KakaoMap({
       // eslint-disable-next-line no-new
       new kakao.maps.Marker({ position: latlng, map });
       if (venueName) {
-        new kakao.maps.InfoWindow({
-          content: `<div style="padding:5px 10px;font-size:13px;font-weight:600;color:#333;white-space:nowrap;">${venueName}</div>`,
-        }).open(map, new kakao.maps.Marker({ position: latlng }));
+        // InfoWindow 대신 CustomOverlay 사용 → 기본 말풍선 여백 없이 글씨에 꽉 맞는 박스
+        const labelEl = document.createElement('div');
+        labelEl.textContent = venueName;
+        labelEl.style.cssText =
+          'display:inline-block;padding:2px 8px;background:#fff;border:1px solid #d8d0c8;border-radius:6px;font-size:12px;font-weight:600;color:#333;white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,0.2);';
+        const overlay = new kakao.maps.CustomOverlay({
+          position: latlng,
+          yAnchor: 1.9,
+          content: labelEl,
+        });
+        overlay.setMap(map);
       }
       map.setCenter(latlng);
       // 터치로 이동/확대 가능(기본 인터랙티브)

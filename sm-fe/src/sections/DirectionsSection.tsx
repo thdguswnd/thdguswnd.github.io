@@ -89,7 +89,7 @@ export function DirectionsSection() {
       )}
 
       {/* 내비게이션 앱 버튼 (실제 앱 아이콘, 줄바꿈 없이 가로 꽉 차게) */}
-      <div style={{ marginTop: 28 }}>
+      <div style={{ marginTop: 10 }}>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'nowrap' }}>
           {appLinks.naver && (
             <button data-testid="map-naver" style={navBtn} onClick={() => openWithFallback(appLinks.naver!)}>
