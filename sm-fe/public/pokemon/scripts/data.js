@@ -28,7 +28,7 @@
   ];
 
   // 신랑/신부 질문 + 선택지(대화창 우측 위 오버랩)
-  var GENDER_QUESTION = '너는 신랑인가?\n그게 아니면 신부인가?';
+  var GENDER_QUESTION = '그대는 신랑이니?\n아니면 신부인가?';
   var CHOICES = [
     { key: 'song', label: '송현중(신랑)' },
     { key: 'jo', label: '조나영(신부)' },

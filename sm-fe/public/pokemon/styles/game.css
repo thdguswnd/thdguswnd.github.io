@@ -89,8 +89,8 @@ html, body {
 }
 /* 캐릭터 슬롯(오박사/선택캐릭터 공용) — 발판 위에 서 있게 */
 #char-slot {
-  position: absolute; left: 50%; bottom: 28%;
-  width: 24%; height: 54%;
+  position: absolute; left: 50%; bottom: 26%;
+  width: 32%; height: 66%;
   transform: translateX(-50%);
   opacity: 0; transition: opacity .55s ease;
   display: flex; align-items: flex-end; justify-content: center;
@@ -306,8 +306,17 @@ html, body {
 .move-item.disabled { color: #8aa0b4; cursor: default; text-decoration: line-through; }
 
 /* ===================== 엔딩 장면 (신랑·신부 나란히) ===================== */
+/* 배경: 예식장 사진(wed-hall.png). 이미지가 없으면 연한 색으로 폴백. */
 #scene-ending {
-  background: linear-gradient(#ffffff 0%, #fdf3f6 70%, #f6e6ec 100%);
+  background: #efe6ea url('../assets/wed-hall.png') center / cover no-repeat;
+}
+/* 사진 위에 반투명 흰 베일 → 캐릭터(신랑·신부)가 배경에 묻히지 않게. 커플(z-index 1·2)보다 아래. */
+#scene-ending::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.55);
+  z-index: 0;
 }
 .couple {
   position: absolute; bottom: 16%; width: 34%; height: 60%;
