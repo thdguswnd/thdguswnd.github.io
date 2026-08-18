@@ -75,13 +75,11 @@ export function HandwritingCarousel({ people }: { people: CarouselPerson[] }) {
               style={{
                 flex: '0 0 100%',
                 minWidth: 0,
-                display: 'flex',
-                justifyContent: 'center',
-                padding: '0 12px',
+                padding: '0 4px',
               }}
             >
-              {/* 3:4 세로 카드 영역 (이비스 페인트 캔버스도 3:4 권장) */}
-              <div style={{ width: '80%', maxWidth: 300, aspectRatio: '3 / 4' }}>
+              {/* 가로 꽉 채우는 3:4 세로 카드 (이비스 페인트 캔버스도 3:4 권장) */}
+              <div style={{ width: '100%', aspectRatio: '3 / 4' }}>
                 {handwritingUrls[i] ? (
                   <img
                     src={handwritingUrls[i]}
