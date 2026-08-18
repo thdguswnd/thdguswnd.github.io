@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#101010" />
+  <title>포켓몬스터 · 결혼 배틀</title>
+  <link rel="stylesheet" href="styles/game.css" />
+</head>
+<body>
+  <!-- 세로 모드일 때 안내 -->
+  <div id="rotate-hint">
+    <div class="phone">📱</div>
+    <div>휴대폰을 가로로 돌려주세요!</div>
+  </div>
+
+  <div id="viewport">
+    <div id="screen">
+
+      <!-- ===== 인트로 / 확인 장면 ===== -->
+      <div id="scene-intro" class="scene">
+        <div id="oak-sprite"></div>
+
+        <!-- 이름 선택지 (대화창 우측 위 오버랩) -->
+        <div id="choice-box" class="choice-box hidden"></div>
+
+        <!-- 네/아니오 확인 창 -->
+        <div id="yesno-box" class="yesno-box hidden"></div>
+      </div>
+
+      <!-- ===== 배틀 장면 ===== -->
+      <div id="scene-battle" class="scene hidden">
+        <!-- 상대 HP -->
+        <div id="enemy-hp-box" class="hp-box enemy">
+          <div id="enemy-hp-name" class="hp-name"></div>
+          <div class="hp-row">
+            <span class="hp-label">HP</span>
+            <div class="hp-track"><div id="enemy-hp-fill" class="hp-fill"></div></div>
+          </div>
+        </div>
+
+        <!-- 상대 포켓몬 -->
+        <div id="enemy-area" class="enemy-area"></div>
+
+        <!-- 우리 포켓몬 -->
+        <div id="ally-area" class="ally-area"></div>
+
+        <!-- 아군 HP (100% 고정) -->
+        <div id="ally-hp-box" class="hp-box ally">
+          <div id="ally-hp-name" class="hp-name"></div>
+          <div class="hp-row">
+            <span class="hp-label">HP</span>
+            <div class="hp-track"><div class="hp-fill"></div></div>
+          </div>
+        </div>
+
+        <!-- 기술 메뉴 (2x2) -->
+        <div id="move-menu" class="move-menu hidden"></div>
+      </div>
+
+      <!-- ===== 공용 하단 대화창 ===== -->
+      <div id="dialog-box" class="dialog-box">
+        <span id="dialog-text" class="dialog-text"></span>
+        <span id="dialog-arrow" class="dialog-arrow"></span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 클래식 스크립트(비-모듈) → file:// 로도 바로 실행 가능 -->
+  <script src="scripts/data.js"></script>
+  <script src="scripts/sprites.js"></script>
+  <script src="scripts/game.js"></script>
+</body>
+</html>
