@@ -79,12 +79,7 @@ export function KakaoMap({
         }).open(map, new kakao.maps.Marker({ position: latlng }));
       }
       map.setCenter(latlng);
-
-      // 정적 미리보기: 지도 조작(팬/줌)을 모두 끔 → 페이지 스크롤을 절대 방해하지 않음.
-      // 상세 확인은 아래 '카카오맵에서 크게 보기' 링크로. (지도 컨테이너는 pointer-events: none)
-      map.setDraggable(false);
-      map.setZoomable(false);
-
+      // 터치로 이동/확대 가능(기본 인터랙티브)
       setStatus('ok');
     };
 
@@ -143,8 +138,7 @@ export function KakaoMap({
     <div
       ref={ref}
       data-testid="kakao-map"
-      // pointer-events: none → 지도가 터치를 가로채지 않아 페이지 스크롤이 항상 동작(정적 미리보기)
-      style={{ height, borderRadius: 8, overflow: 'hidden', pointerEvents: 'none' }}
+      style={{ height, borderRadius: 8, overflow: 'hidden' }}
     />
   );
 }

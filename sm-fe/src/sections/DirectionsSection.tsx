@@ -6,6 +6,9 @@ import { Modal } from '../components/Modal';
 import { LabelDivider } from '../components/LabelDivider';
 import { SmartImage } from '../components/SmartImage';
 import type { AppLink } from '../content/types';
+import naverIcon from '../assets/nav-icons/navermap.png';
+import tmapIcon from '../assets/nav-icons/tmap.png';
+import kakaoNaviIcon from '../assets/nav-icons/kakaonavi.png';
 
 /** 앱 미설치 시 웹으로 폴백하는 링크 열기 (deep link + web fallback). */
 function openWithFallback(link: AppLink) {
@@ -18,16 +21,21 @@ function openWithFallback(link: AppLink) {
 }
 
 const navBtn = {
-  display: 'inline-flex',
+  flex: 1,
+  minWidth: 0,
+  display: 'flex',
+  flexDirection: 'column',
   alignItems: 'center',
   gap: 6,
-  padding: '10px 14px',
-  borderRadius: 8,
+  padding: '12px 4px',
+  borderRadius: 10,
   border: '1px solid #e0d8ce',
   background: '#fff',
   cursor: 'pointer',
-  fontSize: '0.85rem',
+  fontSize: '0.8rem',
 } as const;
+
+const navIconStyle = { width: 38, height: 38, display: 'block', borderRadius: 8 } as const;
 
 /** FR-08: 오시는 길 (Location 구분선, 카카오 지도, 오시는 길 약도 이미지, 내비 앱 링크). */
 export function DirectionsSection() {
@@ -50,27 +58,14 @@ export function DirectionsSection() {
         {directions.tel && <div style={{ marginTop: 8 }}>Tel. {directions.tel}</div>}
       </div>
 
-      {/* 카카오 지도 (정적 미리보기 — 조작은 아래 '크게 보기'로) */}
+      {/* 카카오 지도 (터치로 이동/확대 가능). 핀 말풍선은 식장명만 짧게 표시 */}
       <KakaoMap
         appkey={directions.kakaoJsKey}
         address={directions.mapQuery ?? directions.address}
-        venueName={directions.venueName}
+        venueName={directions.venueName.split(' ')[0]}
         lat={directions.lat ?? 37.5665}
         lng={directions.lng ?? 126.978}
       />
-      {appLinks.kakaoNavi?.webUrl && (
-        <div style={{ textAlign: 'center', marginTop: 6 }}>
-          <a
-            href={appLinks.kakaoNavi.webUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            data-testid="map-zoom"
-            style={{ fontSize: '0.82rem', color: 'var(--color-muted)', textDecoration: 'underline' }}
-          >
-            카카오맵에서 크게 보기 →
-          </a>
-        </div>
-      )}
 
       {/* 오시는 길 약도 이미지 보기 */}
       {directions.sketchMapImage && (
@@ -93,22 +88,25 @@ export function DirectionsSection() {
         </button>
       )}
 
-      {/* 내비게이션 앱 버튼 */}
+      {/* 내비게이션 앱 버튼 (실제 앱 아이콘, 줄바꿈 없이 가로 꽉 차게) */}
       <div style={{ marginTop: 28 }}>
-        <div style={{ display: 'flex', gap: 8, justifyContent: 'center', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'nowrap' }}>
           {appLinks.naver && (
             <button data-testid="map-naver" style={navBtn} onClick={() => openWithFallback(appLinks.naver!)}>
-              🟢 네이버지도
+              <img src={naverIcon} alt="" style={navIconStyle} />
+              네이버지도
             </button>
           )}
           {appLinks.tmap && (
             <button data-testid="map-tmap" style={navBtn} onClick={() => openWithFallback(appLinks.tmap!)}>
-              🟣 티맵
+              <img src={tmapIcon} alt="" style={navIconStyle} />
+              티맵
             </button>
           )}
           {appLinks.kakaoNavi && (
             <button data-testid="map-kakao" style={navBtn} onClick={() => openWithFallback(appLinks.kakaoNavi!)}>
-              🟡 카카오내비
+              <img src={kakaoNaviIcon} alt="" style={navIconStyle} />
+              카카오내비
             </button>
           )}
         </div>

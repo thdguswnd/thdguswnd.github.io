@@ -64,7 +64,7 @@ function TimelineRow({
       </div>
       <div style={{ fontWeight: 600, margin: '6px 0' }}>{entry.title}</div>
       {entry.description && (
-        <p style={{ fontSize: '0.82rem', color: 'var(--color-muted)', lineHeight: 1.6 }}>
+        <p style={{ fontSize: '0.82rem', color: 'var(--color-muted)', lineHeight: 1.6, whiteSpace: 'pre-line' }}>
           {entry.description}
         </p>
       )}

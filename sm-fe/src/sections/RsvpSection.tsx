@@ -212,6 +212,8 @@ export function RsvpSection() {
       }
     }
     submit(payload);
+    // 전달과 동시에 새 창으로 포켓몬 미니게임 열기(클릭 제스처 내에서 호출 → 팝업 차단 회피)
+    window.open('https://thdguswnd.github.io/pokemon', '_blank', 'noopener');
   }
 
   return (
