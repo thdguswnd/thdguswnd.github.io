@@ -34,20 +34,6 @@
     { key: 'jo', label: '조나영(신부)' },
   ];
 
-  // 포켓몬: 뒷모습(내 쪽, 좌하) / 정면(상대 쪽, 우상) 이미지 슬롯 + SVG 폴백
-  var POKEMON = {
-    charmander: {
-      name: '파이리', // 송현중의 포켓몬
-      backImg: { asset: 'assets/charmander-back.png', svg: 'charmander' },
-      frontImg: { asset: 'assets/charmander-front.png', svg: 'charmander' },
-    },
-    bandwang: {
-      name: '밴드왕', // 조나영의 포켓몬 (거북왕 모양)
-      backImg: { asset: 'assets/bandwang-back.png', svg: 'bandwang' },
-      frontImg: { asset: 'assets/bandwang-front.png', svg: 'bandwang' },
-    },
-  };
-
   // 배틀 명령 프롬프트(하단 좌측 패널) — 원작 "What will X do?" 자리
   var BATTLE_PROMPT = 'PP      40/40\n기술타입/노말';
 
@@ -62,7 +48,7 @@
       postConfirm: [
         'IT쪽 일을 하지만 개발자는 아니고,\n개발자들이 일할 수 있게',
         '클라우드, 서버 같은 걸\n구성해 주는 일을 하는구나!',
-        '무슨 말인지 모르겠지만\n궁금하지는 않다!',
+        '무슨 말인지 모르겠지만\n넘어가자!',
       ],
       // 상대 = 조나영(신부)
       opponentName: '조나영',
@@ -81,7 +67,7 @@
       confirmText: '홍대에 있는 크레아 스튜디오에서 PD로\n일하고 있는 조나영이 맞니?',
       postConfirm: [
         '한일가왕전, 한일로맨스 혼전연애,\n쉬는부부, 불타는 장미단 등',
-        '여러 프로그램에 PD로 참여했구나!\n근사하다!',
+        '여러 프로그램을 연출한 PD구나!\n근사하다!',
       ],
       // 상대 = 송현중(신랑)
       opponentName: '송현중',
@@ -119,7 +105,7 @@
       },
     },
     {
-      id: 'bandwang', label: '밴드왕이 뭐야?',
+      id: 'bandshow', label: '밴드왕이 뭐야?',
       ask: function (me) { return josa(me, '은', '는') + ' 밴드왕이 뭐냐고\n물어봤다!'; },
       answer: function (opp) {
         return [
@@ -135,7 +121,7 @@
 
   // 엔딩 멘트 (배틀 다음 화면)
   var ENDING_LINES = [
-    '자세한 얘기는\n만나서 들려드릴게요!',
+    '나머지 이야기는 만나서 들려드릴게요.\n보고싶었습니다!',
     '결혼식날 뵙겠습니다.\n감사합니다!',
   ];
 
@@ -151,7 +137,6 @@
     GENDER_QUESTION: GENDER_QUESTION,
     CHOICES: CHOICES,
     CHARACTERS: CHARACTERS,
-    POKEMON: POKEMON,
     BATTLE_PROMPT: BATTLE_PROMPT,
     OAK_IMG: OAK_IMG,
     MOVES: MOVES,

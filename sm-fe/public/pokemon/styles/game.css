@@ -145,8 +145,13 @@ html, body {
   padding: .45em .5em; z-index: 22;
 }
 .choice-box.hidden, .yesno-box.hidden { display: none; }
-/* 엔딩 팝업은 가운데 상단(대화창 위)으로 */
-#end-menu { left: 50%; right: auto; transform: translateX(-50%); bottom: 32%; }
+/* 엔딩 팝업: 대화창 오른쪽 위에 붙여 가로로 (다시 시작 / 끝내기) */
+#end-menu {
+  left: auto; right: 3%; transform: none; bottom: 29.5%;
+  display: flex; flex-direction: row; gap: .2em;
+}
+#end-menu.hidden { display: none; }
+#end-menu .choice-item { padding: .28em .5em .28em 1.2em; }
 .choice-item {
   display: flex; align-items: center;
   padding: .28em .6em .28em 1.3em;
@@ -189,6 +194,8 @@ html, body {
   from { transform: translateX(120%); }
   to   { transform: translateX(-260%); }
 }
+/* 배틀 자리 잡은 뒤에는 움직이는 스트릭 제거(정적 배경만) */
+.battle-bg.settled .streak { display: none; }
 
 /* 트레이너/포켓몬 배치 영역 */
 .enemy-area, .ally-area {
