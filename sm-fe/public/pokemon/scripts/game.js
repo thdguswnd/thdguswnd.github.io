@@ -39,6 +39,8 @@
     el.allyHpName = $('ally-hp-name');
     el.enemyHpGender = $('enemy-hp-gender');
     el.allyHpGender = $('ally-hp-gender');
+    el.enemyHpLevel = $('enemy-hp-level');
+    el.allyHpLevel = $('ally-hp-level');
     el.enemyHpFill = $('enemy-hp-fill');
     el.allyHpFill = $('ally-hp-fill');
     el.allyHpValue = $('ally-hp-value');
@@ -290,10 +292,14 @@
     el.battleBg.classList.add('settled'); // 자리 잡으면 정적 배경(스트릭 제거)
     // 포켓몬 없이 트레이너끼리 직접 진행
     showMessages([ch.battleIntro], function () {
+      var opp = CHARACTERS[ch.opponentKey];
       el.enemyHpName.textContent = ch.opponentName;
       el.allyHpName.textContent = ch.name;
       setGender(el.enemyHpGender, ch.opponentKey);
       setGender(el.allyHpGender, ch.key);
+      // 레벨은 인물 고정: 송현중 Lv.37 / 조나영 Lv.30 (누구를 선택하든 동일)
+      if (el.enemyHpLevel) el.enemyHpLevel.textContent = 'Lv.' + opp.level;
+      if (el.allyHpLevel) el.allyHpLevel.textContent = 'Lv.' + ch.level;
       updateBars();
       el.enemyHpBox.classList.remove('hidden-v');
       el.allyHpBox.classList.remove('hidden-v');
@@ -353,21 +359,29 @@
     });
   }
 
-  // 송현중 체력 0: 송현중 캐릭터가 아래로 사라지며 마무리 후 엔딩
+  // 송현중 체력 0: 송현중이 "제자리에서" 아래로 가라앉으며 사라짐.
+  // 영역 안에서 클립(overflow:hidden) → 화면을 가로지르거나 대화창 밑으로 다시 보이지 않음.
   function songDown() {
     var songArea = (state.charKey === 'song') ? el.allyArea : el.enemyArea;
-    songArea.style.transition = 'transform .6s ease, opacity .6s ease';
-    songArea.style.transform = 'translateY(120%)';
-    songArea.style.opacity = '0';
+    songArea.style.overflow = 'hidden';
+    var sprite = songArea.firstElementChild; // img 또는 svg
+    if (sprite) {
+      sprite.style.transition = 'transform .55s ease, opacity .55s ease';
+      sprite.style.transform = 'translateY(130%)';
+      sprite.style.opacity = '0';
+    } else {
+      songArea.style.transition = 'opacity .4s ease';
+      songArea.style.opacity = '0';
+    }
     showMessages(['준비된 질문이 끝났다!'], toEnding);
   }
 
-  // 도망친다: 나(좌하)가 왼쪽으로 사라지고 → 엔딩으로
+  // 도망친다: 나(좌하)가 왼쪽 화면 밖으로 "수평 이동"해서 걸어 나감(사라지듯 팟 하고 없어지지 않게)
   function fleeSequence() {
     state.busy = true;
-    el.allyArea.style.transition = 'transform .5s ease, opacity .5s ease';
-    el.allyArea.style.transform = 'translateX(-340%)';
-    el.allyArea.style.opacity = '0';
+    el.cmdBar.classList.add('hidden');
+    el.allyArea.style.transition = 'transform .6s ease-in';
+    el.allyArea.style.transform = 'translateX(-320%)'; // 폭의 320% → 화면 왼쪽 밖으로
     showMessages(['질문을 그만두고\n도망쳤다!'], toEnding);
   }
 

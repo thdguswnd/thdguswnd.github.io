@@ -42,6 +42,7 @@
       key: 'song',
       name: '송현중',
       gender: '신랑',
+      level: 37,
       opponentKey: 'jo',
       confirmText: '마곡에 있는 LG CNS에서 인프라 아키텍트로\n일하고 있는 송현중이 맞니?',
       // '네' 선택 후 오박사 반응
@@ -63,6 +64,7 @@
       key: 'jo',
       name: '조나영',
       gender: '신부',
+      level: 30,
       opponentKey: 'song',
       confirmText: '홍대에 있는 크레아 스튜디오에서 PD로\n일하고 있는 조나영이 맞니?',
       postConfirm: [
@@ -86,7 +88,7 @@
   // 각 질문: ask(me) = 선택한 사람이 물음(공격), answer(opp) = 안 선택한 사람이 대답(반격, 배열=여러 줄)
   var MOVES = [
     {
-      id: 'newhome', label: '신혼집 어디야?',
+      id: 'newhome', label: '신혼집',
       ask: function (me) { return josa(me, '은', '는') + ' 신혼집을 어디에 구했는지\n물어봤다!'; },
       answer: function (opp) {
         return [
@@ -95,7 +97,7 @@
       },
     },
     {
-      id: 'honeymoon', label: '신혼여행 어디가?',
+      id: 'honeymoon', label: '신혼여행',
       ask: function (me) { return josa(me, '은', '는') + ' 신혼여행을 어디 가는지\n물어봤다!'; },
       answer: function (opp) {
         return [
@@ -105,7 +107,7 @@
       },
     },
     {
-      id: 'bandshow', label: '밴드왕이 뭐야?',
+      id: 'bandshow', label: '밴드왕',
       ask: function (me) { return josa(me, '은', '는') + ' 밴드왕이 뭐냐고\n물어봤다!'; },
       answer: function (opp) {
         return [
@@ -121,7 +123,7 @@
 
   // 엔딩 멘트 (배틀 다음 화면)
   var ENDING_LINES = [
-    '나머지 이야기는 만나서 들려드릴게요.\n보고싶었습니다!',
+    '나머지 이야기는\n만나서 들려드릴게요.',
     '결혼식날 뵙겠습니다.\n감사합니다!',
   ];
 

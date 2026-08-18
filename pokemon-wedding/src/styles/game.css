@@ -145,10 +145,11 @@ html, body {
   padding: .45em .5em; z-index: 22;
 }
 .choice-box.hidden, .yesno-box.hidden { display: none; }
-/* 엔딩 팝업: 대화창 오른쪽 위에 붙여 가로로 (다시 시작 / 끝내기) */
+/* 엔딩 팝업: 대화창 위에 겹쳐 오른쪽 아래로, 가로 (다시 시작 / 끝내기) */
 #end-menu {
-  left: auto; right: 3%; transform: none; bottom: 29.5%;
+  left: auto; right: 3.5%; transform: none; bottom: 5%;
   display: flex; flex-direction: row; gap: .2em;
+  z-index: 30; /* 대화창(z20) 위에 겹치게 */
 }
 #end-menu.hidden { display: none; }
 #end-menu .choice-item { padding: .28em .5em .28em 1.2em; }
@@ -181,9 +182,9 @@ html, body {
 .battle-bg {
   position: absolute; inset: 0; overflow: hidden;
   background:
-    repeating-linear-gradient(180deg, rgba(255, 248, 141, .65) 0 5px, rgba(255, 248, 141, 0) 5px 28px),
-    repeating-linear-gradient(180deg, rgba(144, 201, 219, .12) 0 4px, rgba(144, 201, 219, 0) 4px 24px),
-    linear-gradient(180deg, #fff7c9 0%, #fffefa 11%, #f8fbfa 44%, #eef8f7 100%);
+    linear-gradient(180deg, rgba(255, 246, 111, .68) 0%, rgba(255, 252, 187, .34) 5%, rgba(255, 252, 187, 0) 14%),
+    repeating-linear-gradient(180deg, rgba(182, 207, 203, .28) 0 3px, rgba(182, 207, 203, 0) 3px 14px),
+    linear-gradient(180deg, #fbfbf1 0%, #f4f6f3 22%, #edf4f2 58%, #e7f0ee 100%);
 }
 .streak {
   position: absolute; height: 2.2%;
@@ -267,31 +268,34 @@ html, body {
 .cmd-bar.hidden { display: none; }
 .cmd-prompt {
   order: 1;
-  flex: 0 0 50%;
+  flex: 0 0 42%;
+  min-width: 0;
   background: var(--bdlg-fill);
   border: 4px solid var(--bdlg-gold); border-radius: 3px;
   box-shadow: inset 0 0 0 5px #e8edf1;
-  padding: .85em .9em; color: #f2f6fa;
+  padding: .7em .75em; color: #f2f6fa;
   display: flex; align-items: flex-start;
   white-space: pre-line;
-  font-size: 1.08em;
-  line-height: 1.55;
+  font-size: 1em;
+  line-height: 1.5;
 }
 .move-menu {
   order: 2;
   flex: 1 1 auto;
+  min-width: 0;
   background: #fff;
   border: 4px solid #6d6a98; border-radius: 3px;
   box-shadow: inset 0 0 0 5px #eceaf7;
-  padding: .75em 1em;
+  padding: .55em .55em;
   display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr;
-  gap: .05em 1.25em;
+  gap: .05em .5em;
 }
 .move-menu.hidden { display: none; }
 .move-item {
-  display: flex; align-items: center; padding-left: 1.1em;
+  display: flex; align-items: center; padding-left: 1em;
   position: relative; cursor: pointer; color: #4b4d48;
-  font-size: 1.02em; white-space: nowrap;
+  font-size: .88em; line-height: 1.12;
+  white-space: normal; word-break: keep-all; min-width: 0;
 }
 .move-item::before {
   content: ''; position: absolute; left: .1em; top: 50%;
@@ -306,11 +310,12 @@ html, body {
   background: linear-gradient(#ffffff 0%, #fdf3f6 70%, #f6e6ec 100%);
 }
 .couple {
-  position: absolute; bottom: 16%; width: 30%; height: 60%;
+  position: absolute; bottom: 16%; width: 34%; height: 60%;
   display: flex; align-items: flex-end; justify-content: center;
 }
-#couple-left { left: 19%; }   /* 신랑 송현중 */
-#couple-right { right: 19%; } /* 신부 조나영 */
+/* 겹쳐서 나란히: 신랑(뒤) 뒤쪽, 신부(앞) 앞쪽. 머리가 거의 붙게 가깝게 배치 */
+#couple-left  { left: 27%; right: auto; z-index: 1; }  /* 신랑 송현중 (뒤) */
+#couple-right { left: 39%; right: auto; z-index: 2; }  /* 신부 조나영 (앞) */
 
 /* ===================== 전환 연출 오버레이 ===================== */
 /* 흰 화면 fade (엔딩 진입) */
