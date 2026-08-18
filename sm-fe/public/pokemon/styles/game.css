@@ -15,11 +15,11 @@
   --dlg-border2: #cddcee;
   --dlg-text: #4a4a4a;
   /* 배틀 대화창(골드/네이비) */
-  --bdlg-fill: #16496a;
-  --bdlg-gold: #d9a441;
+  --bdlg-fill: #255873;
+  --bdlg-gold: #d9b348;
   --bdlg-text: #f2f6fa;
   /* HP */
-  --hp-green: #58c153; --hp-yellow: #f0c33c; --hp-red: #e0574a; --hp-track: #3a3a3a;
+  --hp-green: #54d58a; --hp-yellow: #f0c33c; --hp-red: #e0574a; --hp-track: #e7efe7;
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -56,20 +56,41 @@ html, body {
 /* 배경: 위 밝은 민트 → 지평선 → 아래 청록 (스샷1) */
 #scene-intro {
   background:
-    linear-gradient(#e9f4ef 0%, #d8ede4 46%, #cfe7dd 61%,
-      #74b6a6 61%, #5aa294 74%, #3f8579 100%);
+    linear-gradient(180deg,
+      #e7f4ee 0%,
+      #deefe8 50%,
+      #b9dcd2 53%,
+      #a7d1c6 55%,
+      #84bdaf 59%,
+      #58a093 64%,
+      #3f887b 100%);
+}
+#scene-intro::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 52%;
+  height: 13%;
+  background: repeating-linear-gradient(
+    180deg,
+    rgba(232, 250, 241, .55) 0 8%,
+    rgba(124, 187, 174, .35) 8% 24%
+  );
 }
 .platform {
-  position: absolute; left: 50%; bottom: 30%;
-  width: 46%; height: 9%;
+  position: absolute; left: 50%; bottom: 25%;
+  width: 38%; height: 13%;
   transform: translateX(-50%);
-  background: radial-gradient(ellipse at center, #e9f6ef 0%, #cfe8dd 70%, rgba(207,232,221,0) 72%);
+  background:
+    radial-gradient(ellipse at center, #e8fff2 0 44%, #d8f3e6 45% 57%, #abd9ca 58% 70%, rgba(171,217,202,0) 72%);
   border-radius: 50%;
+  filter: blur(.2px);
 }
 /* 캐릭터 슬롯(오박사/선택캐릭터 공용) — 발판 위에 서 있게 */
 #char-slot {
-  position: absolute; left: 50%; bottom: 32%;
-  width: 24%; height: 52%;
+  position: absolute; left: 50%; bottom: 28%;
+  width: 24%; height: 54%;
   transform: translateX(-50%);
   opacity: 0; transition: opacity .55s ease;
   display: flex; align-items: flex-end; justify-content: center;
@@ -142,7 +163,7 @@ html, body {
 .choice-item:active { background: #eef1f6; }
 
 /* ===================== 배틀 장면 ===================== */
-#scene-battle { background: #f7f8f2; overflow: hidden; }
+#scene-battle { background: #fbfbf2; overflow: hidden; }
 /* 배틀 열림 클립(가운데 가로선 → 위아래로) */
 #scene-battle.opening { animation: openBattle .5s ease forwards; }
 @keyframes openBattle {
@@ -154,8 +175,9 @@ html, body {
 .battle-bg {
   position: absolute; inset: 0; overflow: hidden;
   background:
-    repeating-linear-gradient(0deg, rgba(150,190,230,.08) 0 2px, transparent 2px 9px),
-    linear-gradient(#fbf6dc 0%, #fdfdfa 14%, #eef4f6 100%);
+    repeating-linear-gradient(180deg, rgba(255, 248, 141, .65) 0 5px, rgba(255, 248, 141, 0) 5px 28px),
+    repeating-linear-gradient(180deg, rgba(144, 201, 219, .12) 0 4px, rgba(144, 201, 219, 0) 4px 24px),
+    linear-gradient(180deg, #fff7c9 0%, #fffefa 11%, #f8fbfa 44%, #eef8f7 100%);
 }
 .streak {
   position: absolute; height: 2.2%;
@@ -172,33 +194,50 @@ html, body {
 .enemy-area, .ally-area {
   position: absolute; transition: transform .55s ease, opacity .4s ease;
 }
-.enemy-area { right: 5%; top: 7%; width: 26%; height: 40%; }
-.ally-area  { left: 5%;  bottom: 29%; width: 32%; height: 44%; }
+.enemy-area { left: 20%; top: 8%; width: 18%; height: 38%; z-index: 3; }
+.ally-area  { right: 14%; bottom: 27%; width: 22%; height: 39%; z-index: 3; }
+#scene-battle.is-fighting .enemy-area { left: auto; right: 9%; top: 20%; width: 22%; height: 32%; }
+#scene-battle.is-fighting .ally-area  { right: auto; left: 15%; bottom: 25%; width: 26%; height: 35%; }
 /* 슬라이드 시작 오프셋(우상=오른쪽에서, 좌하=왼쪽에서 들어옴은 JS에서 지정) */
 
 /* 발판(배틀) */
 .b-platform {
   position: absolute; border-radius: 50%;
-  background: radial-gradient(ellipse at center, rgba(180,205,195,.55), rgba(180,205,195,0) 72%);
+  background:
+    radial-gradient(ellipse at center, rgba(255,255,255,.92) 0 45%, rgba(232,236,234,.72) 46% 61%, rgba(204,213,212,.46) 62% 73%, rgba(204,213,212,0) 74%);
 }
-.b-platform.enemy { right: 4%; top: 40%; width: 30%; height: 8%; }
-.b-platform.ally  { left: 3%; bottom: 26%; width: 36%; height: 9%; }
+.b-platform.enemy { left: 2%; top: 29%; width: 54%; height: 18%; }
+.b-platform.ally  { right: -4%; bottom: 23%; width: 46%; height: 12%; }
+#scene-battle.is-fighting .b-platform.enemy { left: auto; right: 4%; top: 32%; width: 46%; height: 15%; }
+#scene-battle.is-fighting .b-platform.ally  { right: auto; left: -3%; bottom: 21%; width: 52%; height: 15%; }
 
 /* HP 박스 */
 .hp-box {
-  position: absolute; background: #f7f4e6;
-  border: 3px solid #4a5540; border-radius: 6px;
-  padding: .3em .55em; min-width: 33%; z-index: 8;
+  position: absolute;
+  background: #fffde0;
+  border: 4px solid #405940;
+  border-radius: 9px 9px 4px 9px;
+  box-shadow: 7px 9px 0 #536c62;
+  padding: .12em .35em .22em .55em;
+  min-width: 38%;
+  z-index: 8;
+  color: #4b4d48;
 }
-.hp-box.enemy { left: 4%; top: 6%; }
-.hp-box.ally  { right: 4%; bottom: 29%; }
+.hp-box.enemy { left: 5%; top: 9%; }
+.hp-box.ally  { right: 6%; bottom: 32%; min-width: 40%; border-radius: 9px 9px 9px 4px; }
 .hp-box.hidden-v { visibility: hidden; }
-.hp-name { font-size: .82em; margin-bottom: .18em; color: #33372c; }
-.hp-row { display: flex; align-items: center; gap: .35em; }
-.hp-label { color: #c99a1e; font-size: .7em; font-weight: bold; }
-.hp-track { flex: 1; height: .55em; background: var(--hp-track); border-radius: 3px; border: 1px solid #222; overflow: hidden; }
-.hp-fill { height: 100%; width: 100%; background: var(--hp-green); transition: width .5s ease, background .3s ease; }
+.hp-top { display: flex; align-items: baseline; gap: .18em; line-height: 1; }
+.hp-name { font-size: 1.35em; color: #4b4d48; letter-spacing: 0; }
+.hp-gender { color: #40bfe5; font-size: .85em; }
+.hp-level { margin-left: auto; font-size: 1.02em; color: #4b4d48; }
+.hp-row { display: flex; align-items: center; gap: .16em; margin-left: 23%; margin-top: .1em; }
+.hp-label { color: #f0a424; font-size: .88em; font-weight: bold; line-height: 1; text-shadow: 1px 0 #405940; }
+.hp-track { flex: 1; height: .58em; background: var(--hp-track); border-radius: 9px; border: 2px solid #5a6d55; overflow: hidden; box-shadow: inset 0 0 0 2px #f9fbef; }
+.hp-fill { height: 100%; width: 100%; background: linear-gradient(#70efaa, var(--hp-green)); transition: width .5s ease, background .3s ease; }
 .hp-fill.mid { background: var(--hp-yellow); } .hp-fill.low { background: var(--hp-red); }
+.hp-value { text-align: right; font-size: 1.04em; line-height: 1; padding-right: .35em; margin-top: .1em; }
+.exp-row { display: flex; align-items: center; gap: .2em; margin-left: 10%; margin-top: .1em; color: #f4ce29; font-size: .7em; line-height: 1; }
+.exp-row i { display: block; flex: 1; height: .28em; background: repeating-linear-gradient(90deg, #d7cd81 0 4px, #fff3a7 4px 6px); }
 
 /* 공격 연출 */
 @keyframes shake { 0%,100%{transform:translateX(0);} 20%{transform:translateX(-6%);} 40%{transform:translateX(6%);} 60%{transform:translateX(-4%);} 80%{transform:translateX(4%);} }
@@ -208,32 +247,38 @@ html, body {
 
 /* 배틀 명령 바: 좌 프롬프트 패널 + 우 4보기 패널 (스샷1) */
 .cmd-bar {
-  position: absolute; left: 2.5%; right: 2.5%; bottom: 3.2%; height: 25%;
-  display: flex; gap: 2%; z-index: 21;
+  position: absolute; left: 0; right: 0; bottom: 0; height: 29%;
+  display: flex; gap: 1.5%; z-index: 21;
+  padding: .5% .45%;
+  background: #263c43;
 }
 .cmd-bar.hidden { display: none; }
 .cmd-prompt {
-  flex: 0 0 40%;
-  background: var(--bdlg-fill);
-  border: 4px solid var(--bdlg-gold); border-radius: 8px;
-  box-shadow: inset 0 0 0 3px var(--bdlg-fill), inset 0 0 0 5px #eef2f6;
-  padding: .6em .8em; color: var(--bdlg-text);
+  order: 2;
+  flex: 0 0 31%;
+  background: #fff;
+  border: 4px solid #6d6a98; border-radius: 3px;
+  box-shadow: inset 0 0 0 5px #eceaf7;
+  padding: .8em .8em; color: #4b4d48;
   display: flex; align-items: flex-start;
+  white-space: pre-line;
+  font-size: 1.08em;
 }
 .move-menu {
+  order: 1;
   flex: 1 1 auto;
-  background: var(--bdlg-fill);
-  border: 4px solid var(--bdlg-gold); border-radius: 8px;
-  box-shadow: inset 0 0 0 3px var(--bdlg-fill), inset 0 0 0 5px #eef2f6;
-  padding: .5em .6em;
+  background: #fff;
+  border: 4px solid #6d6a98; border-radius: 3px;
+  box-shadow: inset 0 0 0 5px #eceaf7;
+  padding: .82em 1.1em;
   display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr;
-  gap: .05em .5em;
+  gap: .05em 1.6em;
 }
 .move-menu.hidden { display: none; }
 .move-item {
   display: flex; align-items: center; padding-left: 1.1em;
-  position: relative; cursor: pointer; color: var(--bdlg-text);
-  font-size: .82em; white-space: nowrap;
+  position: relative; cursor: pointer; color: #4b4d48;
+  font-size: 1.08em; white-space: nowrap;
 }
 .move-item::before {
   content: ''; position: absolute; left: .1em; top: 50%;

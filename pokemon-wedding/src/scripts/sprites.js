@@ -15,69 +15,27 @@
     );
   }
 
-  // 오박사 — 흰 가운 + 회색 머리
-  var oak = wrap('0 0 80 104',
-    // 몸통(가운)
-    '<path d="M40 48 L14 100 L66 100 Z" fill="#f6f8fa" stroke="#9aa0a6" stroke-width="2"/>' +
-    '<line x1="40" y1="48" x2="40" y2="100" stroke="#c7ccd1" stroke-width="2"/>' +
-    // 팔
-    '<path d="M22 58 L10 84" stroke="#e9edf1" stroke-width="8" stroke-linecap="round"/>' +
-    '<path d="M58 58 L70 84" stroke="#e9edf1" stroke-width="8" stroke-linecap="round"/>' +
-    // 넥타이 살짝
-    '<path d="M40 50 l-4 10 4 6 4-6 z" fill="#c0392b"/>' +
-    // 얼굴
-    '<circle cx="40" cy="30" r="15" fill="#f3caa0" stroke="#b98a5e" stroke-width="2"/>' +
-    // 회색 머리
-    '<path d="M24 26 Q40 4 56 26 Q54 14 40 13 Q26 14 24 26 Z" fill="#cfd3d8" stroke="#a7abb0" stroke-width="2"/>' +
-    '<path d="M23 27 q-4 6 0 12" fill="none" stroke="#cfd3d8" stroke-width="4" stroke-linecap="round"/>' +
-    '<path d="M57 27 q4 6 0 12" fill="none" stroke="#cfd3d8" stroke-width="4" stroke-linecap="round"/>' +
-    // 눈/눈썹
-    '<circle cx="34" cy="30" r="2.4" fill="#2b2b2b"/>' +
-    '<circle cx="46" cy="30" r="2.4" fill="#2b2b2b"/>' +
-    '<path d="M30 24 h8 M42 24 h8" stroke="#8a8f94" stroke-width="2" stroke-linecap="round"/>'
-  );
-
-  // 잉어킹(오마주) — 주황 물고기, 큰 입술, 노란 수염
-  var magikarp = wrap('0 0 128 92',
-    // 꼬리지느러미
-    '<path d="M96 46 L126 18 L118 46 L126 74 Z" fill="#f7c14b" stroke="#3a2a12" stroke-width="3" stroke-linejoin="round"/>' +
-    // 몸통
-    '<ellipse cx="56" cy="48" rx="46" ry="27" fill="#f28c1e" stroke="#3a2a12" stroke-width="3"/>' +
-    // 등지느러미
-    '<path d="M44 23 L58 5 L72 23 Z" fill="#f7c14b" stroke="#3a2a12" stroke-width="3" stroke-linejoin="round"/>' +
-    // 가슴지느러미
-    '<path d="M52 63 L46 86 L70 70 Z" fill="#f7c14b" stroke="#3a2a12" stroke-width="3" stroke-linejoin="round"/>' +
-    // 비늘 곡선
-    '<path d="M40 26 Q62 48 40 70" fill="none" stroke="#d5761a" stroke-width="3"/>' +
-    // 입술
-    '<ellipse cx="15" cy="53" rx="13" ry="9" fill="#f6d9a0" stroke="#3a2a12" stroke-width="3"/>' +
-    '<path d="M4 53 h22" stroke="#3a2a12" stroke-width="2"/>' +
-    // 수염(바벨)
-    '<path d="M9 61 q-7 9 -3 19" fill="none" stroke="#f7c14b" stroke-width="4" stroke-linecap="round"/>' +
-    '<path d="M22 63 q-3 11 -12 17" fill="none" stroke="#f7c14b" stroke-width="4" stroke-linecap="round"/>' +
-    // 눈
-    '<circle cx="36" cy="38" r="9" fill="#ffffff" stroke="#3a2a12" stroke-width="3"/>' +
-    '<circle cx="36" cy="38" r="4" fill="#3a2a12"/>'
-  );
-
-  // 밴드왕(거북왕 오마주) — 파란 거북 + 갈색 등껍질 + 어깨 대포
-  var bandwang = wrap('0 0 120 104',
-    // 뒷다리/발
-    '<ellipse cx="44" cy="94" rx="13" ry="9" fill="#79c2d4" stroke="#1c3a44" stroke-width="3"/>' +
-    '<ellipse cx="88" cy="94" rx="13" ry="9" fill="#79c2d4" stroke="#1c3a44" stroke-width="3"/>' +
-    // 등껍질
-    '<ellipse cx="66" cy="58" rx="46" ry="36" fill="#8a5a2b" stroke="#3a2412" stroke-width="3"/>' +
-    '<path d="M28 58 h76 M66 24 v68 M40 34 L92 82 M92 34 L40 82" stroke="#6d4520" stroke-width="2" fill="none"/>' +
-    // 어깨 대포
-    '<rect x="86" y="30" width="26" height="13" rx="4" fill="#aab2ba" stroke="#1c3a44" stroke-width="3"/>' +
-    '<rect x="86" y="60" width="26" height="13" rx="4" fill="#aab2ba" stroke="#1c3a44" stroke-width="3"/>' +
-    // 머리
-    '<circle cx="26" cy="50" r="19" fill="#79c2d4" stroke="#1c3a44" stroke-width="3"/>' +
-    // 눈
-    '<circle cx="18" cy="45" r="3.4" fill="#12303a"/>' +
-    '<circle cx="31" cy="45" r="3.4" fill="#12303a"/>' +
-    // 입
-    '<path d="M15 57 q10 6 20 0" fill="none" stroke="#12303a" stroke-width="2.5" stroke-linecap="round"/>'
+  // 박사 — 밝은 머리 + 흰 가운 + 보라 셔츠(오리지널 도트풍)
+  var oak = wrap('0 0 96 128',
+    '<path d="M36 118 h17 v7 H34 Z" fill="#3f2920"/>' +
+    '<path d="M62 118 h17 v7 H60 Z" fill="#3f2920"/>' +
+    '<path d="M38 70 h18 l-3 50 H36 Z" fill="#978146" stroke="#57492f" stroke-width="3"/>' +
+    '<path d="M58 70 h18 l5 50 H62 Z" fill="#8f793f" stroke="#57492f" stroke-width="3"/>' +
+    '<path d="M36 46 h40 l-4 32 H40 Z" fill="#7661ac" stroke="#493c77" stroke-width="3"/>' +
+    '<path d="M34 45 L16 62 L23 115 H45 L47 74 L49 115 H75 L82 62 L64 45 L57 55 L48 52 L39 55 Z" fill="#f7fbff" stroke="#627089" stroke-width="3"/>' +
+    '<path d="M38 55 L28 82 L22 80 L30 51 Z" fill="#dbe8f5"/>' +
+    '<path d="M62 55 L72 83 L80 78 L67 51 Z" fill="#dbe8f5"/>' +
+    '<path d="M20 78 L9 84 L4 80 L16 69 Z" fill="#f2c49f" stroke="#71442e" stroke-width="3"/>' +
+    '<path d="M7 78 l-6 5 M12 75 l-5 -7" stroke="#71442e" stroke-width="2" stroke-linecap="round"/>' +
+    '<path d="M75 78 L88 82 L91 75 L78 68 Z" fill="#f2c49f" stroke="#71442e" stroke-width="3"/>' +
+    '<path d="M42 42 h24 v15 H42 Z" fill="#eab68e" stroke="#6d442f" stroke-width="3"/>' +
+    '<path d="M31 19 L26 32 L31 47 L43 55 H61 L73 47 L78 32 L72 19 L62 12 H41 Z" fill="#f0c49d" stroke="#6d442f" stroke-width="3"/>' +
+    '<path d="M28 21 h8 v-7 h10 V8 h22 v5 h8 v10 h5 v14 h-8 V26 H34 v11 h-7 Z" fill="#d9d1a5" stroke="#7d7658" stroke-width="3"/>' +
+    '<path d="M32 26 h8 v-5 h18 v4 h14 v7 H55 v4 H38 v-4 h-6 Z" fill="#eee7bb"/>' +
+    '<rect x="39" y="34" width="6" height="6" fill="#443232"/>' +
+    '<rect x="61" y="34" width="6" height="6" fill="#443232"/>' +
+    '<path d="M43 49 q10 7 20 0" fill="none" stroke="#7b4938" stroke-width="3" stroke-linecap="round"/>' +
+    '<path d="M37 29 h10 M59 29 h11" stroke="#5d4d3a" stroke-width="3" stroke-linecap="round"/>'
   );
 
   // 예비 신부 — 흰 드레스 + 면사포 + 부케
@@ -181,37 +139,8 @@
     '<ellipse cx="40" cy="22" rx="18" ry="7" fill="#ffffff" stroke="#c9ced6" stroke-width="2"/>'
   );
 
-  // 파이리(오마주) — 주황 도마뱀 + 꼬리 불꽃 (오리지널, 실제 스프라이트 아님)
-  var charmander = wrap('0 0 110 122',
-    // 꼬리 + 불꽃
-    '<path d="M78 86 Q104 84 100 60" fill="none" stroke="#e07a1e" stroke-width="9" stroke-linecap="round"/>' +
-    '<path d="M100 62 q-9 -16 3 -26 q2 12 10 12 q-2 12 -13 14 Z" fill="#ff8a1e" stroke="#e0651a" stroke-width="2"/>' +
-    '<path d="M101 58 q-4 -9 2 -15 q1 7 6 7 q-1 7 -8 8 Z" fill="#ffd24a"/>' +
-    // 다리
-    '<ellipse cx="42" cy="106" rx="11" ry="8" fill="#f2952a" stroke="#c26f16" stroke-width="2"/>' +
-    '<ellipse cx="66" cy="106" rx="11" ry="8" fill="#f2952a" stroke="#c26f16" stroke-width="2"/>' +
-    // 몸통
-    '<ellipse cx="54" cy="74" rx="26" ry="30" fill="#f79a2b" stroke="#c26f16" stroke-width="2.5"/>' +
-    // 배(크림)
-    '<ellipse cx="54" cy="82" rx="15" ry="18" fill="#ffe0a6"/>' +
-    // 팔
-    '<path d="M32 70 q-8 4 -8 12" fill="none" stroke="#f79a2b" stroke-width="7" stroke-linecap="round"/>' +
-    '<path d="M76 70 q8 4 8 12" fill="none" stroke="#f79a2b" stroke-width="7" stroke-linecap="round"/>' +
-    // 머리
-    '<circle cx="54" cy="40" r="24" fill="#f79a2b" stroke="#c26f16" stroke-width="2.5"/>' +
-    // 눈
-    '<ellipse cx="45" cy="37" rx="4.5" ry="6" fill="#fff"/><circle cx="45" cy="38" r="2.6" fill="#1f2933"/>' +
-    '<ellipse cx="63" cy="37" rx="4.5" ry="6" fill="#fff"/><circle cx="63" cy="38" r="2.6" fill="#1f2933"/>' +
-    // 콧구멍/입
-    '<circle cx="50" cy="47" r="1.2" fill="#8a5216"/><circle cx="58" cy="47" r="1.2" fill="#8a5216"/>' +
-    '<path d="M47 52 q7 5 14 0" fill="none" stroke="#8a5216" stroke-width="2" stroke-linecap="round"/>'
-  );
-
   window.GAME_SPRITES = {
     oak: oak,
-    magikarp: magikarp,
-    charmander: charmander,
-    bandwang: bandwang,
     bride: bride,
     groom: groom,
     trainerMaleFront: trainerMaleFront,

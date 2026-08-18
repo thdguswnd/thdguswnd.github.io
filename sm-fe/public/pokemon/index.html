@@ -26,7 +26,11 @@
         <div class="b-platform ally"></div>
 
         <div id="enemy-hp-box" class="hp-box enemy hidden-v">
-          <div id="enemy-hp-name" class="hp-name"></div>
+          <div class="hp-top">
+            <span id="enemy-hp-name" class="hp-name"></span>
+            <span class="hp-gender">♂</span>
+            <span class="hp-level">Lv.5</span>
+          </div>
           <div class="hp-row"><span class="hp-label">HP</span>
             <div class="hp-track"><div id="enemy-hp-fill" class="hp-fill"></div></div></div>
         </div>
@@ -35,9 +39,15 @@
         <div id="ally-area" class="ally-area sprite-wrap"></div>
 
         <div id="ally-hp-box" class="hp-box ally hidden-v">
-          <div id="ally-hp-name" class="hp-name"></div>
+          <div class="hp-top">
+            <span id="ally-hp-name" class="hp-name"></span>
+            <span class="hp-gender">♂</span>
+            <span class="hp-level">Lv.5</span>
+          </div>
           <div class="hp-row"><span class="hp-label">HP</span>
-            <div class="hp-track"><div class="hp-fill"></div></div></div>
+            <div class="hp-track"><div id="ally-hp-fill" class="hp-fill"></div></div></div>
+          <div id="ally-hp-value" class="hp-value">20 / 20</div>
+          <div class="exp-row"><span>EXP</span><i></i></div>
         </div>
       </div>
 

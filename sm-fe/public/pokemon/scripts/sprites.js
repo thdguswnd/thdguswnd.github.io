@@ -15,26 +15,27 @@
     );
   }
 
-  // 오박사 — 흰 가운 + 회색 머리
-  var oak = wrap('0 0 80 104',
-    // 몸통(가운)
-    '<path d="M40 48 L14 100 L66 100 Z" fill="#f6f8fa" stroke="#9aa0a6" stroke-width="2"/>' +
-    '<line x1="40" y1="48" x2="40" y2="100" stroke="#c7ccd1" stroke-width="2"/>' +
-    // 팔
-    '<path d="M22 58 L10 84" stroke="#e9edf1" stroke-width="8" stroke-linecap="round"/>' +
-    '<path d="M58 58 L70 84" stroke="#e9edf1" stroke-width="8" stroke-linecap="round"/>' +
-    // 넥타이 살짝
-    '<path d="M40 50 l-4 10 4 6 4-6 z" fill="#c0392b"/>' +
-    // 얼굴
-    '<circle cx="40" cy="30" r="15" fill="#f3caa0" stroke="#b98a5e" stroke-width="2"/>' +
-    // 회색 머리
-    '<path d="M24 26 Q40 4 56 26 Q54 14 40 13 Q26 14 24 26 Z" fill="#cfd3d8" stroke="#a7abb0" stroke-width="2"/>' +
-    '<path d="M23 27 q-4 6 0 12" fill="none" stroke="#cfd3d8" stroke-width="4" stroke-linecap="round"/>' +
-    '<path d="M57 27 q4 6 0 12" fill="none" stroke="#cfd3d8" stroke-width="4" stroke-linecap="round"/>' +
-    // 눈/눈썹
-    '<circle cx="34" cy="30" r="2.4" fill="#2b2b2b"/>' +
-    '<circle cx="46" cy="30" r="2.4" fill="#2b2b2b"/>' +
-    '<path d="M30 24 h8 M42 24 h8" stroke="#8a8f94" stroke-width="2" stroke-linecap="round"/>'
+  // 박사 — 밝은 머리 + 흰 가운 + 보라 셔츠(오리지널 도트풍)
+  var oak = wrap('0 0 96 128',
+    '<path d="M36 118 h17 v7 H34 Z" fill="#3f2920"/>' +
+    '<path d="M62 118 h17 v7 H60 Z" fill="#3f2920"/>' +
+    '<path d="M38 70 h18 l-3 50 H36 Z" fill="#978146" stroke="#57492f" stroke-width="3"/>' +
+    '<path d="M58 70 h18 l5 50 H62 Z" fill="#8f793f" stroke="#57492f" stroke-width="3"/>' +
+    '<path d="M36 46 h40 l-4 32 H40 Z" fill="#7661ac" stroke="#493c77" stroke-width="3"/>' +
+    '<path d="M34 45 L16 62 L23 115 H45 L47 74 L49 115 H75 L82 62 L64 45 L57 55 L48 52 L39 55 Z" fill="#f7fbff" stroke="#627089" stroke-width="3"/>' +
+    '<path d="M38 55 L28 82 L22 80 L30 51 Z" fill="#dbe8f5"/>' +
+    '<path d="M62 55 L72 83 L80 78 L67 51 Z" fill="#dbe8f5"/>' +
+    '<path d="M20 78 L9 84 L4 80 L16 69 Z" fill="#f2c49f" stroke="#71442e" stroke-width="3"/>' +
+    '<path d="M7 78 l-6 5 M12 75 l-5 -7" stroke="#71442e" stroke-width="2" stroke-linecap="round"/>' +
+    '<path d="M75 78 L88 82 L91 75 L78 68 Z" fill="#f2c49f" stroke="#71442e" stroke-width="3"/>' +
+    '<path d="M42 42 h24 v15 H42 Z" fill="#eab68e" stroke="#6d442f" stroke-width="3"/>' +
+    '<path d="M31 19 L26 32 L31 47 L43 55 H61 L73 47 L78 32 L72 19 L62 12 H41 Z" fill="#f0c49d" stroke="#6d442f" stroke-width="3"/>' +
+    '<path d="M28 21 h8 v-7 h10 V8 h22 v5 h8 v10 h5 v14 h-8 V26 H34 v11 h-7 Z" fill="#d9d1a5" stroke="#7d7658" stroke-width="3"/>' +
+    '<path d="M32 26 h8 v-5 h18 v4 h14 v7 H55 v4 H38 v-4 h-6 Z" fill="#eee7bb"/>' +
+    '<rect x="39" y="34" width="6" height="6" fill="#443232"/>' +
+    '<rect x="61" y="34" width="6" height="6" fill="#443232"/>' +
+    '<path d="M43 49 q10 7 20 0" fill="none" stroke="#7b4938" stroke-width="3" stroke-linecap="round"/>' +
+    '<path d="M37 29 h10 M59 29 h11" stroke="#5d4d3a" stroke-width="3" stroke-linecap="round"/>'
   );
 
   // 잉어킹(오마주) — 주황 물고기, 큰 입술, 노란 수염

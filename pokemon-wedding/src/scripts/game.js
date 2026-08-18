@@ -11,7 +11,7 @@
   var CHARACTERS = DATA.CHARACTERS;
   var CFG = DATA.CONFIG;
 
-  var state = { scene: 'intro', charKey: null, enemyHp: 100, usedMoves: {}, busy: false };
+  var state = { scene: 'intro', charKey: null, hits: { song: 0, jo: 0 }, usedMoves: {}, busy: false };
 
   var el = {};
   function $(id) { return document.getElementById(id); }
@@ -38,6 +38,8 @@
     el.enemyHpName = $('enemy-hp-name');
     el.allyHpName = $('ally-hp-name');
     el.enemyHpFill = $('enemy-hp-fill');
+    el.allyHpFill = $('ally-hp-fill');
+    el.allyHpValue = $('ally-hp-value');
     el.moveMenu = $('move-menu');
     el.cmdBar = $('cmd-bar');
     el.cmdPrompt = $('cmd-prompt');
@@ -209,12 +211,38 @@
     }, 520);
   }
 
+  // 체력: 인물별 피격 횟수로 계산. 송현중은 1/3씩(3대=0), 조나영은 1/6씩(6대=0).
+  function maxHits(person) { return person === 'song' ? 3 : 6; }
+  function hpPct(person) {
+    var m = maxHits(person);
+    return Math.max(0, Math.round(100 * (m - state.hits[person]) / m));
+  }
+  function setHpFill(fillEl, pct) {
+    fillEl.style.width = pct + '%';
+    fillEl.classList.remove('mid', 'low');
+    if (pct <= 25) fillEl.classList.add('low');
+    else if (pct <= 50) fillEl.classList.add('mid');
+  }
+  function updateBars() {
+    var me = CHARACTERS[state.charKey];
+    var enemyPct = hpPct(me.opponentKey);
+    var allyPct = hpPct(me.key);
+    setHpFill(el.enemyHpFill, enemyPct); // 상대(우상)
+    setHpFill(el.allyHpFill, allyPct);   // 나(좌하)
+    if (el.allyHpValue) {
+      var allyHp = Math.max(0, Math.round(20 * allyPct / 100));
+      el.allyHpValue.textContent = allyHp + ' / 20';
+    }
+  }
+
   function setupBattleField() {
     var ch = CHARACTERS[state.charKey];
-    state.enemyHp = 100; state.usedMoves = {}; state.questionsAsked = 0;
+    state.usedMoves = {};
+    state.hits = { song: 0, jo: 0 };
     el.dialog.classList.add('battle');
-    // HP 이름은 배틀 인트로 후 설정된다(afterTrainersIn).
-    updateEnemyHp();
+    el.battle.classList.remove('is-fighting');
+    el.battleBg.classList.remove('settled'); // 전환 중에는 스트릭 흐름
+    updateBars();
     el.enemyHpBox.classList.add('hidden-v');
     el.allyHpBox.classList.add('hidden-v');
     el.cmdBar.classList.add('hidden');
@@ -243,10 +271,12 @@
 
   function afterTrainersIn() {
     var ch = CHARACTERS[state.charKey];
+    el.battleBg.classList.add('settled'); // 자리 잡으면 정적 배경(스트릭 제거)
     // 포켓몬 없이 트레이너끼리 직접 진행
     showMessages([ch.battleIntro], function () {
       el.enemyHpName.textContent = ch.opponentName;
       el.allyHpName.textContent = ch.name;
+      updateBars();
       el.enemyHpBox.classList.remove('hidden-v');
       el.allyHpBox.classList.remove('hidden-v');
       openMoveMenu();
@@ -255,6 +285,7 @@
 
   // ================= 배틀(기술) =================
   function openMoveMenu() {
+    el.battle.classList.add('is-fighting');
     if (el.cmdPrompt) el.cmdPrompt.textContent = DATA.BATTLE_PROMPT;
     el.moveMenu.innerHTML = '';
     DATA.MOVES.forEach(function (mv, i) {
@@ -279,18 +310,33 @@
     el.cmdBar.classList.add('hidden');
     var me = CHARACTERS[state.charKey];
     var opp = CHARACTERS[me.opponentKey];
-    // 내 공격(질문): 왼쪽 아래 인물이 돌진
+
+    // 내 질문(공격): 좌하 인물이 돌진 → 상대 체력 감소
     el.allyArea.classList.add('lunge');
     setTimeout(function () { el.allyArea.classList.remove('lunge'); }, 400);
+    state.hits[opp.key] += 1;
+    updateBars();
     showMessages([mv.ask(me.name)], function () {
-      // 상대 반격(대답): 오른쪽 위 인물이 돌진 + 궁금증(HP) 감소
+      // 상대 대답(반격): 우상 인물이 돌진 → 내 체력 감소
       el.enemyArea.classList.add('lunge');
       setTimeout(function () { el.enemyArea.classList.remove('lunge'); }, 400);
-      state.questionsAsked = (state.questionsAsked || 0) + 1;
-      state.enemyHp = Math.max(0, Math.round(100 * (3 - state.questionsAsked) / 3));
-      updateEnemyHp();
-      showMessages(mv.answer(opp.name), openMoveMenu);
+      state.hits[me.key] += 1;
+      updateBars();
+      showMessages(mv.answer(opp.name), function () {
+        // 질문 3개가 끝나 송현중 체력이 0이면 종료 연출
+        if (hpPct('song') <= 0) { songDown(); return; }
+        openMoveMenu();
+      });
     });
+  }
+
+  // 송현중 체력 0: 송현중 캐릭터가 아래로 사라지며 마무리 후 엔딩
+  function songDown() {
+    var songArea = (state.charKey === 'song') ? el.allyArea : el.enemyArea;
+    songArea.style.transition = 'transform .6s ease, opacity .6s ease';
+    songArea.style.transform = 'translateY(120%)';
+    songArea.style.opacity = '0';
+    showMessages(['준비된 질문이 끝났다!'], toEnding);
   }
 
   // 도망친다: 나(좌하)가 왼쪽으로 사라지고 → 엔딩으로
@@ -329,26 +375,19 @@
     }, 520);
   }
 
-  // 엔딩 팝업(재시작 / 종료) — 선택창 스타일
+  // 엔딩 팝업(다시 시작 / 끝내기) — 대화창 오른쪽 위에 가로로
   function showEndMenu() {
     el.endMenu.innerHTML = '';
-    el.endMenu.appendChild(makeChoice('재시작', function () {
-      location.reload();
+    el.endMenu.appendChild(makeChoice('다시 시작', function () {
+      location.reload(); // 처음부터 재시작
     }));
-    el.endMenu.appendChild(makeChoice('종료', function () {
-      // 모바일 청첩장에서 새 창으로 열린 경우 닫기 → 실패 시 청첩장으로 이동
+    el.endMenu.appendChild(makeChoice('끝내기', function () {
+      // 창(브라우저 탭) 종료. 새 창으로 열린 경우 닫힘, 실패 시 청첩장으로.
+      window.open('', '_self');
       window.close();
       setTimeout(function () { location.href = CFG.invitationUrl; }, 300);
     }));
     el.endMenu.classList.remove('hidden');
-  }
-
-  function updateEnemyHp() {
-    var hp = state.enemyHp;
-    el.enemyHpFill.style.width = hp + '%';
-    el.enemyHpFill.classList.remove('mid', 'low');
-    if (hp <= 25) el.enemyHpFill.classList.add('low');
-    else if (hp <= 50) el.enemyHpFill.classList.add('mid');
   }
 
   // ---- 배경 스트릭 생성 ----

@@ -38,6 +38,8 @@
     el.enemyHpName = $('enemy-hp-name');
     el.allyHpName = $('ally-hp-name');
     el.enemyHpFill = $('enemy-hp-fill');
+    el.allyHpFill = $('ally-hp-fill');
+    el.allyHpValue = $('ally-hp-value');
     el.moveMenu = $('move-menu');
     el.cmdBar = $('cmd-bar');
     el.cmdPrompt = $('cmd-prompt');
@@ -213,6 +215,7 @@
     var ch = CHARACTERS[state.charKey];
     state.enemyHp = 100; state.usedMoves = {}; state.questionsAsked = 0;
     el.dialog.classList.add('battle');
+    el.battle.classList.remove('is-fighting');
     // HP 이름은 배틀 인트로 후 설정된다(afterTrainersIn).
     updateEnemyHp();
     el.enemyHpBox.classList.add('hidden-v');
@@ -255,6 +258,7 @@
 
   // ================= 배틀(기술) =================
   function openMoveMenu() {
+    el.battle.classList.add('is-fighting');
     if (el.cmdPrompt) el.cmdPrompt.textContent = DATA.BATTLE_PROMPT;
     el.moveMenu.innerHTML = '';
     DATA.MOVES.forEach(function (mv, i) {
@@ -349,6 +353,8 @@
     el.enemyHpFill.classList.remove('mid', 'low');
     if (hp <= 25) el.enemyHpFill.classList.add('low');
     else if (hp <= 50) el.enemyHpFill.classList.add('mid');
+    if (el.allyHpFill) el.allyHpFill.style.width = '100%';
+    if (el.allyHpValue) el.allyHpValue.textContent = '20 / 20';
   }
 
   // ---- 배경 스트릭 생성 ----

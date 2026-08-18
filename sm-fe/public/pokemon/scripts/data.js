@@ -49,7 +49,7 @@
   };
 
   // 배틀 명령 프롬프트(하단 좌측 패널) — 원작 "What will X do?" 자리
-  var BATTLE_PROMPT = '무엇을 물어볼까?';
+  var BATTLE_PROMPT = 'PP      40/40\n기술타입/노말';
 
   var CHARACTERS = {
     song: {
