@@ -198,15 +198,14 @@
         // 3) 검은 상태에서 배틀 필드 셋업 + 씬 전환
         setupBattleField();
         setScene('battle');
-        el.battle.classList.add('opening'); // 가운데 가로선 → 위아래 오픈
-        // 4) 다음 틱에 블랙 제거 → 오픈 연출 노출
-        setTimeout(function () {
-          el.fxBlack.classList.remove('full');
-          el.fxBlack.style.display = 'none';
-        }, 30);
-        // 5) 오픈 완료 후 트레이너 슬라이드 인
+        // 배틀이 fxBlack(검정) 위에서 가운데 가로선→위아래로 열림.
+        // (fxBlack을 계속 켜둬서 클립 바깥이 초록 대신 검정으로 보이게 함)
+        el.battle.classList.add('opening');
+        // 오픈 완료 후: 검정 제거 + 트레이너 슬라이드 인
         setTimeout(function () {
           el.battle.classList.remove('opening');
+          el.fxBlack.classList.remove('full');
+          el.fxBlack.style.display = 'none';
           slideInTrainers();
         }, 520);
       }, 470);
