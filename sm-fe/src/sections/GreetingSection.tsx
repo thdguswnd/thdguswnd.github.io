@@ -11,14 +11,14 @@ export function GreetingSection() {
   const { groom, bride } = greeting;
   const [contactOpen, setContactOpen] = useState(false);
 
-  // 손글씨 카드 순서: 신랑부 → 신랑모 → 신랑 → 신부부 → 신부모 → 신부 (루프)
+  // 손글씨 카드 순서: 신랑부 → 신랑모 → 신부부 → 신부모 → 신랑 → 신부 (루프)
   const people: CarouselPerson[] = [
-    { key: 'groom-father', name: groom.parents.father ?? '' },
-    { key: 'groom-mother', name: groom.parents.mother ?? '' },
-    { key: 'groom', name: groom.name },
-    { key: 'bride-father', name: bride.parents.father ?? '' },
-    { key: 'bride-mother', name: bride.parents.mother ?? '' },
-    { key: 'bride', name: bride.name },
+    { key: 'groom-father', name: groom.parents.father ?? '' }, // 01 송창용
+    { key: 'groom-mother', name: groom.parents.mother ?? '' }, // 02 오재순
+    { key: 'bride-father', name: bride.parents.father ?? '' }, // 03 조진범
+    { key: 'bride-mother', name: bride.parents.mother ?? '' }, // 04 김진
+    { key: 'groom', name: groom.name }, // 05 송현중
+    { key: 'bride', name: bride.name }, // 06 조나영
   ];
 
   return (

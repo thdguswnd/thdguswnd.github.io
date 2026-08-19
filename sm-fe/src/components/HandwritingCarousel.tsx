@@ -27,18 +27,18 @@ const START_KEYS: Record<string, number> = {
   'groom-father': 0,
   신랑모: 1,
   'groom-mother': 1,
-  신랑: 2,
-  groom: 2,
-  신부부: 3,
-  'bride-father': 3,
-  신부모: 4,
-  'bride-mother': 4,
+  신부부: 2,
+  'bride-father': 2,
+  신부모: 3,
+  'bride-mother': 3,
+  신랑: 4,
+  groom: 4,
   신부: 5,
   bride: 5,
 };
 
-const DEFAULT_START = 0; // 기본 도메인 첫 카드 = 01(송창용)
-const RANDOM_DEFAULT = false; // true 로 바꾸면 기본 접속 시 (업로드된 카드 중) 매번 랜덤
+const DEFAULT_START = 0; // 기본 도메인 첫 카드 = 01(송창용) — RANDOM_DEFAULT=false 일 때만 사용
+const RANDOM_DEFAULT = true; // 기본 접속 시 (업로드된 카드 중) 매번 랜덤
 
 // URL 경로가 사람 키와 매칭되면 그 인덱스, 아니면 -1.
 function pathKeyIndex(): number {
