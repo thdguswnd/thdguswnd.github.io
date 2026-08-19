@@ -1,18 +1,27 @@
 import { useEffect, useState } from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
 
-// 손글씨 이미지(투명 배경 png/webp). 파일명 순(01~06)으로 사람 순서에 매핑.
-// 아직 파일이 없으면 이름 텍스트 placeholder 로 표시된다.
+// 손글씨 이미지(투명 배경 png/webp). 파일명 앞 번호(01~06)로 사람 순서에 매핑.
+// 번호가 없는 자리는 이름 텍스트 placeholder 로 표시된다.
 const handwritingMods = import.meta.glob('../assets/handwriting/*.{png,webp,jpg,jpeg,PNG,WEBP,JPG,JPEG}', {
   eager: true,
   query: '?url',
   import: 'default',
 }) as Record<string, string>;
-const handwritingUrls = Object.entries(handwritingMods)
-  .sort(([a], [b]) => a.localeCompare(b))
-  .map(([, url]) => url);
 
-// 경로(예: /신랑부)에 따른 시작 카드 인덱스. 기본은 신랑(2).
+function fileNumber(key: string): number {
+  const f = key.split('/').pop() ?? '';
+  return parseInt(f.match(/(\d+)/)?.[1] ?? '0', 10);
+}
+
+// 인덱스(0~5) = 파일번호-1. 누락 번호는 undefined.
+const handwritingByIndex: (string | undefined)[] = [];
+for (const [key, url] of Object.entries(handwritingMods)) {
+  const n = fileNumber(key);
+  if (n >= 1) handwritingByIndex[n - 1] = url;
+}
+
+// 경로(예: /신랑부)에 따른 시작 카드 인덱스.
 const START_KEYS: Record<string, number> = {
   신랑부: 0,
   'groom-father': 0,
@@ -28,18 +37,19 @@ const START_KEYS: Record<string, number> = {
   bride: 5,
 };
 
-const DEFAULT_START = 2; // 기본 도메인 첫 카드 = 신랑(송현중)
+const DEFAULT_START = 0; // 기본 도메인 첫 카드 = 01(송창용)
+const RANDOM_DEFAULT = false; // true 로 바꾸면 기본 접속 시 (업로드된 카드 중) 매번 랜덤
 
-function startIndexFromPath(count: number): number {
+// URL 경로가 사람 키와 매칭되면 그 인덱스, 아니면 -1.
+function pathKeyIndex(): number {
   try {
     const base = import.meta.env.BASE_URL || '/';
     let path = decodeURIComponent(window.location.pathname);
     if (path.startsWith(base)) path = path.slice(base.length);
     const seg = path.replace(/^\/+|\/+$/g, '').split('/')[0];
-    const idx = seg in START_KEYS ? START_KEYS[seg] : DEFAULT_START;
-    return idx < count ? idx : 0;
+    return seg in START_KEYS ? START_KEYS[seg] : -1;
   } catch {
-    return 0;
+    return -1;
   }
 }
 
@@ -48,9 +58,19 @@ export interface CarouselPerson {
   name: string;
 }
 
-/** 손글씨 이미지 카드(옆으로 넘김, 무한 루프). URL 경로로 첫 카드 결정. */
+/** 손글씨 이미지 카드(옆으로 넘김, 무한 루프). URL 경로로 첫 카드 결정, 기본은 01(또는 랜덤). */
 export function HandwritingCarousel({ people }: { people: CarouselPerson[] }) {
-  const startIndex = startIndexFromPath(people.length);
+  const [startIndex] = useState(() => {
+    const fromPath = pathKeyIndex();
+    if (fromPath >= 0 && fromPath < people.length) return fromPath;
+    if (RANDOM_DEFAULT) {
+      const pool = people.map((_, i) => i).filter((i) => handwritingByIndex[i] !== undefined);
+      const arr = pool.length ? pool : [0];
+      return arr[Math.floor(Math.random() * arr.length)];
+    }
+    return DEFAULT_START < people.length ? DEFAULT_START : 0;
+  });
+
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, startIndex, align: 'center' });
   const [selected, setSelected] = useState(startIndex);
 
@@ -80,9 +100,9 @@ export function HandwritingCarousel({ people }: { people: CarouselPerson[] }) {
             >
               {/* 가로 꽉 채우는 3:4 세로 카드 (이비스 페인트 캔버스도 3:4 권장) */}
               <div style={{ width: '100%', aspectRatio: '3 / 4' }}>
-                {handwritingUrls[i] ? (
+                {handwritingByIndex[i] ? (
                   <img
-                    src={handwritingUrls[i]}
+                    src={handwritingByIndex[i]}
                     alt={`${p.name} 손글씨`}
                     style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
                   />
