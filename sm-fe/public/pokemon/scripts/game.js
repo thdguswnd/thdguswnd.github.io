@@ -53,14 +53,23 @@
   }
 
   // ---- 스프라이트 렌더 (이미지 우선, 실패 시 SVG 폴백) ----
-  function renderSprite(container, spec) {
-    if (!spec) { container.innerHTML = ''; return; }
-    if (!spec.asset) { container.innerHTML = SPRITES[spec.svg] || ''; return; }
+  function renderSprite(container, spec, onReady) {
+    if (!spec) { container.innerHTML = ''; if (onReady) onReady(); return; }
+    if (!spec.asset) { container.innerHTML = SPRITES[spec.svg] || ''; if (onReady) onReady(); return; }
     var img = new Image();
     img.className = 'sprite-img';
-    img.onload = function () { container.innerHTML = ''; container.appendChild(img); };
-    img.onerror = function () { container.innerHTML = SPRITES[spec.svg] || ''; };
+    img.onload = function () { container.innerHTML = ''; container.appendChild(img); if (onReady) onReady(); };
+    img.onerror = function () { container.innerHTML = SPRITES[spec.svg] || ''; if (onReady) onReady(); };
     img.src = spec.asset;
+  }
+
+  // 게임 이미지 프리로드(등장 시 즉시 표시 + 엔딩 배경 지연 방지)
+  function preloadAssets() {
+    var urls = [
+      'assets/oak.png', 'assets/song-front.png', 'assets/song-back.png',
+      'assets/jo-front.png', 'assets/jo-back.png', 'assets/wed-hall.jpg',
+    ];
+    urls.forEach(function (u) { var i = new Image(); i.src = u; });
   }
 
   // ---- 타자기 메시지 큐 ----
@@ -128,8 +137,9 @@
     setScene('intro');
     el.dialog.classList.remove('battle');
     el.dialog.classList.remove('hidden');
-    renderSprite(el.charSlot, DATA.OAK_IMG);
-    setTimeout(function () { el.charSlot.classList.add('show'); }, 20);
+    renderSprite(el.charSlot, DATA.OAK_IMG, function () {
+      requestAnimationFrame(function () { el.charSlot.classList.add('show'); });
+    });
     showMessages(DATA.INTRO_LINES, afterIntroLines);
   }
 
@@ -157,9 +167,10 @@
     state.charKey = key;
     el.choiceBox.classList.add('hidden');
     var ch = CHARACTERS[key];
-    // 선택 캐릭터 front fade in
-    renderSprite(el.charSlot, ch.frontImg);
-    setTimeout(function () { el.charSlot.classList.add('show'); }, 20);
+    // 선택 캐릭터 front fade in (이미지 로드 완료 후 fade → 팍 등장 방지)
+    renderSprite(el.charSlot, ch.frontImg, function () {
+      requestAnimationFrame(function () { el.charSlot.classList.add('show'); });
+    });
     showMessages([ch.confirmText], renderYesNo);
   }
 
@@ -381,7 +392,8 @@
     state.busy = true;
     el.cmdBar.classList.add('hidden');
     el.allyArea.style.transition = 'transform .6s ease-in';
-    el.allyArea.style.transform = 'translateX(-320%)'; // 폭의 320% → 화면 왼쪽 밖으로
+    void el.allyArea.offsetWidth; // reflow → transform 트랜지션 확실히 적용(즉시 사라짐 방지)
+    el.allyArea.style.transform = 'translateX(-320%)'; // 폭의 320% → 화면 왼쪽 밖으로 걸어나감
     showMessages(['질문을 그만두고\n도망쳤다!'], toEnding);
   }
 
@@ -483,6 +495,7 @@
 
   function boot() {
     cacheDom();
+    preloadAssets();
     bindLayout();
     layout();
     makeStreaks();
