@@ -193,8 +193,8 @@ html, body {
   animation: streak linear infinite;
 }
 @keyframes streak {
-  from { transform: translateX(120%); }
-  to   { transform: translateX(-260%); }
+  from { transform: translateX(300%); }
+  to   { transform: translateX(-700%); }
 }
 /* 배틀 자리 잡은 뒤에는 움직이는 스트릭 제거(정적 배경만) */
 .battle-bg.settled .streak { display: none; }
