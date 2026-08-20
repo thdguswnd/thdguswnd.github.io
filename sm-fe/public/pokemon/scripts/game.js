@@ -415,10 +415,19 @@
         el.coupleLeft.style.transform = 'translateX(0)';
         el.coupleRight.style.transform = 'translateX(0)';
         setTimeout(function () {
-          showMessages(DATA.ENDING_LINES, function () { /* 끝 — 팝업/전환 없음 */ });
+          showMessages(DATA.ENDING_LINES, showEndMenu);
         }, 900);
       }, 80);
     }, 520);
+  }
+
+  // 엔딩 후 '다시 하기' 박스 (캐릭터 선택 박스와 같은 위치, 우측 위) → 처음부터 재시작
+  function showEndMenu() {
+    el.endMenu.innerHTML = '';
+    el.endMenu.appendChild(makeChoice('다시 하기', function () {
+      location.reload();
+    }));
+    el.endMenu.classList.remove('hidden');
   }
 
   // 엔딩 꽃가루: 캐릭터와 같은 톤의 꽃잎이 위에서 팔랑팔랑 떨어짐

@@ -145,11 +145,10 @@ html, body {
   padding: .45em .5em; z-index: 22;
 }
 .choice-box.hidden, .yesno-box.hidden { display: none; }
-/* 엔딩 팝업: 대화창 위에 겹쳐 오른쪽 아래로, 가로 (다시 시작 / 끝내기) */
+/* 엔딩 '다시 하기' 박스: 캐릭터 선택 박스와 같은 위치(대화창 우측 위) */
 #end-menu {
-  left: auto; right: 3.5%; transform: none; bottom: 5%;
-  display: flex; flex-direction: row; gap: .2em;
-  z-index: 30; /* 대화창(z20) 위에 겹치게 */
+  left: auto; right: 3%; transform: none; bottom: 31%;
+  z-index: 30;
 }
 #end-menu.hidden { display: none; }
 #end-menu .choice-item { padding: .28em .5em .28em 1.2em; }
