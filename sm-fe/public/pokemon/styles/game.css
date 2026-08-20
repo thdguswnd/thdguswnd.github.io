@@ -193,8 +193,8 @@ html, body {
   animation: streak linear infinite;
 }
 @keyframes streak {
-  from { transform: translateX(300%); }
-  to   { transform: translateX(-700%); }
+  from { transform: translateX(120%); }
+  to   { transform: translateX(-260%); }
 }
 /* 배틀 자리 잡은 뒤에는 움직이는 스트릭 제거(정적 배경만) */
 .battle-bg.settled .streak { display: none; }
@@ -206,9 +206,9 @@ html, body {
 }
 /* 상대: 우상 정면, 크게 */
 .enemy-area { right: 6%; top: 11%; width: 30%; height: 46%; }
-/* 나: 좌하 뒷모습 전신(자르지 않음). 발은 화면 아래쪽 → 명령창/대화창이 하반신을 자연스럽게 가림 */
-.ally-area  { left: 4%; bottom: 4%; width: 42%; height: 74%; }
-.ally-area .sprite-img { object-fit: contain; object-position: center bottom; }
+/* 나: 좌하 뒷모습, 크게. 아래를 잘라 등 위쪽(상반신)만 보이게 */
+.ally-area  { left: 6%; bottom: 3%; width: 40%; height: 56%; overflow: hidden; }
+.ally-area .sprite-img { object-fit: cover; object-position: center top; }
 
 /* 발판(배틀) */
 .b-platform {
@@ -308,7 +308,7 @@ html, body {
 /* ===================== 엔딩 장면 (신랑·신부 나란히) ===================== */
 /* 배경: 예식장 사진(wed-hall.png). 이미지가 없으면 연한 색으로 폴백. */
 #scene-ending {
-  background: #efe6ea url('../assets/wed-hall.jpg') center / cover no-repeat;
+  background: #efe6ea url('../assets/wed-hall.png') center / cover no-repeat;
 }
 /* 사진 위에 반투명 흰 베일 → 캐릭터(신랑·신부)가 배경에 묻히지 않게. 커플(z-index 1·2)보다 아래. */
 #scene-ending::before {

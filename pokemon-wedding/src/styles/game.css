@@ -207,7 +207,7 @@ html, body {
 /* 상대: 우상 정면, 크게 */
 .enemy-area { right: 6%; top: 11%; width: 30%; height: 46%; }
 /* 나: 좌하 뒷모습, 크게. 아래를 잘라 등 위쪽(상반신)만 보이게 */
-.ally-area  { left: 6%; bottom: 18%; width: 40%; height: 56%; overflow: hidden; }
+.ally-area  { left: 6%; bottom: 3%; width: 40%; height: 56%; overflow: hidden; }
 .ally-area .sprite-img { object-fit: cover; object-position: center top; }
 
 /* 발판(배틀) */
