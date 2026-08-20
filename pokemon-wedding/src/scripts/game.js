@@ -214,12 +214,7 @@
     }, 520);
   }
 
-  // 체력: 인물별 피격 횟수로 계산. 송현중은 1/3씩(3대=0), 조나영은 1/6씩(6대=0).
-  function maxHits(person) { return person === 'song' ? 3 : 6; }
-  function hpPct(person) {
-    var m = maxHits(person);
-    return Math.max(0, Math.round(100 * (m - state.hits[person]) / m));
-  }
+  // 체력: 질문한 횟수 기반. 상대(선택한 사람)는 3질문에 0, 나(파트너)는 천천히 감소.
   function setHpFill(fillEl, pct) {
     fillEl.style.width = pct + '%';
     fillEl.classList.remove('mid', 'low');
@@ -242,21 +237,21 @@
     setTimeout(function () { target.classList.remove('hit-blink'); }, 460);
   }
   function updateBars() {
-    var me = CHARACTERS[state.charKey];
-    var enemyPct = hpPct(me.opponentKey);
-    var allyPct = hpPct(me.key);
+    var q = state.questionsAsked || 0;
+    var enemyPct = Math.max(0, Math.round(100 * (3 - q) / 3)); // 상대(선택): 3질문에 0
+    var allyPct = Math.max(0, Math.round(100 * (6 - q) / 6));  // 나(파트너): 천천히
     setHpFill(el.enemyHpFill, enemyPct); // 상대(우상)
     setHpFill(el.allyHpFill, allyPct);   // 나(좌하)
     if (el.allyHpValue) {
-      var allyHp = Math.max(0, Math.round(20 * allyPct / 100));
-      el.allyHpValue.textContent = allyHp + ' / 20';
+      el.allyHpValue.textContent = Math.max(0, Math.round(20 * allyPct / 100)) + ' / 20';
     }
   }
 
   function setupBattleField() {
-    var ch = CHARACTERS[state.charKey];
+    var ch = CHARACTERS[state.charKey];       // 선택한 사람 = 상대(우상, 질문받는 쪽)
+    var other = CHARACTERS[ch.opponentKey];    // 파트너 = 나(좌하, 질문하는 쪽)
     state.usedMoves = {};
-    state.hits = { song: 0, jo: 0 };
+    state.questionsAsked = 0;
     el.dialog.classList.add('battle');
     el.battle.classList.remove('is-fighting');
     el.battleBg.classList.remove('settled'); // 전환 중에는 스트릭 흐름
@@ -266,12 +261,13 @@
     el.cmdBar.classList.add('hidden');
     el.enemyArea.style.opacity = '1';
     el.allyArea.style.opacity = '1';
+    el.enemyArea.style.overflow = '';
 
-    // 상대(우상)=oppImg, 나(좌하)=backImg
-    renderSprite(el.enemyArea, ch.oppImg);
-    renderSprite(el.allyArea, ch.backImg);
+    // 상대(우상, 정면) = 선택한 사람 / 나(좌하, 뒷모습) = 파트너
+    renderSprite(el.enemyArea, ch.frontImg);
+    renderSprite(el.allyArea, other.backImg);
 
-    // 슬라이드 시작 위치: 상대는 왼쪽 위에서, 나는 오른쪽 아래에서
+    // 슬라이드 시작 위치: 상대는 왼쪽에서, 나는 오른쪽에서
     el.enemyArea.style.transition = 'none';
     el.allyArea.style.transition = 'none';
     el.enemyArea.style.transform = 'translateX(-320%)';
@@ -288,18 +284,18 @@
   }
 
   function afterTrainersIn() {
-    var ch = CHARACTERS[state.charKey];
+    var ch = CHARACTERS[state.charKey];       // 선택 = 상대(우상)
+    var other = CHARACTERS[ch.opponentKey];   // 파트너 = 나(좌하)
     el.battleBg.classList.add('settled'); // 자리 잡으면 정적 배경(스트릭 제거)
-    // 포켓몬 없이 트레이너끼리 직접 진행
     showMessages([ch.battleIntro], function () {
-      var opp = CHARACTERS[ch.opponentKey];
-      el.enemyHpName.textContent = ch.opponentName;
-      el.allyHpName.textContent = ch.name;
-      setGender(el.enemyHpGender, ch.opponentKey);
-      setGender(el.allyHpGender, ch.key);
-      // 레벨은 인물 고정: 송현중 Lv.37 / 조나영 Lv.30 (누구를 선택하든 동일)
-      if (el.enemyHpLevel) el.enemyHpLevel.textContent = 'Lv.' + opp.level;
-      if (el.allyHpLevel) el.allyHpLevel.textContent = 'Lv.' + ch.level;
+      // 상대(우상) = 선택한 사람
+      el.enemyHpName.textContent = ch.name;
+      setGender(el.enemyHpGender, ch.key);
+      if (el.enemyHpLevel) el.enemyHpLevel.textContent = 'Lv.' + ch.level;
+      // 나(좌하) = 파트너
+      el.allyHpName.textContent = other.name;
+      setGender(el.allyHpGender, other.key);
+      if (el.allyHpLevel) el.allyHpLevel.textContent = 'Lv.' + other.level;
       updateBars();
       el.enemyHpBox.classList.remove('hidden-v');
       el.allyHpBox.classList.remove('hidden-v');
@@ -311,10 +307,10 @@
   function openMoveMenu() {
     el.battle.classList.add('is-fighting');
     el.battle.classList.add('choosing');
-    var me = CHARACTERS[state.charKey];
-    if (el.cmdPrompt) el.cmdPrompt.textContent = DATA.josa(me.name, '은', '는') + '\n무엇을 물어볼까?';
+    if (el.cmdPrompt) el.cmdPrompt.textContent = '무엇을\n물어볼까?';
     el.moveMenu.innerHTML = '';
-    DATA.MOVES.forEach(function (mv, i) {
+    var moves = CHARACTERS[state.charKey].moves; // 선택한 사람별 질문
+    moves.forEach(function (mv, i) {
       var item = document.createElement('div');
       item.className = 'move-item';
       var used = !!state.usedMoves[mv.id];
@@ -329,60 +325,72 @@
 
   function onUseMove(index) {
     if (state.busy) return;
-    var mv = DATA.MOVES[index];
+    var moves = CHARACTERS[state.charKey].moves;
+    var mv = moves[index];
     el.battle.classList.remove('choosing');
     if (mv.flee) { el.cmdBar.classList.add('hidden'); fleeSequence(); return; }
     if (state.usedMoves[mv.id]) return;
     state.usedMoves[mv.id] = true;
     el.cmdBar.classList.add('hidden');
-    var me = CHARACTERS[state.charKey];
-    var opp = CHARACTERS[me.opponentKey];
 
-    // 내 질문(공격): 좌하 인물이 돌진 → 상대 체력 감소
+    // 질문(공격): 나(좌하=파트너) 돌진 → 상대(선택한 사람) 궁금증 감소
     el.allyArea.classList.add('lunge');
     setTimeout(function () { el.allyArea.classList.remove('lunge'); }, 400);
-    state.hits[opp.key] += 1;
+    state.questionsAsked = (state.questionsAsked || 0) + 1;
     updateBars();
     blinkHit(el.enemyArea);
-    showMessages([mv.ask(me.name)], function () {
-      // 상대 대답(반격): 우상 인물이 돌진 → 내 체력 감소
+    showMessages([mv.ask()], function () {
+      // 답변(반격): 상대(우상=선택한 사람) 돌진
       el.enemyArea.classList.add('lunge');
       setTimeout(function () { el.enemyArea.classList.remove('lunge'); }, 400);
-      state.hits[me.key] += 1;
-      updateBars();
       blinkHit(el.allyArea);
-      showMessages(mv.answer(opp.name), function () {
-        // 질문 3개가 끝나 송현중 체력이 0이면 종료 연출
-        if (hpPct('song') <= 0) { songDown(); return; }
+      showMessages(mv.answer(), function () {
+        if (state.questionsAsked >= 3) { learnedEnd(); return; } // 질문 3개 끝
         openMoveMenu();
       });
     });
   }
 
-  // 송현중 체력 0: 송현중이 "제자리에서" 아래로 가라앉으며 사라짐.
-  // 영역 안에서 클립(overflow:hidden) → 화면을 가로지르거나 대화창 밑으로 다시 보이지 않음.
-  function songDown() {
-    var songArea = (state.charKey === 'song') ? el.allyArea : el.enemyArea;
-    songArea.style.overflow = 'hidden';
-    var sprite = songArea.firstElementChild; // img 또는 svg
-    if (sprite) {
-      sprite.style.transition = 'transform .55s ease, opacity .55s ease';
-      sprite.style.transform = 'translateY(130%)';
-      sprite.style.opacity = '0';
-    } else {
-      songArea.style.transition = 'opacity .4s ease';
-      songArea.style.opacity = '0';
-    }
-    showMessages(['준비된 질문이 끝났다!'], toEnding);
+  // 질문 3개 끝: "신랑(신부)에 대해서 조금 더 알게되었다!" → 엔딩
+  function learnedEnd() {
+    var ch = CHARACTERS[state.charKey]; // 선택한 사람
+    showMessages([ch.gender + '에 대해서\n조금 더 알게되었다!'], toEnding);
   }
 
-  // 도망친다: 나(좌하)가 왼쪽 화면 밖으로 "수평 이동"해서 걸어 나감(사라지듯 팟 하고 없어지지 않게)
+  // 도망친다: 나(좌하)가 왼쪽으로 걸어 나가고 → "누가 궁금해?" 선택 화면으로 자연스럽게 복귀
   function fleeSequence() {
     state.busy = true;
     el.cmdBar.classList.add('hidden');
     el.allyArea.style.transition = 'transform .6s ease-in';
-    el.allyArea.style.transform = 'translateX(-320%)'; // 폭의 320% → 화면 왼쪽 밖으로
-    showMessages(['질문을 그만두고\n도망쳤다!'], toEnding);
+    el.allyArea.style.transform = 'translateX(-320%)'; // 화면 왼쪽 밖으로
+    showMessages(['질문을 그만두고\n도망쳤다!'], function () {
+      el.dialog.classList.add('hidden');
+      el.fxWhite.classList.add('show'); // 부드러운 페이드
+      setTimeout(function () {
+        returnToGenderSelect();
+        setTimeout(function () { el.fxWhite.classList.remove('show'); }, 60);
+      }, 420);
+    });
+  }
+
+  // "신랑이 궁금해? 아니면 신부가 궁금해?" 선택 화면으로 복귀
+  function returnToGenderSelect() {
+    state.charKey = null;
+    el.battle.classList.remove('is-fighting', 'choosing');
+    el.enemyHpBox.classList.add('hidden-v');
+    el.allyHpBox.classList.add('hidden-v');
+    el.cmdBar.classList.add('hidden');
+    el.enemyArea.removeAttribute('style');
+    el.allyArea.removeAttribute('style');
+    el.enemyArea.innerHTML = '';
+    el.allyArea.innerHTML = '';
+    setScene('intro');
+    el.dialog.classList.remove('battle');
+    el.choiceBox.classList.add('hidden');
+    el.yesnoBox.classList.add('hidden');
+    el.charSlot.classList.remove('show');
+    el.charSlot.innerHTML = '';
+    askGender(); // 성별 질문 + 선택지 재표시
   }
 
   // 배틀 다음 화면: 흰 화면 → 신랑·신부 나란히 → 멘트 → 재시작/종료 팝업
@@ -398,6 +406,7 @@
       el.coupleRight.style.transition = 'none';
       el.coupleLeft.style.transform = 'translateX(-200%)';
       el.coupleRight.style.transform = 'translateX(200%)';
+      makePetals(); // 위에서 꽃가루가 팔랑팔랑
       setTimeout(function () {
         el.fxWhite.classList.remove('show');
         void el.coupleLeft.offsetWidth;
@@ -406,25 +415,35 @@
         el.coupleLeft.style.transform = 'translateX(0)';
         el.coupleRight.style.transform = 'translateX(0)';
         setTimeout(function () {
-          showMessages(DATA.ENDING_LINES, showEndMenu);
+          showMessages(DATA.ENDING_LINES, function () { /* 끝 — 팝업/전환 없음 */ });
         }, 900);
       }, 80);
     }, 520);
   }
 
-  // 엔딩 팝업(다시 시작 / 끝내기) — 대화창 오른쪽 위에 가로로
-  function showEndMenu() {
-    el.endMenu.innerHTML = '';
-    el.endMenu.appendChild(makeChoice('다시 시작', function () {
-      location.reload(); // 처음부터 재시작
-    }));
-    el.endMenu.appendChild(makeChoice('끝내기', function () {
-      // 창(브라우저 탭) 종료. 새 창으로 열린 경우 닫힘, 실패 시 청첩장으로.
-      window.open('', '_self');
-      window.close();
-      setTimeout(function () { location.href = CFG.invitationUrl; }, 300);
-    }));
-    el.endMenu.classList.remove('hidden');
+  // 엔딩 꽃가루: 캐릭터와 같은 톤의 꽃잎이 위에서 팔랑팔랑 떨어짐
+  function makePetals() {
+    var host = el.sceneEnding;
+    if (!host) return;
+    var old = host.querySelector('.petals');
+    if (old) old.parentNode.removeChild(old);
+    var box = document.createElement('div');
+    box.className = 'petals';
+    var colors = ['#f6c6d6', '#f9dbe4', '#ffe1c2', '#f4b8cb', '#ffd9e6', '#f7e0b0'];
+    for (var i = 0; i < 16; i++) {
+      var p = document.createElement('span');
+      p.className = 'petal';
+      p.style.left = Math.round(Math.random() * 100) + '%';
+      var size = (1.6 + Math.random() * 1.6);
+      p.style.width = size.toFixed(2) + '%';
+      p.style.height = (size * 1.3).toFixed(2) + '%';
+      p.style.background = colors[i % colors.length];
+      p.style.animationDuration = (3.5 + Math.random() * 3).toFixed(2) + 's';
+      p.style.animationDelay = (Math.random() * 4).toFixed(2) + 's';
+      p.style.setProperty('--sway', Math.round(Math.random() * 24 - 12) + 'px');
+      box.appendChild(p);
+    }
+    host.appendChild(box);
   }
 
   // ---- 배경 스트릭 생성 ----

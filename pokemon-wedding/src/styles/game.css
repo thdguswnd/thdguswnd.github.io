@@ -154,13 +154,13 @@ html, body {
 #end-menu.hidden { display: none; }
 #end-menu .choice-item { padding: .28em .5em .28em 1.2em; }
 .choice-item {
-  display: flex; align-items: center;
-  padding: .28em .6em .28em 1.3em;
+  display: flex; align-items: center; justify-content: center;
+  padding: .28em 1.1em;
   position: relative; cursor: pointer; white-space: nowrap;
   color: #3a3a3a;
 }
 .choice-item::before {
-  content: ''; position: absolute; left: .35em; top: 50%;
+  content: ''; position: absolute; left: .4em; top: 50%;
   width: .55em; height: .55em;
   transform: translateY(-50%) rotate(45deg) scale(0);
   background: var(--pk-select); transition: transform .08s ease;
@@ -325,6 +325,23 @@ html, body {
 /* 겹쳐서 나란히: 신랑(뒤) 뒤쪽, 신부(앞) 앞쪽. 머리가 거의 붙게 가깝게 배치 */
 #couple-left  { left: 27%; right: auto; z-index: 1; }  /* 신랑 송현중 (뒤) */
 #couple-right { left: 39%; right: auto; z-index: 2; }  /* 신부 조나영 (앞) */
+
+/* 엔딩 꽃가루(꽃잎) — 위에서 팔랑팔랑 */
+.petals { position: absolute; inset: 0; overflow: hidden; z-index: 6; pointer-events: none; }
+.petal {
+  position: absolute; top: -8%;
+  border-radius: 60% 10% 60% 10%;
+  opacity: .9;
+  animation-name: petalFall;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  will-change: transform, top;
+}
+@keyframes petalFall {
+  0%   { top: -10%; transform: translateX(0) rotate(0deg); }
+  50%  { transform: translateX(var(--sway, 8px)) rotate(180deg); }
+  100% { top: 112%; transform: translateX(0) rotate(360deg); }
+}
 
 /* ===================== 전환 연출 오버레이 ===================== */
 /* 흰 화면 fade (엔딩 진입) */
