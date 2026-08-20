@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
 
 // 손글씨 이미지(투명 배경 png/webp). 파일명 앞 번호(01~06)로 사람 순서에 매핑.
@@ -73,31 +73,72 @@ export function HandwritingCarousel({ people }: { people: CarouselPerson[] }) {
 
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, startIndex, align: 'center' });
   const [selected, setSelected] = useState(startIndex);
+  const [hintVisible, setHintVisible] = useState(true); // 첫 조작 전까지 "넘겨보세요" 안내 노출
 
   useEffect(() => {
     if (!emblaApi) return;
     emblaApi.scrollTo(startIndex, true); // 초기 위치 강제(즉시 이동)
     const onSelect = () => setSelected(emblaApi.selectedScrollSnap());
+    const onPointerDown = () => setHintVisible(false); // 사용자가 만지면 안내 숨김
     emblaApi.on('select', onSelect);
+    emblaApi.on('pointerDown', onPointerDown);
     onSelect();
     return () => {
       emblaApi.off('select', onSelect);
+      emblaApi.off('pointerDown', onPointerDown);
     };
   }, [emblaApi, startIndex]);
 
+  const go = (dir: -1 | 1) => {
+    setHintVisible(false);
+    if (dir === 1) emblaApi?.scrollNext();
+    else emblaApi?.scrollPrev();
+  };
+
+  const arrowStyle = (side: 'left' | 'right'): CSSProperties => ({
+    position: 'absolute',
+    top: '42%',
+    [side]: 2,
+    transform: 'translateY(-50%)',
+    zIndex: 2,
+    width: 34,
+    height: 34,
+    borderRadius: '50%',
+    border: 'none',
+    padding: 0,
+    cursor: 'pointer',
+    background: 'rgba(255,255,255,0.72)',
+    color: 'var(--color-text)',
+    boxShadow: '0 1px 4px rgba(0,0,0,0.15)',
+    fontSize: '1.1rem',
+    lineHeight: '34px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  });
+
   return (
     <div style={{ margin: '24px 0' }}>
-      <div ref={emblaRef} style={{ overflow: 'hidden' }}>
-        <div style={{ display: 'flex' }}>
-          {people.map((p, i) => (
-            <div
-              key={p.key}
-              style={{
-                flex: '0 0 100%',
-                minWidth: 0,
-                padding: '0 4px',
-              }}
-            >
+      <div style={{ position: 'relative' }}>
+        <button type="button" aria-label="이전 카드" onClick={() => go(-1)} style={arrowStyle('left')}>
+          ‹
+        </button>
+        <button type="button" aria-label="다음 카드" onClick={() => go(1)} style={arrowStyle('right')}>
+          ›
+        </button>
+        <div ref={emblaRef} style={{ overflow: 'hidden' }}>
+          <div style={{ display: 'flex' }}>
+            {people.map((p, i) => (
+              <div
+                key={p.key}
+                style={{
+                  flex: '0 0 86%',
+                  minWidth: 0,
+                  padding: '0 6px',
+                  opacity: i === selected ? 1 : 0.45, // 양옆 카드는 살짝 흐리게 → "더 있음"을 자연스럽게 암시
+                  transition: 'opacity 0.25s ease',
+                }}
+              >
               {/* 가로 꽉 채우는 3:4 세로 카드 (이비스 페인트 캔버스도 3:4 권장) */}
               <div style={{ width: '100%', aspectRatio: '3 / 4' }}>
                 {handwritingByIndex[i] ? (
@@ -127,11 +168,28 @@ export function HandwritingCarousel({ people }: { people: CarouselPerson[] }) {
               </div>
             </div>
           ))}
+          </div>
         </div>
       </div>
 
+      {/* 넘김 안내(첫 조작 전) */}
+      <div
+        aria-hidden
+        style={{
+          textAlign: 'center',
+          marginTop: 10,
+          fontSize: '0.8rem',
+          color: 'var(--color-muted)',
+          opacity: hintVisible ? 1 : 0,
+          transition: 'opacity 0.4s ease',
+          pointerEvents: 'none',
+        }}
+      >
+        ← 좌우로 넘겨보세요 →
+      </div>
+
       {/* 위치 표시 점 */}
-      <div style={{ display: 'flex', gap: 6, justifyContent: 'center', marginTop: 12 }}>
+      <div style={{ display: 'flex', gap: 6, justifyContent: 'center', marginTop: 8 }}>
         {people.map((p, i) => (
           <button
             key={p.key}

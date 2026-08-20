@@ -66,7 +66,7 @@
     "sketchMapImage": "/local-assets/loftgarden344.jpg",
     "appLinks": {
       "naver": { "deepLink": "nmap://route/car?dlat=37.5237531&dlng=126.8751431&dname=로프트가든344&appname=thdguswnd.github.io", "webUrl": "https://naver.me/xyTG8t3T" },
-      "kakaoNavi": { "deepLink": "kakaonavi://navigate?name=로프트가든344&x=126.8751431&y=37.5237531&coord_type=wgs84", "webUrl": "https://place.map.kakao.com/7885407" },
+      "kakaoNavi": { "deepLink": "kakaonavi://navigate?name=로프트가든344&x=126.8751431&y=37.5237531&coord_type=wgs84", "webUrl": "https://map.kakao.com/link/to/로프트가든344,37.5237531,126.8751431" },
       "tmap": { "deepLink": "tmap://route?goalname=로프트가든344&goalx=126.8751431&goaly=37.5237531", "webUrl": "https://tmap.life/39b6a25c" }
     }
   },
@@ -76,7 +76,7 @@
       { "role": "신랑", "holder": "송현중", "bank": "하나은행", "number": "41091059640007", "kakaoPayUrl": "https://qr.kakaopay.com/groom" }
     ],
     "brideAccounts": [
-      { "role": "신부", "holder": "조나영", "bank": "기업은행", "number": "098765432109", "kakaoPayUrl": "https://qr.kakaopay.com/bride" }
+      { "role": "신부", "holder": "조나영", "bank": "국민은행", "number": "91350101188004", "kakaoPayUrl": "https://qr.kakaopay.com/bride" }
     ]
   },
   "gallery": {
