@@ -297,10 +297,24 @@
       setGender(el.allyHpGender, other.key);
       if (el.allyHpLevel) el.allyHpLevel.textContent = 'Lv.' + other.level;
       updateBars();
+      updateExp();
       el.enemyHpBox.classList.remove('hidden-v');
       el.allyHpBox.classList.remove('hidden-v');
       openMoveMenu();
     });
+  }
+
+  // EXP 게이지 = 올해 진행도. 12칸 중 '이번 달' 수만큼 채움(1월=1칸 … 12월=12칸)
+  function updateExp() {
+    var bar = document.getElementById('exp-bar');
+    if (!bar) return;
+    var month = new Date().getMonth() + 1; // 1~12
+    bar.innerHTML = '';
+    for (var m = 1; m <= 12; m++) {
+      var seg = document.createElement('i');
+      seg.className = 'exp-seg' + (m <= month ? ' on' : '');
+      bar.appendChild(seg);
+    }
   }
 
   // ================= 배틀(기술) =================
@@ -408,6 +422,7 @@
       el.coupleRight.style.transform = 'translateX(200%)';
       makePetals(); // 위에서 꽃가루가 팔랑팔랑
       setTimeout(function () {
+        el.fxWhite.classList.add('slow');   // 배경이 천천히 fade-in 되도록
         el.fxWhite.classList.remove('show');
         void el.coupleLeft.offsetWidth;
         el.coupleLeft.style.transition = 'transform .8s ease';
@@ -514,6 +529,8 @@
     bindLayout();
     layout();
     makeStreaks();
+    // 엔딩 배경 미리 로드(늦은 로딩으로 인한 깜빡임/부자연스러움 방지)
+    var pre = new Image(); pre.src = 'assets/wed-hall.png';
     startIntro();
   }
 
