@@ -53,13 +53,16 @@
   }
 
   // ---- 스프라이트 렌더 (이미지 우선, 실패 시 SVG 폴백) ----
+  // 이미지를 '즉시' 컨테이너에 붙인다 → 컨테이너의 opacity fade 트랜지션이 이미지에도 적용됨.
+  // (onload 후에 붙이면 fade가 끝난 뒤 이미지가 팍 나타나서 fade-in이 사라져 보였음)
   function renderSprite(container, spec) {
     if (!spec) { container.innerHTML = ''; return; }
     if (!spec.asset) { container.innerHTML = SPRITES[spec.svg] || ''; return; }
     var img = new Image();
     img.className = 'sprite-img';
-    img.onload = function () { container.innerHTML = ''; container.appendChild(img); };
     img.onerror = function () { container.innerHTML = SPRITES[spec.svg] || ''; };
+    container.innerHTML = '';
+    container.appendChild(img);
     img.src = spec.asset;
   }
 
@@ -187,6 +190,9 @@
     el.dialog.classList.add('hidden');
     el.choiceBox.classList.add('hidden');
     el.yesnoBox.classList.add('hidden');
+    // 재진입(도망 후) 대비: 이전 전환 때 걸어둔 인라인 display:none 초기화
+    // (안 하면 CSS의 .closing/.full(display:block)을 덮어써 검은 오버레이가 안 떠서 초록으로 열림)
+    el.fxBlack.style.display = '';
 
     // 1) 회색 깜빡임 2회
     el.fxFlash.classList.add('play');
@@ -214,7 +220,12 @@
     }, 520);
   }
 
-  // 체력: 질문한 횟수 기반. 상대(선택한 사람)는 3질문에 0, 나(파트너)는 천천히 감소.
+  // 체력: '인물' 기준. 송현중은 한 대에 1/3(3대=0), 조나영은 1/6(6대=0). 선택과 무관.
+  function maxHits(person) { return person === 'song' ? 3 : 6; }
+  function hpPct(person) {
+    var m = maxHits(person);
+    return Math.max(0, Math.round(100 * (m - (state.hits[person] || 0)) / m));
+  }
   function setHpFill(fillEl, pct) {
     fillEl.style.width = pct + '%';
     fillEl.classList.remove('mid', 'low');
@@ -237,9 +248,9 @@
     setTimeout(function () { target.classList.remove('hit-blink'); }, 460);
   }
   function updateBars() {
-    var q = state.questionsAsked || 0;
-    var enemyPct = Math.max(0, Math.round(100 * (3 - q) / 3)); // 상대(선택): 3질문에 0
-    var allyPct = Math.max(0, Math.round(100 * (6 - q) / 6));  // 나(파트너): 천천히
+    var me = CHARACTERS[state.charKey];   // 선택한 사람 = 상대(우상)
+    var enemyPct = hpPct(me.key);         // 상대(선택한 사람) 체력
+    var allyPct = hpPct(me.opponentKey);  // 나(파트너) 체력
     setHpFill(el.enemyHpFill, enemyPct); // 상대(우상)
     setHpFill(el.allyHpFill, allyPct);   // 나(좌하)
     if (el.allyHpValue) {
@@ -251,7 +262,7 @@
     var ch = CHARACTERS[state.charKey];       // 선택한 사람 = 상대(우상, 질문받는 쪽)
     var other = CHARACTERS[ch.opponentKey];    // 파트너 = 나(좌하, 질문하는 쪽)
     state.usedMoves = {};
-    state.questionsAsked = 0;
+    state.hits = { song: 0, jo: 0 };
     el.dialog.classList.add('battle');
     el.battle.classList.remove('is-fighting');
     el.battleBg.classList.remove('settled'); // 전환 중에는 스트릭 흐름
@@ -347,27 +358,39 @@
     state.usedMoves[mv.id] = true;
     el.cmdBar.classList.add('hidden');
 
-    // 질문(공격): 나(좌하=파트너) 돌진 → 상대(선택한 사람) 궁금증 감소
+    var me = CHARACTERS[state.charKey];       // 선택 = 상대(우상)
+    var other = CHARACTERS[me.opponentKey];    // 파트너 = 나(좌하)
+    // 질문(공격): 나(좌하=파트너) 돌진 → 상대(선택한 사람) 피격 (송현중 1/3, 조나영 1/6)
     el.allyArea.classList.add('lunge');
     setTimeout(function () { el.allyArea.classList.remove('lunge'); }, 400);
-    state.questionsAsked = (state.questionsAsked || 0) + 1;
+    state.hits[me.key] += 1;
     updateBars();
     blinkHit(el.enemyArea);
     showMessages([mv.ask()], function () {
-      // 답변(반격): 상대(우상=선택한 사람) 돌진
+      // 답변(반격): 상대(우상=선택한 사람) 돌진 → 나(파트너) 피격
       el.enemyArea.classList.add('lunge');
       setTimeout(function () { el.enemyArea.classList.remove('lunge'); }, 400);
+      state.hits[other.key] += 1;
+      updateBars();
       blinkHit(el.allyArea);
       showMessages(mv.answer(), function () {
-        if (state.questionsAsked >= 3) { learnedEnd(); return; } // 질문 3개 끝
+        if (hpPct('song') <= 0) { learnedEnd(); return; } // 송현중 체력 0 → 종료
         openMoveMenu();
       });
     });
   }
 
-  // 질문 3개 끝: "신랑(신부)에 대해서 조금 더 알게되었다!" → 엔딩
+  // 송현중 체력 0 → 송현중이 제자리에서 아래로 떨어지며 사라짐(영역 안 클립, 상태창/대화창 뒤로 숨음)
   function learnedEnd() {
     var ch = CHARACTERS[state.charKey]; // 선택한 사람
+    var songArea = (state.charKey === 'song') ? el.enemyArea : el.allyArea; // 송현중이 있는 영역
+    songArea.style.overflow = 'hidden';
+    var sprite = songArea.firstElementChild; // img 또는 svg
+    if (sprite) {
+      sprite.style.transition = 'transform .55s ease, opacity .55s ease';
+      sprite.style.transform = 'translateY(130%)';
+      sprite.style.opacity = '0';
+    }
     showMessages([ch.gender + '에 대해서\n조금 더 알게되었다!'], toEnding);
   }
 
@@ -529,8 +552,10 @@
     bindLayout();
     layout();
     makeStreaks();
-    // 엔딩 배경 미리 로드(늦은 로딩으로 인한 깜빡임/부자연스러움 방지)
-    var pre = new Image(); pre.src = 'assets/wed-hall.png';
+    // 캐릭터/배경 이미지 미리 로드(용량 큰 PNG가 늦게 떠서 fade-in이 씹히는 문제 방지)
+    ['oak', 'song-front', 'song-back', 'jo-front', 'jo-back', 'wed-hall'].forEach(function (n) {
+      var im = new Image(); im.src = 'assets/' + n + '.png';
+    });
     startIntro();
   }
 
