@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ScrollReveal } from '../components/ScrollReveal';
 import { LabelDivider } from '../components/LabelDivider';
 import { RevealDiv } from '../components/RevealDiv';
+import { GalleryLightbox } from '../components/GalleryLightbox';
 import { galleryImages } from '../lib/imageSets';
 
 // 갤러리 이미지(파일명 순). 원본 자산 경로: src/assets/sets/default/gallery/.
@@ -19,6 +20,7 @@ function chunkPairs<T>(arr: T[]): T[][] {
 /** FR-10: 웨딩 갤러리. 한 줄(사진 2장)씩 스크롤 리빌, '더보기'로 디렉토리 내 전체 표시. */
 export function GallerySection() {
   const [expanded, setExpanded] = useState(false);
+  const [zoomIndex, setZoomIndex] = useState<number | null>(null); // 확대 보기 중인 사진 index
   const rows = chunkPairs(galleryUrls);
   const visibleRows = expanded ? rows : rows.slice(0, INITIAL_ROWS);
   const hasMore = rows.length > INITIAL_ROWS;
@@ -36,14 +38,26 @@ export function GallerySection() {
         {visibleRows.map((row, ri) => (
           <RevealDiv key={ri}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
-              {row.map((src, ci) => (
-                <img
-                  key={ci}
-                  src={src}
-                  alt={`웨딩 갤러리 ${ri * 2 + ci + 1}`}
-                  style={{ width: '100%', aspectRatio: '4 / 5', objectFit: 'cover', borderRadius: 8, display: 'block' }}
-                />
-              ))}
+              {row.map((src, ci) => {
+                const idx = ri * 2 + ci; // 전체 배열 기준 index (확대 보기 시작 위치)
+                return (
+                  <img
+                    key={ci}
+                    src={src}
+                    alt={`웨딩 갤러리 ${idx + 1}`}
+                    onClick={() => setZoomIndex(idx)}
+                    data-testid="gallery-thumb"
+                    style={{
+                      width: '100%',
+                      aspectRatio: '4 / 5',
+                      objectFit: 'cover',
+                      borderRadius: 8,
+                      display: 'block',
+                      cursor: 'zoom-in',
+                    }}
+                  />
+                );
+              })}
             </div>
           </RevealDiv>
         ))}
@@ -67,6 +81,16 @@ export function GallerySection() {
             더보기 ⌄
           </button>
         </div>
+      )}
+
+      {/* 확대 보기. 전체 사진(더보기 이전 포함) 기준으로 순환 이동 */}
+      {zoomIndex !== null && (
+        <GalleryLightbox
+          images={galleryUrls}
+          index={zoomIndex}
+          onIndexChange={setZoomIndex}
+          onClose={() => setZoomIndex(null)}
+        />
       )}
     </ScrollReveal>
   );
