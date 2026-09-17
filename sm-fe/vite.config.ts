@@ -4,9 +4,9 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'fs';
 import { join } from 'path';
 
 // 빌드 후처리 플러그인.
-// - dist/index.html(기본 청첩장, React) 을 404.html / /invite/ 에 복사
-// - 루트(/)는 게임(/game/)으로 자동 이동(redirect) → thdguswnd.github.io 접속 시 게임형 청첩장
-//   ('/game' 은 public/game 에 정적 배포됨. 기본 청첩장은 '/invite' 에서 그대로 접속 가능)
+// - 루트(/)는 기본 청첩장(React) 을 그대로 서빙 → thdguswnd.github.io 접속 시 청첩장
+// - 같은 HTML 을 404.html(SPA 폴백) / /invite/ 에도 복사 (기존 공유 링크 유지)
+// - 게임은 '/game/' 에 정적 배포됨(public/game). 옛 주소 '/pokemon' 은 '/game/' 로 리다이렉트.
 function emitPages() {
   return {
     name: 'emit-pages',
@@ -20,16 +20,14 @@ function emitPages() {
       // 기본 청첩장을 /invite/ 에도 배치 (base '/' 라 절대경로 자산이 어디서든 동작)
       mkdirSync(join(dist, 'invite'), { recursive: true });
       writeFileSync(join(dist, 'invite', 'index.html'), html);
-      // 게임(/game/)으로 보내는 리다이렉트 페이지
+      // 루트(/) 는 dist/index.html 그대로 = 청첩장. (덮어쓰지 않음)
+      // 옛 게임 주소(/pokemon) → /game/ 리다이렉트 (이전에 공유된 링크 대비)
       const redirect =
         '<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">' +
         '<meta name="viewport" content="width=device-width, initial-scale=1">' +
         '<meta http-equiv="refresh" content="0; url=/game/">' +
         '<title>이동 중…</title>' +
         '<script>location.replace("/game/");</script></head><body></body></html>';
-      // 루트(/) → 게임
-      writeFileSync(indexPath, redirect);
-      // 옛 게임 주소(/pokemon) → 게임 (이전에 공유된 링크 대비)
       mkdirSync(join(dist, 'pokemon'), { recursive: true });
       writeFileSync(join(dist, 'pokemon', 'index.html'), redirect);
     },

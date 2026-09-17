@@ -51,23 +51,23 @@ export function HeroSection() {
         backgroundPosition: 'center',
       }}
     >
-      {/* 상단 1/3: 환영 메시지(크게) */}
-      <div style={layer({ top: '24%', left: '50%', width: '88%', whiteSpace: 'normal' })}>
+      {/* 상단: 환영 메시지(크게) */}
+      <div style={layer({ top: '19%', left: '50%', width: '88%', whiteSpace: 'normal' })}>
         <div style={{ fontWeight: 400, letterSpacing: '0.05em', lineHeight: 1.35 }}>
           <div style={{ fontSize: '2.4rem' }}>{main.title}</div>
           {main.titleSecondary && <div style={{ fontSize: '1.8rem' }}>{main.titleSecondary}</div>}
         </div>
       </div>
 
-      {/* 세로 2/3: 신랑(가로 1/5) · 신부(가로 4/5) */}
-      <div style={layer({ top: '66%', left: '20%', fontSize: '1.4rem', letterSpacing: '0.12em' })}>
+      {/* 신랑(가로 1/5) · 신부(가로 4/5) */}
+      <div style={layer({ top: '61%', left: '20%', fontSize: '1.4rem', letterSpacing: '0.12em' })}>
         {greeting.groom.name}
       </div>
-      <div style={layer({ top: '66%', left: '80%', fontSize: '1.4rem', letterSpacing: '0.12em' })}>
+      <div style={layer({ top: '61%', left: '80%', fontSize: '1.4rem', letterSpacing: '0.12em' })}>
         {greeting.bride.name}
       </div>
 
-      {/* 세로 5/6, 가로 1/2: 날짜 + 예식장 */}
+      {/* 일시·장소는 위치 유지(요청) */}
       <div style={layer({ top: '83%', left: '50%', fontSize: '1.05rem', letterSpacing: '0.18em' })}>
         {dateStr}
       </div>
