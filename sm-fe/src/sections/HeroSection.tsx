@@ -1,7 +1,7 @@
 import { useEffect, useState, type CSSProperties } from 'react';
 import { useContent } from '../content/ContentProvider';
 import { extractPalette, applyPalette } from '../lib/theme';
-import { currentSet, mainImages } from '../lib/imageSets';
+import { mainImages } from '../lib/imageSets';
 
 const SHADOW = '0 1px 8px rgba(0, 0, 0, 0.5)';
 
@@ -22,7 +22,7 @@ function layer(extra: CSSProperties): CSSProperties {
 export function HeroSection() {
   const { main, greeting, calendar } = useContent();
   const [heroSrc] = useState(() => {
-    const urls = mainImages(currentSet());
+    const urls = mainImages;
     return urls.length ? urls[Math.floor(Math.random() * urls.length)] : main.heroImage;
   });
 

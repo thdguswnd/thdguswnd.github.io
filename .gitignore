@@ -27,6 +27,9 @@ sm-fe/.yarn/install-state.gz
 # ────────────────────────────────────────
 *.zip
 *.tgz
+# 웨딩촬영 원본(보정본 JPEG, 장당 10~19MB). 최적화된 webp 만 커밋한다.
+# → sm-fe/src/assets/sets/default/gallery/*.webp
+webphotos/
 
 # ────────────────────────────────────────
 # 로컬 도구 설정

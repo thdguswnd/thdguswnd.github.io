@@ -2,13 +2,13 @@ import { useContent } from '../content/ContentProvider';
 import { SectionContainer } from '../components/SectionContainer';
 import { SmartImage } from '../components/SmartImage';
 import { RevealDiv } from '../components/RevealDiv';
-import { currentSet, timelineImages } from '../lib/imageSets';
+import { timelineImages } from '../lib/imageSets';
 import type { TimelineEntry } from '../content/types';
 
 /** FR-06: 타임라인. 이미지 + 텍스트가 좌우로 번갈아 배치되는 세로 타임라인. */
 export function TimelineSection() {
   const { timeline } = useContent();
-  const images = timelineImages(currentSet()); // 세트별 타임라인 이미지(엔트리 순서)
+  const images = timelineImages; // 타임라인 이미지(엔트리 순서 = 파일명 번호)
 
   return (
     <SectionContainer id="timeline" title="그리고 지금까지.">

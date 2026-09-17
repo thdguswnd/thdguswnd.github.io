@@ -2,10 +2,10 @@ import { useState } from 'react';
 import { ScrollReveal } from '../components/ScrollReveal';
 import { LabelDivider } from '../components/LabelDivider';
 import { RevealDiv } from '../components/RevealDiv';
-import { currentSet, galleryImages } from '../lib/imageSets';
+import { galleryImages } from '../lib/imageSets';
 
-// 현재 URL 세트의 갤러리 이미지(파일명 순). 세트별 이미지는 src/assets/sets/<세트명>/gallery/.
-const galleryUrls = galleryImages(currentSet());
+// 갤러리 이미지(파일명 순). 원본 자산 경로: src/assets/sets/default/gallery/.
+const galleryUrls = galleryImages;
 
 const INITIAL_ROWS = 3; // 초기 3줄(사진 6장) 표시 후 '더보기'
 
