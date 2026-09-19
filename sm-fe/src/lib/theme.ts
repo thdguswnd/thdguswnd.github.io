@@ -7,6 +7,14 @@ export interface Palette {
   muted: string;
 }
 
+/** 버건디 톤 테마 기본 팔레트 */
+export const BURGUNDY_PALETTE: Palette = {
+  bg: '#fbf5f4',
+  text: '#382d2e',
+  accent: '#7a2b38',
+  muted: '#8e7a7c',
+};
+
 const clamp = (n: number) => Math.max(0, Math.min(255, Math.round(n)));
 const mix = (a: number, b: number, t: number) => clamp(a + (b - a) * t);
 const toHex = (r: number, g: number, b: number) =>

@@ -6,9 +6,10 @@ import { Modal } from '../components/Modal';
 import { LabelDivider } from '../components/LabelDivider';
 import { SmartImage } from '../components/SmartImage';
 import type { AppLink } from '../content/types';
-import naverIcon from '../assets/nav-icons/navermap.png';
-import tmapIcon from '../assets/nav-icons/tmap.png';
-import kakaoNaviIcon from '../assets/nav-icons/kakaonavi.png';
+import naverIcon from '../assets/nav-icons/navermap.webp';
+import tmapIcon from '../assets/nav-icons/tmap.webp';
+import kakaoNaviIcon from '../assets/nav-icons/kakaonavi.webp';
+import sketchMapImage from '../assets/loftgarden344.webp';
 
 /** 앱 미설치 시 웹으로 폴백하는 링크 열기 (deep link + web fallback). */
 function openWithFallback(link: AppLink) {
@@ -68,25 +69,23 @@ export function DirectionsSection() {
       />
 
       {/* 오시는 길 약도 이미지 보기 */}
-      {directions.sketchMapImage && (
-        <button
-          type="button"
-          data-testid="sketch-open"
-          onClick={() => setShowMap(true)}
-          style={{
-            width: '100%',
-            marginTop: 12,
-            padding: '12px',
-            borderRadius: 10,
-            border: '1px solid #e0d8ce',
-            background: '#fff',
-            cursor: 'pointer',
-            fontSize: '0.9rem',
-          }}
-        >
-          찾아오시는 방법
-        </button>
-      )}
+      <button
+        type="button"
+        data-testid="sketch-open"
+        onClick={() => setShowMap(true)}
+        style={{
+          width: '100%',
+          marginTop: 12,
+          padding: '12px',
+          borderRadius: 10,
+          border: '1px solid #e0d8ce',
+          background: '#fff',
+          cursor: 'pointer',
+          fontSize: '0.9rem',
+        }}
+      >
+        찾아오시는 방법
+      </button>
 
       {/* 내비게이션 앱 버튼 (실제 앱 아이콘, 줄바꿈 없이 가로 꽉 차게) */}
       <div style={{ marginTop: 10 }}>
@@ -121,7 +120,7 @@ export function DirectionsSection() {
       {showMap && (
         <Modal onClose={() => setShowMap(false)}>
           <SmartImage
-            src={directions.sketchMapImage}
+            src={sketchMapImage}
             alt="찾아오시는 방법"
             style={{ width: '100%', display: 'block', borderRadius: 8 }}
           />

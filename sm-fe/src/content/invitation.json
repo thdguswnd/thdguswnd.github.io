@@ -1,6 +1,5 @@
 {
   "main": {
-    "heroImage": "/local-assets/main.jpeg",
     "title": "함께해,",
     "titleSecondary": "우리의 새로운 시작을",
     "subtitle": "2026. 11. 15. SUN"
@@ -60,10 +59,8 @@
     "tel": "02-2644-7823",
     "lat": 37.5237531,
     "lng": 126.8751431,
-    "mapImage": "/local-assets/map.png",
     "mapQuery": "서울 양천구 오목로 344",
     "kakaoJsKey": "6206ed51d627bc602bd6ac3a19048765",
-    "sketchMapImage": "/local-assets/loftgarden344.jpg",
     "appLinks": {
       "naver": { "deepLink": "nmap://route/car?dlat=37.5237531&dlng=126.8751431&dname=로프트가든344&appname=thdguswnd.github.io", "webUrl": "https://naver.me/xyTG8t3T" },
       "kakaoNavi": { "deepLink": "kakaonavi://navigate?name=로프트가든344&x=126.8751431&y=37.5237531&coord_type=wgs84", "webUrl": "https://map.kakao.com/link/to/로프트가든344,37.5237531,126.8751431" },
@@ -77,17 +74,6 @@
     ],
     "brideAccounts": [
       { "role": "아버지", "holder": "조진범", "bank": "하나은행", "number": "343-890565-75907" }
-    ]
-  },
-  "gallery": {
-    "initialCount": 6,
-    "images": [
-      { "src": "/local-assets/gallery/01.jpg" },
-      { "src": "/local-assets/gallery/02.jpg" },
-      { "src": "/local-assets/gallery/03.jpg" },
-      { "src": "/local-assets/gallery/04.jpg" },
-      { "src": "/local-assets/gallery/05.jpg" },
-      { "src": "/local-assets/gallery/06.jpg" }
     ]
   }
 }

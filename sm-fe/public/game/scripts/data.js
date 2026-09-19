@@ -3,7 +3,7 @@
  * 순수 데이터만 담는다. 로직은 game.js, 그림은 sprites.js.
  * window.GAME_DATA 전역으로 노출.
  *
- * [에셋/저작권] 캐릭터 이미지는 assets/*.png 를 불러오되, 파일이 없으면
+ * [에셋/저작권] 캐릭터 이미지는 assets/*.webp 를 불러오되, 파일이 없으면
  * sprites.js 의 오리지널 SVG 로 자동 대체된다(실제 게임 스프라이트 미포함).
  */
 (function () {
@@ -56,9 +56,9 @@
       opponentGender: '신부',
       battleIntro: '신랑 송현중에게\n궁금한 걸 물어보자!',
       // 트레이너 이미지 슬롯 — 정면/뒷모습 + 상대 정면
-      frontImg: { asset: 'assets/song-front.png', svg: 'trainerMaleFront' },
-      backImg: { asset: 'assets/song-back.png', svg: 'trainerMaleBack' },
-      oppImg: { asset: 'assets/jo-front.png', svg: 'trainerFemaleFront' },
+      frontImg: { asset: 'assets/song-front.webp', svg: 'trainerMaleFront' },
+      backImg: { asset: 'assets/song-back.webp', svg: 'trainerMaleBack' },
+      oppImg: { asset: 'assets/jo-front.webp', svg: 'trainerFemaleFront' },
     },
     jo: {
       key: 'jo',
@@ -75,14 +75,14 @@
       opponentName: '송현중',
       opponentGender: '신랑',
       battleIntro: '신부 조나영에게\n궁금한 걸 물어보자!',
-      frontImg: { asset: 'assets/jo-front.png', svg: 'trainerFemaleFront' },
-      backImg: { asset: 'assets/jo-back.png', svg: 'trainerFemaleBack' },
-      oppImg: { asset: 'assets/song-front.png', svg: 'trainerMaleFront' },
+      frontImg: { asset: 'assets/jo-front.webp', svg: 'trainerFemaleFront' },
+      backImg: { asset: 'assets/jo-back.webp', svg: 'trainerFemaleBack' },
+      oppImg: { asset: 'assets/song-front.webp', svg: 'trainerMaleFront' },
     },
   };
 
   // 오박사 이미지 슬롯
-  var OAK_IMG = { asset: 'assets/oak.png', svg: 'oak' };
+  var OAK_IMG = { asset: 'assets/oak.webp', svg: 'oak' };
 
   // 배틀 질문(2x2): 인물별로 다름. ask()=질문 대사, answer()=답변 대사(배열=여러 줄).
   // ('신부(은)는' / '신랑(은)는' 표기는 게임화면 오마주라 그대로 유지)

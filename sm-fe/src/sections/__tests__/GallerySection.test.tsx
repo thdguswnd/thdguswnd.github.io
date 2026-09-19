@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { GallerySection } from '../GallerySection';
-import { galleryImages } from '../../lib/imageSets';
+import { galleryImages } from '../../lib/images';
 
 const total = galleryImages.length;
 

@@ -2,7 +2,7 @@ import { useContent } from '../content/ContentProvider';
 import { SectionContainer } from '../components/SectionContainer';
 import { SmartImage } from '../components/SmartImage';
 import { RevealDiv } from '../components/RevealDiv';
-import { timelineImages } from '../lib/imageSets';
+import { timelineImages } from '../lib/images';
 import type { TimelineEntry } from '../content/types';
 
 /** FR-06: 타임라인. 이미지 + 텍스트가 좌우로 번갈아 배치되는 세로 타임라인. */

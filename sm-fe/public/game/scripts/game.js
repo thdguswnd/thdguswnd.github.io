@@ -554,7 +554,7 @@
     makeStreaks();
     // 캐릭터/배경 이미지 미리 로드(용량 큰 PNG가 늦게 떠서 fade-in이 씹히는 문제 방지)
     ['oak', 'song-front', 'song-back', 'jo-front', 'jo-back', 'wed-hall'].forEach(function (n) {
-      var im = new Image(); im.src = 'assets/' + n + '.png';
+      var im = new Image(); im.src = 'assets/' + n + '.webp';
     });
     startIntro();
   }

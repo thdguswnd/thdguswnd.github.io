@@ -19,8 +19,8 @@ export function GreetingSection() {
     { key: 'groom-mother', name: groom.parents.mother ?? '' }, // 02 오재순
     { key: 'bride-father', name: bride.parents.father ?? '' }, // 03 조진범
     { key: 'bride-mother', name: bride.parents.mother ?? '' }, // 04 김진
-    // { key: 'groom', name: groom.name }, // 05 송현중 (손글씨 대기)
-    // { key: 'bride', name: bride.name }, // 06 조나영 (손글씨 대기)
+    { key: 'groom', name: groom.name }, // 05 송현중
+    { key: 'bride', name: bride.name }, // 06 조나영
   ];
 
   return (

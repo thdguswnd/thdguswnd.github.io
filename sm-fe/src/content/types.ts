@@ -32,7 +32,7 @@ export interface ContactPerson {
 }
 
 export interface InvitationContent {
-  main: { heroImage: string; title: string; titleSecondary?: string; subtitle?: string };
+  main: { title: string; titleSecondary?: string; subtitle?: string };
   greeting: {
     label?: string;
     title?: string;
@@ -58,11 +58,8 @@ export interface InvitationContent {
     lat?: number;
     lng?: number;
     parking?: string;
-    mapImage?: string;
     kakaoJsKey?: string;
-    sketchMapImage?: string;
     appLinks: { naver?: AppLink; kakaoNavi?: AppLink; tmap?: AppLink };
   };
   gift: { message?: string; groomAccounts: Account[]; brideAccounts: Account[] };
-  gallery: { initialCount?: number; images: { src: string; link?: string }[] };
 }

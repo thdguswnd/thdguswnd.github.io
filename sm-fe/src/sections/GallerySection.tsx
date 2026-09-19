@@ -3,9 +3,9 @@ import { ScrollReveal } from '../components/ScrollReveal';
 import { LabelDivider } from '../components/LabelDivider';
 import { RevealDiv } from '../components/RevealDiv';
 import { GalleryLightbox } from '../components/GalleryLightbox';
-import { galleryImages } from '../lib/imageSets';
+import { galleryImages } from '../lib/images';
 
-// 갤러리 이미지(파일명 순). 원본 자산 경로: src/assets/sets/default/gallery/.
+// 갤러리 이미지(파일명 순). 원본 자산 경로: src/assets/gallery/.
 const galleryUrls = galleryImages;
 
 const INITIAL_ROWS = 3; // 초기 3줄(사진 6장) 표시 후 '더보기'
