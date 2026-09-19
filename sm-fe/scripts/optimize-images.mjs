@@ -1,8 +1,8 @@
 // 로컬 이미지 최적화 스크립트 (sharp).
 // 청첩장 및 게임 자산의 jpg/jpeg/png를 webp로 변환하고 원본은 제거한다.
-// 사진을 새로 넣은 뒤 `yarn optimize:images`로 실행하면 배포용 경량 webp가 만들어진다.
+// gallery 내 고용량 webp도 자동으로 1400px 폭, quality 80으로 경량화한다.
 import sharp from 'sharp';
-import { readdirSync, unlinkSync } from 'fs';
+import { readdirSync, unlinkSync, readFileSync, writeFileSync } from 'fs';
 import { join, extname, basename } from 'path';
 
 const roots = ['src/assets', 'public/game/assets'];
@@ -34,4 +34,25 @@ for (const root of roots) {
     console.log(`optimized: ${src} -> ${out}`);
   }
 }
+
+// 갤러리 webp 최적화 (300KB 초과 또는 너비 1400px 초과 시)
+const galleryDir = 'src/assets/gallery';
+try {
+  const galleryFiles = readdirSync(galleryDir).filter((f) => f.endsWith('.webp'));
+  for (const file of galleryFiles) {
+    const filePath = join(galleryDir, file);
+    const buf = readFileSync(filePath);
+    const meta = await sharp(buf).metadata();
+    if (buf.length > 300 * 1024 || (meta.width && meta.width > 1400)) {
+      const opt = await sharp(buf)
+        .rotate()
+        .resize({ width: 1400, withoutEnlargement: true })
+        .webp({ quality: 80 })
+        .toBuffer();
+      writeFileSync(filePath, opt);
+      console.log(`optimized gallery webp: ${file}`);
+    }
+  }
+} catch {}
+
 console.log('done.');
