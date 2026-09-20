@@ -6,9 +6,9 @@ import { createPortal } from 'react-dom';
  *
  * - 카드 넘김: [이전 · 현재 · 다음] 3장을 한 트랙에 두고 좌우로 쓸면 이웃 사진이 따라 움직인다.
  *   임계값을 넘기면 그 방향으로 넘어가고, 모자라면 제자리로 되돌아온다. 양 끝에서는 순환한다.
- * - 좌/우 화살표 버튼, 키보드 좌우 화살표로도 이동.
- * - 핀치 줌: 두 손가락으로 확대되며 손가락 중심을 기준으로 커진다.
- *   손을 떼면 원본 크기로 되돌아온다(인스타그램 방식, 확대 상태로 고정되지 않음).
+ * - 핀치 줌: 두 손가락으로 확대하고, 누른 상태로 움직이면 확대된 부분이 따라 이동한다.
+ *   손을 떼면 원본 크기·위치로 되돌아온다(확대 상태로 고정되지 않음).
+ * - 선로딩: 현재 사진 기준 앞뒤 2장을 미리 받아둬 스와이프 시 로딩 지연을 줄인다.
  * - 닫기: 오른쪽 위 ×, 사진 바깥(배경) 터치, ESC.
  */
 export function GalleryLightbox({
@@ -29,14 +29,16 @@ export function GalleryLightbox({
   const [animating, setAnimating] = useState(false); // 스냅 애니메이션 중 여부
   const pendingDelta = useRef(0); // 애니메이션 종료 후 반영할 이동량(-1/0/+1)
 
-  // 핀치 줌 상태
+  // 핀치 줌/이동 상태
   const [scale, setScale] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
   const [origin, setOrigin] = useState('50% 50%');
   const [zoomAnimating, setZoomAnimating] = useState(false);
 
   const startX = useRef(0);
   const startY = useRef(0);
   const pinchStartDist = useRef(0);
+  const pinchStartMid = useRef({ x: 0, y: 0 });
   const mode = useRef<'none' | 'swipe' | 'pinch'>('none');
 
   const wrap = useCallback((i: number) => ((i % total) + total) % total, [total]);
@@ -69,25 +71,40 @@ export function GalleryLightbox({
     };
   }, [onClose, jump]);
 
+  // 앞뒤 2장 선로딩. 트랙에 렌더되는 ±1 뿐 아니라 ±2 까지 받아둬야
+  // 연속으로 쓸어 넘길 때 빈 화면이 보이지 않는다.
+  useEffect(() => {
+    if (!total) return;
+    for (const d of [1, -1, 2, -2]) {
+      const img = new Image();
+      img.decoding = 'async';
+      img.src = images[wrap(index + d)];
+    }
+  }, [index, images, total, wrap]);
+
   if (!total) return null;
 
   const dist = (t: React.TouchList) =>
     Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+  const mid = (t: React.TouchList) => ({
+    x: (t[0].clientX + t[1].clientX) / 2,
+    y: (t[0].clientY + t[1].clientY) / 2,
+  });
 
   function handleTouchStart(e: React.TouchEvent) {
     if (e.touches.length >= 2) {
-      // 두 손가락 → 핀치 줌. 진행 중이던 스와이프는 취소.
+      // 두 손가락 → 핀치 줌 시작. 진행 중이던 스와이프는 취소.
       mode.current = 'pinch';
       setDragX(0);
       setAnimating(false);
+      setZoomAnimating(false);
       pinchStartDist.current = dist(e.touches);
+      const m = mid(e.touches);
+      pinchStartMid.current = m;
       // 확대 기준점 = 두 손가락 중간 지점(컨테이너 기준 %)
       const rect = e.currentTarget.getBoundingClientRect();
-      const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
-      const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
-      const px = ((midX - rect.left) / rect.width) * 100;
-      const py = ((midY - rect.top) / rect.height) * 100;
-      setZoomAnimating(false);
+      const px = ((m.x - rect.left) / rect.width) * 100;
+      const py = ((m.y - rect.top) / rect.height) * 100;
       setOrigin(`${Math.max(0, Math.min(100, px))}% ${Math.max(0, Math.min(100, py))}%`);
     } else if (e.touches.length === 1 && scale === 1) {
       mode.current = 'swipe';
@@ -101,7 +118,11 @@ export function GalleryLightbox({
     if (mode.current === 'pinch' && e.touches.length >= 2) {
       if (pinchStartDist.current > 0) {
         const factor = dist(e.touches) / pinchStartDist.current;
-        setScale(Math.max(1, Math.min(factor, 4))); // 1~4배
+        const nextScale = Math.max(1, Math.min(factor, 4)); // 1~4배
+        setScale(nextScale);
+        // 두 손가락 중심의 이동량만큼 확대된 사진을 따라 이동
+        const m = mid(e.touches);
+        setPan({ x: m.x - pinchStartMid.current.x, y: m.y - pinchStartMid.current.y });
       }
       return;
     }
@@ -115,12 +136,12 @@ export function GalleryLightbox({
 
   function handleTouchEnd(e: React.TouchEvent) {
     if (mode.current === 'pinch') {
-      // 남은 손가락이 있으면 아직 제스처 중
-      if (e.touches.length >= 2) return;
+      if (e.touches.length >= 2) return; // 아직 제스처 중
       mode.current = 'none';
       pinchStartDist.current = 0;
-      setZoomAnimating(true); // 원본 크기로 부드럽게 복귀
+      setZoomAnimating(true); // 원본 크기·위치로 부드럽게 복귀
       setScale(1);
+      setPan({ x: 0, y: 0 });
       return;
     }
     if (mode.current === 'swipe') {
@@ -161,7 +182,7 @@ export function GalleryLightbox({
     height: 44,
     borderRadius: '50%',
     border: 'none',
-    background: 'rgba(0, 0, 0, 0.3)',
+    background: 'rgba(0, 0, 0, 0.35)',
     color: '#fff',
     fontSize: '1.4rem',
     lineHeight: 1,
@@ -173,14 +194,14 @@ export function GalleryLightbox({
   };
 
   return createPortal(
-    // 배경(사진 바깥). 클릭하면 닫힘. 어둡기 완화: 0.6 → 0.45
+    // 배경(사진 바깥). 클릭하면 닫힘.
     <div
       data-testid="lightbox-backdrop"
       onClick={onClose}
       style={{
         position: 'fixed',
         inset: 0,
-        background: 'rgba(0, 0, 0, 0.45)',
+        background: 'rgba(0, 0, 0, 0.9)',
         overflow: 'hidden',
         zIndex: 1100,
         touchAction: 'none',
@@ -208,6 +229,7 @@ export function GalleryLightbox({
       >
         {slides.map((slideIdx, pos) => {
           const isCurrent = pos === 1;
+          const zoomed = isCurrent && (scale !== 1 || pan.x !== 0 || pan.y !== 0);
           return (
             <div
               key={`${slideIdx}-${pos}`}
@@ -217,10 +239,13 @@ export function GalleryLightbox({
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                // 확대는 현재 사진에만 적용, 손가락 중심 기준
-                transform: isCurrent && scale !== 1 ? `scale(${scale})` : undefined,
+                // 확대·이동은 현재 사진에만 적용
+                transform: zoomed
+                  ? `translate(${pan.x}px, ${pan.y}px) scale(${scale})`
+                  : undefined,
                 transformOrigin: origin,
                 transition: isCurrent && zoomAnimating ? 'transform 0.25s ease-out' : 'none',
+                willChange: isCurrent ? 'transform' : undefined,
               }}
             >
               <img
@@ -256,7 +281,7 @@ export function GalleryLightbox({
           height: 40,
           borderRadius: '50%',
           border: 'none',
-          background: 'rgba(0, 0, 0, 0.3)',
+          background: 'rgba(0, 0, 0, 0.35)',
           color: '#fff',
           fontSize: '1.5rem',
           lineHeight: 1,
