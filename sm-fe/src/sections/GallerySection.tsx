@@ -8,7 +8,7 @@ import { galleryImages } from '../lib/images';
 // 갤러리 이미지(파일명 순). 원본 자산 경로: src/assets/gallery/.
 const galleryUrls = galleryImages;
 
-const INITIAL_ROWS = 3; // 초기 3줄(사진 6장) 표시 후 '더보기'
+const ROWS_PER_PAGE = 3; // 한 번에 3줄(사진 6장)씩 표시
 
 /** 배열을 2개씩 묶어 행(row)으로. */
 function chunkPairs<T>(arr: T[]): T[][] {
@@ -17,13 +17,13 @@ function chunkPairs<T>(arr: T[]): T[][] {
   return rows;
 }
 
-/** FR-10: 웨딩 갤러리. 한 줄(사진 2장)씩 스크롤 리빌, '더보기'로 디렉토리 내 전체 표시. */
+/** FR-10: 웨딩 갤러리. 한 줄(사진 2장)씩 스크롤 리빌, '더보기' 시 6장씩 추가 표시. */
 export function GallerySection() {
-  const [expanded, setExpanded] = useState(false);
+  const [visibleRowsCount, setVisibleRowsCount] = useState(ROWS_PER_PAGE);
   const [zoomIndex, setZoomIndex] = useState<number | null>(null); // 확대 보기 중인 사진 index
   const rows = chunkPairs(galleryUrls);
-  const visibleRows = expanded ? rows : rows.slice(0, INITIAL_ROWS);
-  const hasMore = rows.length > INITIAL_ROWS;
+  const visibleRows = rows.slice(0, visibleRowsCount);
+  const hasMore = visibleRowsCount < rows.length;
 
   return (
     <ScrollReveal id="gallery">
@@ -45,6 +45,8 @@ export function GallerySection() {
                     key={ci}
                     src={src}
                     alt={`웨딩 갤러리 ${idx + 1}`}
+                    loading="lazy"
+                    decoding="async"
                     onClick={() => setZoomIndex(idx)}
                     data-testid="gallery-thumb"
                     style={{
@@ -63,13 +65,13 @@ export function GallerySection() {
         ))}
       </div>
 
-      {/* 더보기 (초기 표시분보다 더 있을 때만) */}
-      {hasMore && !expanded && (
+      {/* 더보기 (사진이 더 있을 때 6장(3줄)씩 추가) */}
+      {hasMore && (
         <div style={{ textAlign: 'center', marginTop: 16 }}>
           <button
             type="button"
             data-testid="gallery-more"
-            onClick={() => setExpanded(true)}
+            onClick={() => setVisibleRowsCount((prev) => prev + ROWS_PER_PAGE)}
             style={{
               border: 'none',
               background: 'transparent',
