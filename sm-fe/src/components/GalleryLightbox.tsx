@@ -3,10 +3,13 @@ import { createPortal } from 'react-dom';
 
 /**
  * 갤러리 확대 보기(라이트박스).
- * - 좌/우 화살표 클릭 또는 좌/우 터치 스와이프로 사진 넘기기
- * - 인스타그램 스타일 두 손가락 핀치 줌: 두 손가락으로 확대 시 확대되고, 손을 떼면 원본 크기로 자동 복귀(Snap-back)
- * - 배경 반투명 어둡기 완화(rgba(0, 0, 0, 0.6))
- * - 오른쪽 위 X, 사진 바깥(배경) 터치, ESC 로 닫기
+ *
+ * - 카드 넘김: [이전 · 현재 · 다음] 3장을 한 트랙에 두고 좌우로 쓸면 이웃 사진이 따라 움직인다.
+ *   임계값을 넘기면 그 방향으로 넘어가고, 모자라면 제자리로 되돌아온다. 양 끝에서는 순환한다.
+ * - 좌/우 화살표 버튼, 키보드 좌우 화살표로도 이동.
+ * - 핀치 줌: 두 손가락으로 확대되며 손가락 중심을 기준으로 커진다.
+ *   손을 떼면 원본 크기로 되돌아온다(인스타그램 방식, 확대 상태로 고정되지 않음).
+ * - 닫기: 오른쪽 위 ×, 사진 바깥(배경) 터치, ESC.
  */
 export function GalleryLightbox({
   images,
@@ -21,109 +24,134 @@ export function GalleryLightbox({
 }) {
   const total = images.length;
 
-  // 스와이프 및 핀치 줌 상태
-  const [dragX, setDragX] = useState(0);
+  // 카드 넘김 상태
+  const [dragX, setDragX] = useState(0); // 트랙의 현재 가로 오프셋(px)
+  const [animating, setAnimating] = useState(false); // 스냅 애니메이션 중 여부
+  const pendingDelta = useRef(0); // 애니메이션 종료 후 반영할 이동량(-1/0/+1)
+
+  // 핀치 줌 상태
   const [scale, setScale] = useState(1);
-  const [isAnimatingBack, setIsAnimatingBack] = useState(false);
+  const [origin, setOrigin] = useState('50% 50%');
+  const [zoomAnimating, setZoomAnimating] = useState(false);
 
-  const touchStartX = useRef(0);
-  const touchStartY = useRef(0);
-  const initialPinchDist = useRef(0);
-  const isSwiping = useRef(false);
-  const isPinching = useRef(false);
+  const startX = useRef(0);
+  const startY = useRef(0);
+  const pinchStartDist = useRef(0);
+  const mode = useRef<'none' | 'swipe' | 'pinch'>('none');
 
-  // 순환 이동: 첫 장에서 이전 → 마지막 장, 마지막 장에서 다음 → 첫 장
-  const move = useCallback(
+  const wrap = useCallback((i: number) => ((i % total) + total) % total, [total]);
+
+  /** 버튼·키보드용 즉시 이동. */
+  const jump = useCallback(
     (delta: number) => {
       if (!total) return;
-      onIndexChange((index + delta + total) % total);
+      setAnimating(false);
       setDragX(0);
+      pendingDelta.current = 0;
+      onIndexChange(wrap(index + delta));
     },
-    [index, total, onIndexChange],
+    [index, total, onIndexChange, wrap],
   );
 
-  // 배경 스크롤 잠금 + 키보드 조작(ESC 닫기, 좌우 화살표 이동)
+  // 배경 스크롤 잠금 + 키보드 조작
   useEffect(() => {
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
-      else if (e.key === 'ArrowLeft') move(-1);
-      else if (e.key === 'ArrowRight') move(1);
+      else if (e.key === 'ArrowLeft') jump(-1);
+      else if (e.key === 'ArrowRight') jump(1);
     };
     window.addEventListener('keydown', onKey);
     return () => {
       document.body.style.overflow = prevOverflow;
       window.removeEventListener('keydown', onKey);
     };
-  }, [onClose, move]);
+  }, [onClose, jump]);
 
   if (!total) return null;
 
-  // 터치 이벤트 핸들러
-  const handleTouchStart = (e: React.TouchEvent) => {
-    if (e.touches.length === 2) {
-      // 두 손가락: 핀치 줌 모드 시작
-      isSwiping.current = false;
-      isPinching.current = true;
+  const dist = (t: React.TouchList) =>
+    Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+
+  function handleTouchStart(e: React.TouchEvent) {
+    if (e.touches.length >= 2) {
+      // 두 손가락 → 핀치 줌. 진행 중이던 스와이프는 취소.
+      mode.current = 'pinch';
       setDragX(0);
-      const dist = Math.hypot(
-        e.touches[0].clientX - e.touches[1].clientX,
-        e.touches[0].clientY - e.touches[1].clientY,
-      );
-      initialPinchDist.current = dist;
-    } else if (e.touches.length === 1) {
-      // 한 손가락: 스와이프 모드 준비
-      touchStartX.current = e.touches[0].clientX;
-      touchStartY.current = e.touches[0].clientY;
-      isSwiping.current = true;
-      isPinching.current = false;
+      setAnimating(false);
+      pinchStartDist.current = dist(e.touches);
+      // 확대 기준점 = 두 손가락 중간 지점(컨테이너 기준 %)
+      const rect = e.currentTarget.getBoundingClientRect();
+      const midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+      const midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+      const px = ((midX - rect.left) / rect.width) * 100;
+      const py = ((midY - rect.top) / rect.height) * 100;
+      setZoomAnimating(false);
+      setOrigin(`${Math.max(0, Math.min(100, px))}% ${Math.max(0, Math.min(100, py))}%`);
+    } else if (e.touches.length === 1 && scale === 1) {
+      mode.current = 'swipe';
+      startX.current = e.touches[0].clientX;
+      startY.current = e.touches[0].clientY;
+      setAnimating(false);
     }
-  };
+  }
 
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (isPinching.current && e.touches.length === 2) {
-      // 두 손가락 확대 배율 계산 (최대 4배)
-      const currentDist = Math.hypot(
-        e.touches[0].clientX - e.touches[1].clientX,
-        e.touches[0].clientY - e.touches[1].clientY,
-      );
-      if (initialPinchDist.current > 0) {
-        const factor = currentDist / initialPinchDist.current;
-        setScale(Math.max(1, Math.min(factor, 4)));
+  function handleTouchMove(e: React.TouchEvent) {
+    if (mode.current === 'pinch' && e.touches.length >= 2) {
+      if (pinchStartDist.current > 0) {
+        const factor = dist(e.touches) / pinchStartDist.current;
+        setScale(Math.max(1, Math.min(factor, 4))); // 1~4배
       }
-    } else if (isSwiping.current && e.touches.length === 1 && scale === 1) {
-      const currentX = e.touches[0].clientX;
-      const currentY = e.touches[0].clientY;
-      const dx = currentX - touchStartX.current;
-      const dy = currentY - touchStartY.current;
-
-      // 수평 이동이 수직 이동보다 클 때만 스와이프 피드백 반영
-      if (Math.abs(dx) > Math.abs(dy)) {
-        setDragX(dx);
-      }
+      return;
     }
-  };
+    if (mode.current === 'swipe' && e.touches.length === 1) {
+      const dx = e.touches[0].clientX - startX.current;
+      const dy = e.touches[0].clientY - startY.current;
+      // 가로 이동이 세로보다 뚜렷할 때만 카드를 끌어당긴다(세로 스크롤 오인 방지)
+      if (Math.abs(dx) > Math.abs(dy)) setDragX(dx);
+    }
+  }
 
-  const handleTouchEnd = () => {
-    if (isPinching.current) {
-      // 핀치 줌 종료: 손을 떼면 인스타그램처럼 즉시 원본(scale: 1)으로 부드럽게 복귀
-      isPinching.current = false;
-      initialPinchDist.current = 0;
-      setIsAnimatingBack(true);
+  function handleTouchEnd(e: React.TouchEvent) {
+    if (mode.current === 'pinch') {
+      // 남은 손가락이 있으면 아직 제스처 중
+      if (e.touches.length >= 2) return;
+      mode.current = 'none';
+      pinchStartDist.current = 0;
+      setZoomAnimating(true); // 원본 크기로 부드럽게 복귀
       setScale(1);
-      setTimeout(() => setIsAnimatingBack(false), 260);
-    } else if (isSwiping.current) {
-      isSwiping.current = false;
-      const SWIPE_THRESHOLD = 45; // 45px 이상 스와이프 시 사진 전환
-      if (dragX < -SWIPE_THRESHOLD) {
-        move(1); // 왼쪽으로 쓸어 넘김 -> 다음 사진
-      } else if (dragX > SWIPE_THRESHOLD) {
-        move(-1); // 오른쪽으로 쓸어 넘김 -> 이전 사진
-      }
-      setDragX(0);
+      return;
     }
-  };
+    if (mode.current === 'swipe') {
+      mode.current = 'none';
+      const w = window.innerWidth || 1;
+      const threshold = Math.min(70, w * 0.15);
+      setAnimating(true);
+      if (dragX <= -threshold) {
+        pendingDelta.current = 1; // 왼쪽으로 쓸기 → 다음
+        setDragX(-w);
+      } else if (dragX >= threshold) {
+        pendingDelta.current = -1; // 오른쪽으로 쓸기 → 이전
+        setDragX(w);
+      } else {
+        pendingDelta.current = 0; // 부족 → 제자리 복귀
+        setDragX(0);
+      }
+    }
+  }
+
+  /** 스냅 애니메이션이 끝난 시점에 실제 index 를 넘기고 트랙을 원위치로. */
+  function handleTrackTransitionEnd() {
+    if (!animating) return;
+    setAnimating(false);
+    const delta = pendingDelta.current;
+    pendingDelta.current = 0;
+    setDragX(0);
+    if (delta !== 0) onIndexChange(wrap(index + delta));
+  }
+
+  const slides = [wrap(index - 1), index, wrap(index + 1)];
 
   const navButton = {
     position: 'absolute' as const,
@@ -133,7 +161,7 @@ export function GalleryLightbox({
     height: 44,
     borderRadius: '50%',
     border: 'none',
-    background: 'rgba(0, 0, 0, 0.35)',
+    background: 'rgba(0, 0, 0, 0.3)',
     color: '#fff',
     fontSize: '1.4rem',
     lineHeight: 1,
@@ -145,22 +173,75 @@ export function GalleryLightbox({
   };
 
   return createPortal(
-    // 배경(사진 바깥). 클릭하면 닫힘. 반투명 어둡기를 0.9에서 0.6으로 완화
+    // 배경(사진 바깥). 클릭하면 닫힘. 어둡기 완화: 0.6 → 0.45
     <div
       data-testid="lightbox-backdrop"
       onClick={onClose}
       style={{
         position: 'fixed',
         inset: 0,
-        background: 'rgba(0, 0, 0, 0.6)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
+        background: 'rgba(0, 0, 0, 0.45)',
+        overflow: 'hidden',
         zIndex: 1100,
         touchAction: 'none',
         userSelect: 'none',
+        WebkitUserSelect: 'none',
       }}
     >
+      {/* 카드 트랙: [이전 · 현재 · 다음]. 기본 위치는 -100vw(가운데 = 현재 사진) */}
+      <div
+        onClick={(e) => e.stopPropagation()}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onTouchCancel={handleTouchEnd}
+        onTransitionEnd={handleTrackTransitionEnd}
+        style={{
+          position: 'absolute',
+          inset: 0,
+          display: 'flex',
+          width: '300vw',
+          transform: `translateX(calc(-100vw + ${dragX}px))`,
+          transition: animating ? 'transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1)' : 'none',
+          willChange: 'transform',
+        }}
+      >
+        {slides.map((slideIdx, pos) => {
+          const isCurrent = pos === 1;
+          return (
+            <div
+              key={`${slideIdx}-${pos}`}
+              style={{
+                flex: '0 0 100vw',
+                height: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                // 확대는 현재 사진에만 적용, 손가락 중심 기준
+                transform: isCurrent && scale !== 1 ? `scale(${scale})` : undefined,
+                transformOrigin: origin,
+                transition: isCurrent && zoomAnimating ? 'transform 0.25s ease-out' : 'none',
+              }}
+            >
+              <img
+                src={images[slideIdx]}
+                alt={`웨딩 갤러리 확대 ${slideIdx + 1}`}
+                data-testid={isCurrent ? 'lightbox-image' : undefined}
+                draggable={false}
+                decoding="async"
+                style={{
+                  maxWidth: '100vw',
+                  maxHeight: '100vh',
+                  width: 'auto',
+                  height: 'auto',
+                  objectFit: 'contain',
+                }}
+              />
+            </div>
+          );
+        })}
+      </div>
+
       {/* 닫기 (오른쪽 위) */}
       <button
         type="button"
@@ -175,7 +256,7 @@ export function GalleryLightbox({
           height: 40,
           borderRadius: '50%',
           border: 'none',
-          background: 'rgba(0, 0, 0, 0.35)',
+          background: 'rgba(0, 0, 0, 0.3)',
           color: '#fff',
           fontSize: '1.5rem',
           lineHeight: 1,
@@ -186,12 +267,12 @@ export function GalleryLightbox({
         ×
       </button>
 
-      {/* 이전 */}
+      {/* 이전 / 다음 */}
       <button
         type="button"
         onClick={(e) => {
           e.stopPropagation();
-          move(-1);
+          jump(-1);
         }}
         aria-label="이전 사진"
         data-testid="lightbox-prev"
@@ -199,13 +280,11 @@ export function GalleryLightbox({
       >
         ‹
       </button>
-
-      {/* 다음 */}
       <button
         type="button"
         onClick={(e) => {
           e.stopPropagation();
-          move(1);
+          jump(1);
         }}
         aria-label="다음 사진"
         data-testid="lightbox-next"
@@ -213,45 +292,6 @@ export function GalleryLightbox({
       >
         ›
       </button>
-
-      {/* 사진 컨테이너: 스와이프 및 핀치 줌 제스처 영역 */}
-      <div
-        onClick={(e) => e.stopPropagation()}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-        onTouchCancel={handleTouchEnd}
-        style={{
-          maxWidth: '100vw',
-          maxHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          transform: scale !== 1 ? `scale(${scale})` : `translateX(${dragX}px)`,
-          transformOrigin: 'center center',
-          transition: isAnimatingBack
-            ? 'transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1)'
-            : dragX === 0
-              ? 'transform 0.2s ease-out'
-              : 'none',
-          willChange: 'transform',
-        }}
-      >
-        <img
-          src={images[index]}
-          alt={`웨딩 갤러리 확대 ${index + 1}`}
-          data-testid="lightbox-image"
-          draggable={false}
-          onClick={(e) => e.stopPropagation()}
-          style={{
-            maxWidth: '100vw',
-            maxHeight: '100vh',
-            width: 'auto',
-            height: 'auto',
-            objectFit: 'contain',
-          }}
-        />
-      </div>
 
       {/* 현재 위치 표시 */}
       <div
@@ -264,7 +304,8 @@ export function GalleryLightbox({
           color: 'rgba(255, 255, 255, 0.9)',
           fontSize: '0.85rem',
           pointerEvents: 'none',
-          textShadow: '0 1px 4px rgba(0,0,0,0.5)',
+          textShadow: '0 1px 4px rgba(0,0,0,0.6)',
+          zIndex: 3,
         }}
       >
         {index + 1} / {total}

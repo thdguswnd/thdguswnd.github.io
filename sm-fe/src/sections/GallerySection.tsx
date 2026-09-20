@@ -3,10 +3,12 @@ import { ScrollReveal } from '../components/ScrollReveal';
 import { LabelDivider } from '../components/LabelDivider';
 import { RevealDiv } from '../components/RevealDiv';
 import { GalleryLightbox } from '../components/GalleryLightbox';
-import { galleryImages } from '../lib/images';
+import { galleryImages, galleryThumbs } from '../lib/images';
 
-// 갤러리 이미지(파일명 순). 원본 자산 경로: src/assets/gallery/.
+// 그리드는 축소본(gallery-thumb), 확대 보기는 원본(gallery) 사용.
+// 원본을 그리드에 그대로 쓰면 디코딩 비용이 커서 '더보기' 시 버벅인다.
 const galleryUrls = galleryImages;
+const thumbUrls = galleryThumbs;
 
 const ROWS_PER_PAGE = 3; // 한 번에 3줄(사진 6장)씩 표시
 
@@ -38,8 +40,9 @@ export function GallerySection() {
         {visibleRows.map((row, ri) => (
           <RevealDiv key={ri}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}>
-              {row.map((src, ci) => {
+              {row.map((_full, ci) => {
                 const idx = ri * 2 + ci; // 전체 배열 기준 index (확대 보기 시작 위치)
+                const src = thumbUrls[idx]; // 그리드는 축소본 사용
                 return (
                   <img
                     key={ci}
@@ -47,15 +50,20 @@ export function GallerySection() {
                     alt={`웨딩 갤러리 ${idx + 1}`}
                     loading="lazy"
                     decoding="async"
+                    width={480}
+                    height={720}
                     onClick={() => setZoomIndex(idx)}
                     data-testid="gallery-thumb"
                     style={{
                       width: '100%',
+                      height: 'auto',
                       aspectRatio: '4 / 5',
                       objectFit: 'cover',
                       borderRadius: 8,
                       display: 'block',
                       cursor: 'zoom-in',
+                      // 합성 레이어로 올려 리빌 애니메이션 중 리페인트 비용 절감
+                      backgroundColor: '#efe9e2',
                     }}
                   />
                 );

@@ -58,11 +58,11 @@ export function HeroSection() {
         {greeting.bride.name}
       </div>
 
-      {/* 일시·장소 */}
-      <div style={layer({ top: '86.5%', left: '50%', fontSize: '1.05rem', letterSpacing: '0.18em' })}>
+      {/* 일시·장소 (글씨 한 줄 높이 ≈ 4% 만큼 아래로) */}
+      <div style={layer({ top: '90.5%', left: '50%', fontSize: '1.05rem', letterSpacing: '0.18em' })}>
         {dateStr}
       </div>
-      <div style={layer({ top: '91.5%', left: '50%', fontSize: '1.2rem', letterSpacing: '0.1em' })}>
+      <div style={layer({ top: '95.5%', left: '50%', fontSize: '1.2rem', letterSpacing: '0.1em' })}>
         로프트가든344
       </div>
     </section>

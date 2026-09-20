@@ -7,6 +7,14 @@ const galleryMods = import.meta.glob('../assets/gallery/*.{webp,jpg,jpeg,png,JPG
   import: 'default',
 }) as Record<string, string>;
 
+// 그리드 표시용 축소본(폭 480px). 원본을 그대로 쓰면 디코딩 비용이 커서 '더보기' 시 버벅인다.
+// 생성: yarn thumbs (scripts/make-thumbs.mjs)
+const galleryThumbMods = import.meta.glob('../assets/gallery-thumb/*.{webp,jpg,jpeg,png,JPG,JPEG,PNG}', {
+  eager: true,
+  query: '?url',
+  import: 'default',
+}) as Record<string, string>;
+
 const timelineMods = import.meta.glob('../assets/timeline/*.{webp,jpg,jpeg,png,JPG,JPEG,PNG}', {
   eager: true,
   query: '?url',
@@ -48,8 +56,16 @@ function indexedUrls(mods: Record<string, string>): string[] {
 /** 메인(히어로) 이미지 URL. */
 export { heroImage };
 
-/** 갤러리 이미지 URL 배열(파일명 순). */
+/** 갤러리 원본 이미지 URL 배열(파일명 순). 확대 보기(라이트박스)에서 사용. */
 export const galleryImages = sortedUrls(galleryMods);
+
+/**
+ * 갤러리 그리드용 축소본 URL 배열(파일명 순, galleryImages 와 같은 순서).
+ * 썸네일이 아직 생성되지 않았으면 원본으로 폴백한다.
+ */
+const galleryThumbUrls = sortedUrls(galleryThumbMods);
+export const galleryThumbs =
+  galleryThumbUrls.length === galleryImages.length ? galleryThumbUrls : galleryImages;
 
 /** 타임라인 이미지 URL 배열(인덱스 = 파일명 번호 - 1). */
 export const timelineImages = indexedUrls(timelineMods);

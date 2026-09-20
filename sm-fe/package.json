@@ -10,6 +10,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "optimize:images": "node scripts/optimize-images.mjs",
+    "thumbs": "node scripts/make-thumbs.mjs",
     "lint": "eslint . --ext .ts,.tsx",
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\""
   },

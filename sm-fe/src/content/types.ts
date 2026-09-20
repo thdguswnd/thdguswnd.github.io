@@ -38,7 +38,8 @@ export interface InvitationContent {
     title?: string;
     poem?: string;
     poemSource?: string;
-    message: string;
+    // 현재 화면에서는 사용하지 않는다(invitation.json 에서 제거됨). 필수로 두면 tsc 가 실패해 배포가 깨진다.
+    message?: string;
     groom: Person;
     bride: Person;
   };
