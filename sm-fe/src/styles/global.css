@@ -71,8 +71,29 @@ textarea {
   letter-spacing: 0.1em;
 }
 
-/* 히어로 전체 높이. iOS 주소창 리사이즈로 인한 튐 방지 위해 svh 사용(미지원 시 vh 폴백). */
+/* 히어로 전체 높이. 텍스트 위치(top %)의 기준이므로 svh 유지. */
 .hero-full {
-  min-height: 100vh;
+  position: relative;
+  min-height: 100vh; /* 구형 폴백 */
   min-height: 100svh;
+  overflow: hidden; /* lvh 로 넘치는 배경 레이어를 잘라냄 */
+}
+
+/* 히어로 배경 레이어.
+   모바일에서 스크롤하면 주소창이 접히며 뷰포트 높이가 커진다. 배경을 히어로 요소에
+   직접 넣으면 요소 높이가 커질 때 background-size: cover 가 재계산되어 이미지가
+   비례 확대된다('스크롤하면 사진이 확대되는' 현상).
+   → 배경을 별도 레이어로 분리하고 높이를 lvh(주소창 접힌 상태 기준)로 고정한다.
+     lvh 는 스크롤 중 변하지 않으므로 이미지 스케일도 고정된다. */
+.hero-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100vh; /* 구형 폴백 */
+  height: 100lvh;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: 0;
 }

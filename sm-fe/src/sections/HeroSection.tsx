@@ -34,14 +34,13 @@ export function HeroSection() {
       className="section is-visible hero-full"
       data-testid="hero-section"
       style={{
-        position: 'relative',
         padding: 0,
         color: '#fff',
-        backgroundImage: `url(${heroSrc})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
       }}
     >
+      {/* 배경 사진. 스크롤 시 주소창 접힘으로 인한 확대를 막기 위해 별도 레이어로 분리(.hero-bg) */}
+      <div className="hero-bg" style={{ backgroundImage: `url(${heroSrc})` }} aria-hidden />
+
       {/* 상단: 환영 메시지(크게) */}
       <div style={layer({ top: '19%', left: '50%', width: '88%', whiteSpace: 'normal' })}>
         <div style={{ fontWeight: 400, letterSpacing: '0.05em', lineHeight: 1.35 }}>
