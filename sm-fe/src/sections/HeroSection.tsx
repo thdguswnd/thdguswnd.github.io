@@ -1,6 +1,6 @@
 import { useEffect, type CSSProperties } from 'react';
 import { useContent } from '../content/ContentProvider';
-import { BURGUNDY_PALETTE, applyPalette } from '../lib/theme';
+import { GREEN_PALETTE, applyPalette } from '../lib/theme';
 import { heroImage } from '../lib/images';
 
 const SHADOW = '0 1px 8px rgba(0, 0, 0, 0.5)';
@@ -18,13 +18,15 @@ function layer(extra: CSSProperties): CSSProperties {
   };
 }
 
-/** FR-01: 메인(포스터형). 배경 사진 위에 환영 메시지·신랑/신부·날짜를 포스터처럼 배치. 버건디 테마 설정. */
+/** FR-01: 메인(포스터형). 배경 사진 위에 환영 메시지·신랑/신부·날짜를 포스터처럼 배치. 이미지 key color 로 테마 설정. */
 export function HeroSection() {
   const { main, greeting, calendar } = useContent();
   const heroSrc = heroImage;
 
+  // 은은한 초록 테마 적용.
+  // (사진에서 색을 추출하면 현재 메인 사진은 하늘색 비중이 커서 청회색이 나오므로 고정값 사용)
   useEffect(() => {
-    applyPalette(BURGUNDY_PALETTE);
+    applyPalette(GREEN_PALETTE);
   }, []);
 
   const dateStr = calendar.weddingDate.replace(/-/g, '.'); // 2026.11.15

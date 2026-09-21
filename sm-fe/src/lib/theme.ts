@@ -7,12 +7,16 @@ export interface Palette {
   muted: string;
 }
 
-/** 버건디 톤 테마 기본 팔레트 */
-export const BURGUNDY_PALETTE: Palette = {
-  bg: '#fbf5f4',
-  text: '#382d2e',
-  accent: '#7a2b38',
-  muted: '#8e7a7c',
+/**
+ * 은은한 초록(세이지/올리브) 테마 팔레트.
+ * 초기 메인 사진(초목 배경)에서 추출됐던 색을 고정값으로 보존한 것.
+ * 메인 사진이 바뀌어도 테마 톤이 흔들리지 않게 하려고 상수로 둔다.
+ */
+export const GREEN_PALETTE: Palette = {
+  bg: '#f3f5f1',
+  text: '#373934',
+  accent: '#677159',
+  muted: '#808777',
 };
 
 const clamp = (n: number) => Math.max(0, Math.min(255, Math.round(n)));

@@ -1,8 +1,10 @@
 :root {
-  --color-bg: #fbf5f4;
-  --color-text: #382d2e;
-  --color-accent: #7a2b38;
-  --color-muted: #8e7a7c;
+  /* 은은한 초록 테마. lib/theme.ts 의 GREEN_PALETTE 와 같은 값으로,
+     JS 적용 전 첫 렌더에서 색이 튀지 않도록 여기에도 동일하게 둔다. */
+  --color-bg: #f3f5f1;
+  --color-text: #373934;
+  --color-accent: #677159;
+  --color-muted: #808777;
   --max-width: 480px;
 }
 
