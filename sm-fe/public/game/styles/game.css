@@ -150,6 +150,33 @@ html, body {
   left: auto; right: 3%; transform: none; bottom: 31%;
   z-index: 30;
 }
+
+/* 건너뛰기 버튼 — 게임 내내 상시 노출.
+   위치: 선택지 박스(.choice-box, right/bottom 동일)와 같은 높이의 반대쪽(좌측).
+   스타일: 대화창의 흰 박스(--dlg-fill)와 구분되도록 어두운 반투명 알약형 버튼. */
+.skip-btn {
+  position: absolute;
+  left: 3%;
+  bottom: 31%;
+  z-index: 31; /* 엔딩 메뉴(30)보다 위 → 엔딩에서도 눌린다 */
+  padding: .4em .9em;
+  font-family: inherit;
+  font-size: .82em;
+  line-height: 1.2;
+  white-space: nowrap;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.42);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 999px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  cursor: pointer;
+  transition: background .15s ease, transform .1s ease;
+}
+
+.skip-btn:hover { background: rgba(0, 0, 0, 0.58); }
+.skip-btn:active { transform: scale(0.96); background: rgba(0, 0, 0, 0.66); }
 #end-menu.hidden { display: none; }
 #end-menu .choice-item { padding: .28em .5em .28em 1.2em; }
 .choice-item {

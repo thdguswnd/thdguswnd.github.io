@@ -11,7 +11,8 @@
   var CHARACTERS = DATA.CHARACTERS;
   var CFG = DATA.CONFIG;
 
-  var state = { scene: 'intro', charKey: null, hits: { song: 0, jo: 0 }, usedMoves: {}, busy: false };
+  // aborted: '건너뛰기'/'종료하기' 로 게임을 중단하고 청첩장으로 이동하는 중인지
+  var state = { scene: 'intro', charKey: null, hits: { song: 0, jo: 0 }, usedMoves: {}, busy: false, aborted: false };
 
   var el = {};
   function $(id) { return document.getElementById(id); }
@@ -48,8 +49,29 @@
     el.cmdBar = $('cmd-bar');
     el.cmdPrompt = $('cmd-prompt');
     el.endMenu = $('end-menu');
+    el.skipBtn = $('skip-btn');
     el.fxFlash = $('fx-flash');
     el.fxBlack = $('fx-black');
+  }
+
+  // ---- 청첩장으로 이동 ----
+  // 진행 중인 연출/타이머가 남아 화면이 덧그려지지 않도록 먼저 중단 플래그를 세우고 이동한다.
+  // (페이지 이동으로 스크립트가 폐기되지만, 이동 직전 프레임에 콜백이 끼어드는 것을 막는다)
+  var INVITE_URL = '/invite/';
+  function goToInvite() {
+    if (state.aborted) return;
+    state.aborted = true;
+    state.busy = true;
+    window.location.href = INVITE_URL;
+  }
+
+  function bindSkip() {
+    if (!el.skipBtn) return;
+    el.skipBtn.addEventListener('click', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      goToInvite();
+    });
   }
 
   // ---- 스프라이트 렌더 (이미지 우선, 실패 시 SVG 폴백) ----
@@ -459,11 +481,16 @@
     }, 520);
   }
 
-  // 엔딩 후 '다시 하기' 박스 (캐릭터 선택 박스와 같은 위치, 우측 위) → 처음부터 재시작
+  // 엔딩 후 선택 박스 (캐릭터 선택 박스와 같은 위치, 우측 위)
+  //  - 다시하기      → 처음부터 재시작
+  //  - 종료하기(청첩장으로) → invite 페이지로 이동
   function showEndMenu() {
     el.endMenu.innerHTML = '';
-    el.endMenu.appendChild(makeChoice('다시 하기', function () {
+    el.endMenu.appendChild(makeChoice('다시하기', function () {
       location.reload();
+    }));
+    el.endMenu.appendChild(makeChoice('종료하기(청첩장으로)', function () {
+      goToInvite();
     }));
     el.endMenu.classList.remove('hidden');
   }
@@ -549,6 +576,7 @@
 
   function boot() {
     cacheDom();
+    bindSkip();
     bindLayout();
     layout();
     makeStreaks();
