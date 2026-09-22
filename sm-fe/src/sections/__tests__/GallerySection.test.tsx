@@ -80,3 +80,30 @@ it('빈 영역을 눌러도 확대 보기가 닫히지 않는다', async () => {
   await user.click(screen.getByTestId('lightbox-backdrop'));
   expect(screen.getByTestId('lightbox-image')).toBeInTheDocument();
 });
+
+// 회귀 방지: history 처리 effect 가 onClose 를 의존성으로 가지면
+// 사진을 넘길 때마다 cleanup 이 돌며 history.back() -> popstate -> 팝업이 닫혔다.
+it('< > 로 여러 번 넘겨도 팝업이 닫히지 않는다', async () => {
+  const user = await openRow('A');
+  const total = galleryRows.A.length;
+
+  await user.click(screen.getByTestId('lightbox-next'));
+  expect(screen.getByTestId('lightbox-image')).toBeInTheDocument();
+  await user.click(screen.getByTestId('lightbox-next'));
+  expect(screen.getByTestId('lightbox-image')).toBeInTheDocument();
+  await user.click(screen.getByTestId('lightbox-prev'));
+  expect(screen.getByTestId('lightbox-image')).toBeInTheDocument();
+
+  // 세 번 이동 후에도 열려 있고 위치도 맞다 (1 -> 2 -> 3 -> 2)
+  expect(screen.getByTestId('lightbox-counter')).toHaveTextContent(`2 / ${total}`);
+});
+
+it('사진을 넘길 때 history 항목이 늘어나지 않는다', async () => {
+  const before = window.history.length;
+  const user = await openRow('B');
+  await user.click(screen.getByTestId('lightbox-next'));
+  await user.click(screen.getByTestId('lightbox-next'));
+  // 팝업이 열려 있는 동안 push 는 최초 1회뿐이어야 한다
+  expect(window.history.length).toBeLessThanOrEqual(before + 1);
+  expect(screen.getByTestId('lightbox-image')).toBeInTheDocument();
+});

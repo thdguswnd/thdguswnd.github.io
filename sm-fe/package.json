@@ -11,6 +11,7 @@
     "test:watch": "vitest",
     "optimize:images": "node scripts/optimize-images.mjs",
     "thumbs": "node scripts/make-thumbs.mjs",
+    "og:fallback": "node scripts/make-og-fallback.mjs",
     "lint": "eslint . --ext .ts,.tsx",
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\""
   },

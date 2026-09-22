@@ -74,6 +74,15 @@ export function GalleryLightbox({
   const pushedRef = useRef(false); // 더미 항목을 push 한 상태인지
   const closedByPopRef = useRef(false); // popstate 로 닫히는 중인지
 
+  // onClose 는 부모에서 매 렌더 새로 만들어지는 함수다. 아래 effect 의 의존성으로 두면
+  // 사진을 넘길 때마다(부모 리렌더) cleanup 이 돌아 history.back() 이 호출되고,
+  // 그 popstate 가 팝업을 닫아버린다. 그래서 최신 값을 ref 로만 참조한다.
+  const onCloseRef = useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
+
+  // 이 effect 는 열릴 때 1회, 닫힐 때 1회만 실행되어야 한다(의존성 배열 비움).
   useEffect(() => {
     window.history.pushState({ lightboxOpen: true }, '');
     pushedRef.current = true;
@@ -82,7 +91,7 @@ export function GalleryLightbox({
       // 뒤로가기로 더미 항목이 이미 사라졌다 → 추가 정리 없이 닫기만 한다
       pushedRef.current = false;
       closedByPopRef.current = true;
-      onClose();
+      onCloseRef.current();
     };
     window.addEventListener('popstate', onPopState);
 
@@ -94,7 +103,7 @@ export function GalleryLightbox({
         window.history.back();
       }
     };
-  }, [onClose]);
+  }, []);
 
   // 배경 스크롤 잠금 + 키보드 조작
   useEffect(() => {

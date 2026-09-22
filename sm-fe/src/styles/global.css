@@ -41,6 +41,13 @@ body {
   padding-bottom: 12px;
 }
 
+/* 타임라인('그리고 지금까지.') 섹션은 줄바꿈 보정 전 동작으로 되돌린다(요청).
+   전역 keep-all 을 여기서만 기본값(normal)으로 복원한다. */
+#timeline,
+#timeline * {
+  word-break: normal;
+}
+
 html::-webkit-scrollbar,
 body::-webkit-scrollbar {
   display: none; /* Chrome/Safari */
