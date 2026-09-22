@@ -8,6 +8,7 @@ import { DirectionsSection } from './sections/DirectionsSection';
 import { RsvpSection } from './sections/RsvpSection';
 import { GallerySection } from './sections/GallerySection';
 import { GiftSection } from './sections/GiftSection';
+import { ClosingSection } from './sections/ClosingSection';
 
 export default function App() {
   return (
@@ -21,6 +22,7 @@ export default function App() {
         <RsvpSection />
         <GallerySection />
         <GiftSection />
+        <ClosingSection />
       </ContentProvider>
     </ErrorBoundary>
   );
