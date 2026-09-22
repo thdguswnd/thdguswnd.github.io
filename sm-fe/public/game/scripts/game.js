@@ -58,11 +58,35 @@
   // 진행 중인 연출/타이머가 남아 화면이 덧그려지지 않도록 먼저 중단 플래그를 세우고 이동한다.
   // (페이지 이동으로 스크립트가 폐기되지만, 이동 직전 프레임에 콜백이 끼어드는 것을 막는다)
   var INVITE_URL = '/invite/';
+
+  // 이동 중 중복 클릭 잠금. state 와 분리해 두고 bfcache 복원 시 반드시 해제한다.
+  var navLocked = false;
+
   function goToInvite() {
-    if (state.aborted) return;
-    state.aborted = true;
-    state.busy = true;
+    if (navLocked) return;
+    navLocked = true;
+    state.aborted = true; // 진행 중 연출 콜백이 화면을 덧그리지 않게
     window.location.href = INVITE_URL;
+  }
+
+  /**
+   * 뒤로가기로 게임에 다시 들어왔을 때 이동 잠금을 푼다.
+   *
+   * 브라우저는 뒤로가기 시 페이지를 bfcache 에서 그대로 복원한다(스크립트 재실행 없음).
+   * 그래서 청첩장으로 떠날 때 세워둔 navLocked / state.aborted 가 true 로 남아
+   * '건너뛰기'·'종료하기' 가 첫 줄에서 return 되어 두 번째부터 동작하지 않았다.
+   * pageshow 는 일반 로드와 bfcache 복원 모두에서 발생하므로 여기서 초기화한다.
+   */
+  function bindPageShowReset() {
+    window.addEventListener('pageshow', function () {
+      navLocked = false;
+      state.aborted = false;
+    });
+    // 일부 환경에서 pageshow 가 누락될 때를 대비한 보조 장치
+    window.addEventListener('popstate', function () {
+      navLocked = false;
+      state.aborted = false;
+    });
   }
 
   function bindSkip() {
@@ -577,6 +601,7 @@
   function boot() {
     cacheDom();
     bindSkip();
+    bindPageShowReset();
     bindLayout();
     layout();
     makeStreaks();

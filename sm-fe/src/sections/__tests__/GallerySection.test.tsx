@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { GallerySection } from '../GallerySection';
 import { GALLERY_ROW_KEYS, galleryRows } from '../../lib/images';
@@ -106,4 +106,47 @@ it('사진을 넘길 때 history 항목이 늘어나지 않는다', async () => 
   // 팝업이 열려 있는 동안 push 는 최초 1회뿐이어야 한다
   expect(window.history.length).toBeLessThanOrEqual(before + 1);
   expect(screen.getByTestId('lightbox-image')).toBeInTheDocument();
+});
+
+/** 지정한 이동량/소요시간으로 좌우 스와이프를 흉내낸다. */
+function swipe(target: Element, dx: number, durationMs: number) {
+  const t = (x: number) => ({ clientX: x, clientY: 200 });
+  fireEvent.touchStart(target, { touches: [t(200)] });
+  vi.setSystemTime(Date.now() + durationMs);
+  fireEvent.touchMove(target, { touches: [t(200 + dx)] });
+  fireEvent.touchEnd(target, { touches: [], changedTouches: [t(200 + dx)] });
+}
+
+describe('라이트박스 스와이프 판정', () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('짧지만 빠른 플릭으로도 다음 사진으로 넘어간다', async () => {
+    await openRow('A');
+    const total = galleryRows.A.length;
+    const track = screen.getByTestId('lightbox-image').closest('div')!.parentElement!;
+
+    // 20px / 40ms = 0.5 px/ms → 거리 임계값(70px)에는 못 미치지만 플릭으로 인정
+    swipe(track, -20, 40);
+    fireEvent.transitionEnd(track);
+
+    expect(screen.getByTestId('lightbox-counter')).toHaveTextContent(`2 / ${total}`);
+    expect(screen.getByTestId('lightbox-image')).toBeInTheDocument();
+  });
+
+  it('느리고 짧게 끌면 제자리로 돌아온다', async () => {
+    await openRow('A');
+    const total = galleryRows.A.length;
+    const track = screen.getByTestId('lightbox-image').closest('div')!.parentElement!;
+
+    // 20px / 800ms = 0.025 px/ms → 거리·속도 모두 부족
+    swipe(track, -20, 800);
+    fireEvent.transitionEnd(track);
+
+    expect(screen.getByTestId('lightbox-counter')).toHaveTextContent(`1 / ${total}`);
+  });
 });

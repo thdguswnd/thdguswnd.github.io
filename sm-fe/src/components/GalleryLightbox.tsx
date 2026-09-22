@@ -42,6 +42,7 @@ export function GalleryLightbox({
 
   const startX = useRef(0);
   const startY = useRef(0);
+  const startTime = useRef(0); // 터치 시작 시각(플릭 속도 판정용)
   const pinchStartDist = useRef(0);
   const pinchStartMid = useRef({ x: 0, y: 0 });
   const mode = useRef<'none' | 'swipe' | 'pinch'>('none');
@@ -157,6 +158,7 @@ export function GalleryLightbox({
       mode.current = 'swipe';
       startX.current = e.touches[0].clientX;
       startY.current = e.touches[0].clientY;
+      startTime.current = Date.now(); // 플릭 속도 계산용
       setAnimating(false);
     }
   }
@@ -203,12 +205,23 @@ export function GalleryLightbox({
         return;
       }
 
+      // 빠른 플릭 판정.
+      // 거리만 보면(threshold) 손가락을 빠르게 튕겼을 때 이동량이 작아 제자리로 돌아온다.
+      // 속도(px/ms)가 충분히 빠르면 짧은 거리라도 넘긴다.
+      const elapsed = Math.max(1, Date.now() - startTime.current);
+      const velocity = Math.abs(dragX) / elapsed; // px/ms
+      const FLICK_VELOCITY = 0.3; // 이 속도 이상이면 플릭으로 인정
+      const FLICK_MIN_DIST = 12; // 탭과 구분할 최소 이동량
+      const flicked = velocity >= FLICK_VELOCITY && Math.abs(dragX) >= FLICK_MIN_DIST;
+      const goNext = dragX <= -threshold || (flicked && dragX < 0);
+      const goPrev = dragX >= threshold || (flicked && dragX > 0);
+
       setAnimating(true);
       touchHandledAt.current = Date.now();
-      if (dragX <= -threshold) {
+      if (goNext) {
         pendingDelta.current = 1;
         setDragX(-w);
-      } else if (dragX >= threshold) {
+      } else if (goPrev) {
         pendingDelta.current = -1;
         setDragX(w);
       } else {
