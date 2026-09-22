@@ -8,6 +8,13 @@ import { GALLERY_ROW_KEYS, galleryRows, galleryThumbRows, type GalleryRowKey } f
 /** 확대 보기 대상: 어느 행의 몇 번째 사진인지. 순환은 그 행 안에서만 일어난다. */
 type Zoom = { row: GalleryRowKey; index: number };
 
+/** 행별 촬영 장소. 각 행 아래에 표시된다. */
+const ROW_TITLES: Record<GalleryRowKey, string> = {
+  A: '올림픽공원',
+  B: '서래섬 & 동작대교',
+  C: '용산가족공원',
+};
+
 /**
  * FR-10: 웨딩 갤러리.
  *
@@ -20,17 +27,16 @@ export function GallerySection() {
 
   return (
     <ScrollReveal id="gallery">
-      {/* 헤더 */}
+      {/* 헤더 (구분선만. 소제목 '웨딩 갤러리' 은 제거) */}
       <LabelDivider text="Gallery" />
-      <div style={{ textAlign: 'center', marginBottom: 16 }}>
-        <h2 style={{ color: 'var(--color-accent)', fontWeight: 500 }}>웨딩 갤러리</h2>
-      </div>
+      <div style={{ marginBottom: 16 }} />
 
       <div data-testid="gallery-grid">
         {GALLERY_ROW_KEYS.map((row) => (
           <GalleryRow
             key={row}
             rowKey={row}
+            title={ROW_TITLES[row]}
             thumbs={galleryThumbRows[row]}
             onOpen={(index) => setZoom({ row, index })}
           />

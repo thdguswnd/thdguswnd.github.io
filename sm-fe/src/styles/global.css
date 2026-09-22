@@ -35,6 +35,12 @@ body {
   white-space: nowrap;
 }
 
+/* 마무리 이미지(#closing)를 계좌 박스 바로 아래에 붙이기 위해
+   '마음 전하실 곳' 섹션의 기본 하단 여백(48px)을 줄인다. */
+#gift {
+  padding-bottom: 12px;
+}
+
 html::-webkit-scrollbar,
 body::-webkit-scrollbar {
   display: none; /* Chrome/Safari */

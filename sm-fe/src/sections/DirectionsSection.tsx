@@ -57,11 +57,9 @@ export function DirectionsSection() {
 
   return (
     <ScrollReveal id="directions">
-      {/* 헤더 */}
+      {/* 헤더 (구분선만. 소제목 '오시는 길' 은 제거) */}
       <LabelDivider text="Location" />
-      <div style={{ textAlign: 'center', marginBottom: 20 }}>
-        <h2 style={{ color: 'var(--color-accent)', fontWeight: 500 }}>오시는 길</h2>
-      </div>
+      <div style={{ marginBottom: 20 }} />
 
       {/* 장소 정보.
           주소는 화면이 좁아도 "청학빌딩 10/층" 처럼 쪼개지지 않도록

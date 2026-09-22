@@ -63,6 +63,39 @@ export function GalleryLightbox({
 
   const toggleControls = useCallback(() => setControlsVisible((v) => !v), []);
 
+  /**
+   * 휴대폰 뒤로가기(하드웨어/제스처)로 청첩장을 벗어나지 않게 한다.
+   *
+   * 열릴 때 더미 history 항목을 push 해두고, popstate(뒤로가기) 가 오면
+   * 그 항목이 소비된 것이므로 팝업만 닫는다.
+   * X·ESC 로 직접 닫은 경우에는 push 해둔 항목이 남아 있으므로
+   * history.back() 으로 되돌려 쓸데없는 항목이 쌓이지 않게 정리한다.
+   */
+  const pushedRef = useRef(false); // 더미 항목을 push 한 상태인지
+  const closedByPopRef = useRef(false); // popstate 로 닫히는 중인지
+
+  useEffect(() => {
+    window.history.pushState({ lightboxOpen: true }, '');
+    pushedRef.current = true;
+
+    const onPopState = () => {
+      // 뒤로가기로 더미 항목이 이미 사라졌다 → 추가 정리 없이 닫기만 한다
+      pushedRef.current = false;
+      closedByPopRef.current = true;
+      onClose();
+    };
+    window.addEventListener('popstate', onPopState);
+
+    return () => {
+      window.removeEventListener('popstate', onPopState);
+      // X·ESC 로 닫은 경우: 남아 있는 더미 항목 제거
+      if (pushedRef.current && !closedByPopRef.current) {
+        pushedRef.current = false;
+        window.history.back();
+      }
+    };
+  }, [onClose]);
+
   // 배경 스크롤 잠금 + 키보드 조작
   useEffect(() => {
     const prevOverflow = document.body.style.overflow;

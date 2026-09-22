@@ -20,7 +20,11 @@ function emitPages() {
       const html = readFileSync(indexPath, 'utf-8'); // 기본 청첩장 HTML
 
       const SITE = 'https://thdguswnd.github.io';
-      const THUMB = `${SITE}/thumbnail.jpg`;
+      // public/thumbnail.webp = src/assets/start.webp (1600x2400 세로)
+      const THUMB = `${SITE}/thumbnail.webp`;
+      const THUMB_TYPE = 'image/webp';
+      const THUMB_W = '1600';
+      const THUMB_H = '2400';
       const TITLE = '송현중 · 조나영 결혼합니다';
       const DESC = '2026년 11월 15일 일요일 오전 11시, 로프트가든344';
 
@@ -33,9 +37,9 @@ function emitPages() {
           `<meta property="og:description" content="${DESC}" />`,
           `<meta property="og:image" content="${THUMB}" />`,
           `<meta property="og:image:secure_url" content="${THUMB}" />`,
-          '<meta property="og:image:type" content="image/jpeg" />',
-          '<meta property="og:image:width" content="1200" />',
-          '<meta property="og:image:height" content="630" />',
+          `<meta property="og:image:type" content="${THUMB_TYPE}" />`,
+          `<meta property="og:image:width" content="${THUMB_W}" />`,
+          `<meta property="og:image:height" content="${THUMB_H}" />`,
           `<meta property="og:site_name" content="${TITLE}" />`,
           '<meta property="og:locale" content="ko_KR" />',
           '<meta name="twitter:card" content="summary_large_image" />',
