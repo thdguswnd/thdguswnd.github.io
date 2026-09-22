@@ -21,16 +21,20 @@ const timelineMods = import.meta.glob('../assets/timeline/*.{webp,jpg,jpeg,png,J
   import: 'default',
 }) as Record<string, string>;
 
-/** glob 결과를 파일명 순으로 정렬한 URL 배열로 변환. */
+/**
+ * glob 결과를 파일명 순으로 정렬한 URL 배열로 변환.
+ *
+ * 파일명 전체를 자연 정렬(numeric)한다. 앞자리 숫자만 뽑아 비교하면
+ * A01/B01/C01 이 모두 1 로 묶여 A01→B01→C01→A02… 로 뒤섞이므로,
+ * 접두어(A/B/C)를 먼저 보고 그 안에서 번호 순으로 정렬되게 한다.
+ * (A01…A10 → B01…B10 → C01…C08)
+ */
 function sortedUrls(mods: Record<string, string>): string[] {
   return Object.entries(mods)
     .sort(([a], [b]) => {
       const aFile = a.split('/').pop() ?? '';
       const bFile = b.split('/').pop() ?? '';
-      const aNum = parseInt(aFile.match(/(\d+)/)?.[1] ?? '0', 10);
-      const bNum = parseInt(bFile.match(/(\d+)/)?.[1] ?? '0', 10);
-      if (aNum !== bNum) return aNum - bNum;
-      return a.localeCompare(b, undefined, { numeric: true });
+      return aFile.localeCompare(bFile, undefined, { numeric: true, sensitivity: 'base' });
     })
     .map(([, url]) => url);
 }

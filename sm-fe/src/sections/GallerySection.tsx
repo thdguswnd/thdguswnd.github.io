@@ -103,7 +103,7 @@ export function GallerySection() {
                     loading="lazy"
                     decoding="async"
                     width={480}
-                    height={720}
+                    height={600}
                     onClick={() => setZoomIndex(idx)}
                     data-testid="gallery-thumb"
                     style={{
