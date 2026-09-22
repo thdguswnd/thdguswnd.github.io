@@ -5,7 +5,18 @@ import { KakaoMap } from '../components/KakaoMap';
 import { Modal } from '../components/Modal';
 import { LabelDivider } from '../components/LabelDivider';
 import { SmartImage } from '../components/SmartImage';
+import { keepTogether } from '../lib/text';
 import type { AppLink } from '../content/types';
+
+// 주소·장소명에서 갈라지면 어색한 의미 단위
+// (예: "청학빌딩 10층" 이 "청학빌딩 10" / "층" 으로 쪼개지는 문제)
+const KEEP_TOGETHER = [
+  '청학빌딩 10층',
+  '오목로 344',
+  '로프트가든344 10층',
+  '10층 메인홀',
+  '서울특별시 양천구',
+];
 import naverIcon from '../assets/nav-icons/navermap.webp';
 import tmapIcon from '../assets/nav-icons/tmap.webp';
 import kakaoNaviIcon from '../assets/nav-icons/kakaonavi.webp';
@@ -52,11 +63,24 @@ export function DirectionsSection() {
         <h2 style={{ color: 'var(--color-accent)', fontWeight: 500 }}>오시는 길</h2>
       </div>
 
-      {/* 장소 정보 */}
-      <div style={{ textAlign: 'center', marginBottom: 16 }} data-testid="directions">
-        <div style={{ fontSize: '1.35rem', fontWeight: 600 }}>{directions.venueName}</div>
-        <div style={{ color: 'var(--color-muted)', marginTop: 6 }}>{directions.address}</div>
-        {directions.tel && <div style={{ marginTop: 8 }}>Tel. {directions.tel}</div>}
+      {/* 장소 정보.
+          주소는 화면이 좁아도 "청학빌딩 10/층" 처럼 쪼개지지 않도록
+          건물명+층, 도로명+번지를 의미 단위로 묶는다. */}
+      <div
+        style={{ textAlign: 'center', marginBottom: 16, wordBreak: 'keep-all' }}
+        data-testid="directions"
+      >
+        <div style={{ fontSize: '1.35rem', fontWeight: 600 }}>
+          {keepTogether(directions.venueName, KEEP_TOGETHER)}
+        </div>
+        <div style={{ color: 'var(--color-muted)', marginTop: 6 }}>
+          {keepTogether(directions.address, KEEP_TOGETHER)}
+        </div>
+        {directions.tel && (
+          <div style={{ marginTop: 8 }} className="nowrap">
+            Tel. {directions.tel}
+          </div>
+        )}
       </div>
 
       {/* 카카오 지도 (터치로 이동/확대 가능). 핀 말풍선은 식장명만 짧게 표시 */}

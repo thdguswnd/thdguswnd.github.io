@@ -3,7 +3,12 @@ import { SectionContainer } from '../components/SectionContainer';
 import { SmartImage } from '../components/SmartImage';
 import { RevealDiv } from '../components/RevealDiv';
 import { timelineImages } from '../lib/images';
+import { keepTogether } from '../lib/text';
 import type { TimelineEntry } from '../content/types';
+
+// 줄바꿈으로 쪼개지면 어색한 구절. word-break: keep-all 로도 공백이 든 구절은
+// 갈라지므로 여기 등록해 한 덩어리로 묶는다.
+const KEEP_TOGETHER = ['‘부부’라는', '그리고 결혼', '새 출발을', '두 사람은'];
 
 /** FR-06: 타임라인. 이미지 + 텍스트가 좌우로 번갈아 배치되는 세로 타임라인. */
 export function TimelineSection() {
@@ -62,10 +67,21 @@ function TimelineRow({
       <div style={{ color: 'var(--color-muted)', fontSize: '0.8rem', letterSpacing: '0.05em' }}>
         {entry.date}
       </div>
-      <div style={{ fontWeight: 600, margin: '6px 0' }}>{entry.title}</div>
+      <div style={{ fontWeight: 600, margin: '6px 0' }} className="nowrap">
+        {entry.title}
+      </div>
       {entry.description && (
-        <p style={{ fontSize: '0.82rem', color: 'var(--color-muted)', lineHeight: 1.6, whiteSpace: 'pre-line', textAlign: 'left' }}>
-          {entry.description}
+        <p
+          style={{
+            fontSize: '0.82rem',
+            color: 'var(--color-muted)',
+            lineHeight: 1.6,
+            whiteSpace: 'pre-line',
+            textAlign: 'left',
+            wordBreak: 'keep-all',
+          }}
+        >
+          {keepTogether(entry.description, KEEP_TOGETHER)}
         </p>
       )}
     </div>

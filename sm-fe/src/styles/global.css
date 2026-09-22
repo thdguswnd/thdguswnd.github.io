@@ -20,9 +20,19 @@ body {
   color: var(--color-text);
   font-family: var(--font-family, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif);
   line-height: 1.6;
+  /* 한글 줄바꿈: 기본값(normal)은 음절 단위로 끊어 '부부'·'10층' 같은 단어가 쪼개진다.
+     keep-all 은 공백 단위로만 끊으므로 단어가 통째로 넘어간다.
+     단, keep-all 은 긴 URL 처럼 공백 없는 문자열을 넘치게 하므로 안전장치를 함께 둔다. */
+  word-break: keep-all;
+  overflow-wrap: break-word;
   /* 스크롤은 유지하되 스크롤바 숨김 (모바일 화면) */
   scrollbar-width: none; /* Firefox */
   -ms-overflow-style: none; /* IE/Edge */
+}
+
+/* 의미 단위를 한 줄에 묶을 때 사용 (예: "청학빌딩 10층", "‘부부’라는") */
+.nowrap {
+  white-space: nowrap;
 }
 
 html::-webkit-scrollbar,
@@ -34,7 +44,10 @@ body::-webkit-scrollbar {
   max-width: var(--max-width);
   margin: 0 auto;
   background: var(--color-bg);
-  min-height: 100vh;
+  /* 여기는 배경 이미지가 없어 높이 변동이 배율에 영향을 주지 않으므로 dvh 사용 가능.
+     주소창이 접힐 때 하단에 빈 영역이 생기지 않는다. */
+  min-height: 100vh; /* 구형 폴백 */
+  min-height: 100dvh;
   /* overflow-x: hidden 은 overflow-y 를 auto 로 만들어 #root 가 스크롤 컨테이너가 됨
      → iOS Safari 스크롤 튐 원인. clip 은 스크롤 컨테이너를 만들지 않음. */
   overflow-x: hidden; /* 구형 폴백 */
@@ -73,27 +86,27 @@ textarea {
   letter-spacing: 0.1em;
 }
 
-/* 히어로 전체 높이. 텍스트 위치(top %)의 기준이므로 svh 유지. */
+/* 히어로 전체 높이.
+   높이 우선순위: JS 가 정한 --app-height → svh → vh(구형 폴백).
+   --app-height 는 lib/viewport.ts 가 px 로 고정하며 스크롤 중에는 변하지 않는다.
+   (dvh 는 주소창 토글마다 값이 바뀌어 사진 배율이 흔들리므로 쓰지 않는다) */
 .hero-full {
   position: relative;
   min-height: 100vh; /* 구형 폴백 */
-  min-height: 100svh;
-  overflow: hidden; /* lvh 로 넘치는 배경 레이어를 잘라냄 */
+  min-height: 100svh; /* svh 지원 브라우저 */
+  min-height: var(--app-height, 100svh); /* JS 계산값이 있으면 우선 */
+  overflow: hidden;
 }
 
 /* 히어로 배경 레이어.
-   모바일에서 스크롤하면 주소창이 접히며 뷰포트 높이가 커진다. 배경을 히어로 요소에
-   직접 넣으면 요소 높이가 커질 때 background-size: cover 가 재계산되어 이미지가
-   비례 확대된다('스크롤하면 사진이 확대되는' 현상).
-   → 배경을 별도 레이어로 분리하고 높이를 lvh(주소창 접힌 상태 기준)로 고정한다.
-     lvh 는 스크롤 중 변하지 않으므로 이미지 스케일도 고정된다. */
+   부모와 정확히 같은 크기(inset: 0)로 둔다. 이전에는 부모(svh)보다 큰 lvh 를 주고
+   top 고정 + overflow: hidden 이라 사진 아래쪽이 잘렸다.
+   부모 높이가 --app-height 로 고정돼 있으므로 이 레이어도 스크롤 중 크기가 변하지 않고,
+   따라서 background-size: cover 재계산(=사진 확대)도 일어나지 않는다.
+   세로가 긴 사진은 cover 가 높이 기준으로 맞춰지므로 위아래가 잘리지 않는다. */
 .hero-bg {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 100vh; /* 구형 폴백 */
-  height: 100lvh;
+  inset: 0;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
