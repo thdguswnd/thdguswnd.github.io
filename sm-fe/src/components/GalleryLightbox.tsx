@@ -4,12 +4,14 @@ import { createPortal } from 'react-dom';
 /**
  * 갤러리 확대 보기(라이트박스).
  *
- * - 카드 넘김: [이전 · 현재 · 다음] 3장을 한 트랙에 두고 좌우로 쓸면 이웃 사진이 따라 움직인다.
- *   임계값을 넘기면 그 방향으로 넘어가고, 모자라면 제자리로 되돌아온다. 양 끝에서는 순환한다.
- * - 핀치 줌: 두 손가락으로 확대하고, 누른 상태로 움직이면 확대된 부분이 따라 이동한다.
- *   손을 떼면 원본 크기·위치로 되돌아온다(확대 상태로 고정되지 않음).
- * - 선로딩: 현재 사진 기준 앞뒤 2장을 미리 받아둬 스와이프 시 로딩 지연을 줄인다.
- * - 닫기: 오른쪽 위 ×, 사진 바깥(배경) 터치, ESC.
+ * - 전달받은 images 안에서만 순환한다. 갤러리에서 행 단위로 넘겨주므로
+ *   A행을 보다가 B/C행으로 넘어가지 않는다.
+ * - 카드 넘김: [이전 · 현재 · 다음] 3장을 한 트랙에 두고 좌우로 쓸면 이웃이 따라 움직인다.
+ *   임계값을 넘기면 넘어가고, 모자라면 제자리로 돌아온다. 양 끝에서는 순환한다.
+ * - 핀치 줌: 두 손가락으로 확대되고 누른 채 움직이면 확대 부분이 따라 이동한다.
+ *   손을 떼면 원래 크기·위치로 돌아온다.
+ * - 조작 UI 토글: 버튼이 아닌 빈 영역을 탭하면 ×, ‹, ›, 카운터가 함께 숨고 다시 탭하면 나타난다.
+ *   닫기는 × 버튼(또는 ESC)으로만 한다.
  */
 export function GalleryLightbox({
   images,
@@ -25,9 +27,9 @@ export function GalleryLightbox({
   const total = images.length;
 
   // 카드 넘김 상태
-  const [dragX, setDragX] = useState(0); // 트랙의 현재 가로 오프셋(px)
-  const [animating, setAnimating] = useState(false); // 스냅 애니메이션 중 여부
-  const pendingDelta = useRef(0); // 애니메이션 종료 후 반영할 이동량(-1/0/+1)
+  const [dragX, setDragX] = useState(0);
+  const [animating, setAnimating] = useState(false);
+  const pendingDelta = useRef(0);
 
   // 핀치 줌/이동 상태
   const [scale, setScale] = useState(1);
@@ -35,15 +37,19 @@ export function GalleryLightbox({
   const [origin, setOrigin] = useState('50% 50%');
   const [zoomAnimating, setZoomAnimating] = useState(false);
 
+  // 조작 UI 표시 여부
+  const [controlsVisible, setControlsVisible] = useState(true);
+
   const startX = useRef(0);
   const startY = useRef(0);
   const pinchStartDist = useRef(0);
   const pinchStartMid = useRef({ x: 0, y: 0 });
   const mode = useRef<'none' | 'swipe' | 'pinch'>('none');
+  // 터치로 이미 처리한 탭이 click 으로 한 번 더 들어와 토글이 두 번 되는 것을 막는다
+  const touchHandledAt = useRef(0);
 
   const wrap = useCallback((i: number) => ((i % total) + total) % total, [total]);
 
-  /** 버튼·키보드용 즉시 이동. */
   const jump = useCallback(
     (delta: number) => {
       if (!total) return;
@@ -54,6 +60,8 @@ export function GalleryLightbox({
     },
     [index, total, onIndexChange, wrap],
   );
+
+  const toggleControls = useCallback(() => setControlsVisible((v) => !v), []);
 
   // 배경 스크롤 잠금 + 키보드 조작
   useEffect(() => {
@@ -71,8 +79,7 @@ export function GalleryLightbox({
     };
   }, [onClose, jump]);
 
-  // 앞뒤 2장 선로딩. 트랙에 렌더되는 ±1 뿐 아니라 ±2 까지 받아둬야
-  // 연속으로 쓸어 넘길 때 빈 화면이 보이지 않는다.
+  // 앞뒤 2장 선로딩 (연속 스와이프 시 빈 화면 방지)
   useEffect(() => {
     if (!total) return;
     for (const d of [1, -1, 2, -2]) {
@@ -93,7 +100,6 @@ export function GalleryLightbox({
 
   function handleTouchStart(e: React.TouchEvent) {
     if (e.touches.length >= 2) {
-      // 두 손가락 → 핀치 줌 시작. 진행 중이던 스와이프는 취소.
       mode.current = 'pinch';
       setDragX(0);
       setAnimating(false);
@@ -101,7 +107,6 @@ export function GalleryLightbox({
       pinchStartDist.current = dist(e.touches);
       const m = mid(e.touches);
       pinchStartMid.current = m;
-      // 확대 기준점 = 두 손가락 중간 지점(컨테이너 기준 %)
       const rect = e.currentTarget.getBoundingClientRect();
       const px = ((m.x - rect.left) / rect.width) * 100;
       const py = ((m.y - rect.top) / rect.height) * 100;
@@ -118,9 +123,7 @@ export function GalleryLightbox({
     if (mode.current === 'pinch' && e.touches.length >= 2) {
       if (pinchStartDist.current > 0) {
         const factor = dist(e.touches) / pinchStartDist.current;
-        const nextScale = Math.max(1, Math.min(factor, 4)); // 1~4배
-        setScale(nextScale);
-        // 두 손가락 중심의 이동량만큼 확대된 사진을 따라 이동
+        setScale(Math.max(1, Math.min(factor, 4)));
         const m = mid(e.touches);
         setPan({ x: m.x - pinchStartMid.current.x, y: m.y - pinchStartMid.current.y });
       }
@@ -129,40 +132,50 @@ export function GalleryLightbox({
     if (mode.current === 'swipe' && e.touches.length === 1) {
       const dx = e.touches[0].clientX - startX.current;
       const dy = e.touches[0].clientY - startY.current;
-      // 가로 이동이 세로보다 뚜렷할 때만 카드를 끌어당긴다(세로 스크롤 오인 방지)
       if (Math.abs(dx) > Math.abs(dy)) setDragX(dx);
     }
   }
 
   function handleTouchEnd(e: React.TouchEvent) {
     if (mode.current === 'pinch') {
-      if (e.touches.length >= 2) return; // 아직 제스처 중
+      if (e.touches.length >= 2) return;
       mode.current = 'none';
       pinchStartDist.current = 0;
-      setZoomAnimating(true); // 원본 크기·위치로 부드럽게 복귀
+      setZoomAnimating(true);
       setScale(1);
       setPan({ x: 0, y: 0 });
+      touchHandledAt.current = Date.now();
       return;
     }
     if (mode.current === 'swipe') {
       mode.current = 'none';
       const w = window.innerWidth || 1;
       const threshold = Math.min(70, w * 0.15);
+      const TAP_SLOP = 10; // 이 정도 움직임은 '탭'으로 본다
+
+      if (Math.abs(dragX) < TAP_SLOP) {
+        // 움직임이 거의 없으면 탭 → 조작 UI 토글
+        touchHandledAt.current = Date.now();
+        setDragX(0);
+        toggleControls();
+        return;
+      }
+
       setAnimating(true);
+      touchHandledAt.current = Date.now();
       if (dragX <= -threshold) {
-        pendingDelta.current = 1; // 왼쪽으로 쓸기 → 다음
+        pendingDelta.current = 1;
         setDragX(-w);
       } else if (dragX >= threshold) {
-        pendingDelta.current = -1; // 오른쪽으로 쓸기 → 이전
+        pendingDelta.current = -1;
         setDragX(w);
       } else {
-        pendingDelta.current = 0; // 부족 → 제자리 복귀
+        pendingDelta.current = 0;
         setDragX(0);
       }
     }
   }
 
-  /** 스냅 애니메이션이 끝난 시점에 실제 index 를 넘기고 트랙을 원위치로. */
   function handleTrackTransitionEnd() {
     if (!animating) return;
     setAnimating(false);
@@ -172,7 +185,20 @@ export function GalleryLightbox({
     if (delta !== 0) onIndexChange(wrap(index + delta));
   }
 
+  /** 마우스 클릭(데스크톱)으로도 토글. 터치에서 이미 처리했으면 무시. */
+  function handleSurfaceClick() {
+    if (Date.now() - touchHandledAt.current < 600) return;
+    toggleControls();
+  }
+
   const slides = [wrap(index - 1), index, wrap(index + 1)];
+
+  // 숨김 상태에서는 클릭도 받지 않아야 한다(투명 버튼이 탭을 가로채지 않도록)
+  const controlStyle = {
+    opacity: controlsVisible ? 1 : 0,
+    pointerEvents: controlsVisible ? ('auto' as const) : ('none' as const),
+    transition: 'opacity 0.22s ease',
+  };
 
   const navButton = {
     position: 'absolute' as const,
@@ -191,13 +217,14 @@ export function GalleryLightbox({
     justifyContent: 'center',
     cursor: 'pointer',
     zIndex: 2,
+    ...controlStyle,
   };
 
   return createPortal(
-    // 배경(사진 바깥). 클릭하면 닫힘.
+    // 배경. 여기 탭으로는 닫지 않고 조작 UI 만 토글한다(닫기는 × 또는 ESC).
     <div
       data-testid="lightbox-backdrop"
-      onClick={onClose}
+      onClick={handleSurfaceClick}
       style={{
         position: 'fixed',
         inset: 0,
@@ -209,9 +236,8 @@ export function GalleryLightbox({
         WebkitUserSelect: 'none',
       }}
     >
-      {/* 카드 트랙: [이전 · 현재 · 다음]. 기본 위치는 -100vw(가운데 = 현재 사진) */}
+      {/* 카드 트랙: [이전 · 현재 · 다음] */}
       <div
-        onClick={(e) => e.stopPropagation()}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
@@ -239,10 +265,7 @@ export function GalleryLightbox({
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                // 확대·이동은 현재 사진에만 적용
-                transform: zoomed
-                  ? `translate(${pan.x}px, ${pan.y}px) scale(${scale})`
-                  : undefined,
+                transform: zoomed ? `translate(${pan.x}px, ${pan.y}px) scale(${scale})` : undefined,
                 transformOrigin: origin,
                 transition: isCurrent && zoomAnimating ? 'transform 0.25s ease-out' : 'none',
                 willChange: isCurrent ? 'transform' : undefined,
@@ -267,11 +290,15 @@ export function GalleryLightbox({
         })}
       </div>
 
-      {/* 닫기 (오른쪽 위) */}
+      {/* 닫기 (오른쪽 위) — 유일한 닫기 수단 */}
       <button
         type="button"
-        onClick={onClose}
+        onClick={(e) => {
+          e.stopPropagation();
+          onClose();
+        }}
         aria-label="닫기"
+        aria-hidden={!controlsVisible}
         data-testid="lightbox-close"
         style={{
           position: 'absolute',
@@ -287,6 +314,7 @@ export function GalleryLightbox({
           lineHeight: 1,
           cursor: 'pointer',
           zIndex: 3,
+          ...controlStyle,
         }}
       >
         ×
@@ -300,6 +328,7 @@ export function GalleryLightbox({
           jump(-1);
         }}
         aria-label="이전 사진"
+        aria-hidden={!controlsVisible}
         data-testid="lightbox-prev"
         style={{ ...navButton, left: 8 }}
       >
@@ -312,6 +341,7 @@ export function GalleryLightbox({
           jump(1);
         }}
         aria-label="다음 사진"
+        aria-hidden={!controlsVisible}
         data-testid="lightbox-next"
         style={{ ...navButton, right: 8 }}
       >
@@ -320,6 +350,7 @@ export function GalleryLightbox({
 
       {/* 현재 위치 표시 */}
       <div
+        data-testid="lightbox-counter"
         style={{
           position: 'absolute',
           bottom: 'max(14px, env(safe-area-inset-bottom))',
@@ -328,9 +359,10 @@ export function GalleryLightbox({
           textAlign: 'center',
           color: 'rgba(255, 255, 255, 0.9)',
           fontSize: '0.85rem',
-          pointerEvents: 'none',
           textShadow: '0 1px 4px rgba(0,0,0,0.6)',
           zIndex: 3,
+          ...controlStyle,
+          pointerEvents: 'none', // 카운터는 항상 탭을 통과시킨다
         }}
       >
         {index + 1} / {total}

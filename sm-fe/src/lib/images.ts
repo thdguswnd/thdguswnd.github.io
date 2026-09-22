@@ -71,5 +71,39 @@ const galleryThumbUrls = sortedUrls(galleryThumbMods);
 export const galleryThumbs =
   galleryThumbUrls.length === galleryImages.length ? galleryThumbUrls : galleryImages;
 
+/** 갤러리 행 키. 파일명 접두어(A/B/C)가 그대로 행이 된다. */
+export const GALLERY_ROW_KEYS = ['A', 'B', 'C'] as const;
+export type GalleryRowKey = (typeof GALLERY_ROW_KEYS)[number];
+
+/**
+ * glob 결과를 파일명 접두어(A/B/C) 기준으로 묶는다.
+ * 각 행 안에서는 번호 순(A01→A02→…)으로 정렬된다.
+ */
+function groupByRow(mods: Record<string, string>): Record<GalleryRowKey, string[]> {
+  const out: Record<GalleryRowKey, string[]> = { A: [], B: [], C: [] };
+  const entries = Object.entries(mods).sort(([a], [b]) => {
+    const af = a.split('/').pop() ?? '';
+    const bf = b.split('/').pop() ?? '';
+    return af.localeCompare(bf, undefined, { numeric: true, sensitivity: 'base' });
+  });
+  for (const [key, url] of entries) {
+    const file = key.split('/').pop() ?? '';
+    const prefix = file.charAt(0).toUpperCase() as GalleryRowKey;
+    if (prefix in out) out[prefix].push(url);
+  }
+  return out;
+}
+
+/** 행별 원본 이미지 (라이트박스에서 해당 행 안에서만 순환) */
+export const galleryRows = groupByRow(galleryMods);
+
+/** 행별 썸네일. 썸네일이 없는 행은 원본으로 폴백한다. */
+const thumbRows = groupByRow(galleryThumbMods);
+export const galleryThumbRows: Record<GalleryRowKey, string[]> = {
+  A: thumbRows.A.length === galleryRows.A.length ? thumbRows.A : galleryRows.A,
+  B: thumbRows.B.length === galleryRows.B.length ? thumbRows.B : galleryRows.B,
+  C: thumbRows.C.length === galleryRows.C.length ? thumbRows.C : galleryRows.C,
+};
+
 /** 타임라인 이미지 URL 배열(인덱스 = 파일명 번호 - 1). */
 export const timelineImages = indexedUrls(timelineMods);
