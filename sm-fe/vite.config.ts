@@ -67,8 +67,18 @@ function emitPages() {
       mkdirSync(join(dist, 'invite'), { recursive: true });
       writeFileSync(join(dist, 'invite', 'index.html'), inviteHtml);
 
-      // 없는 경로로 들어와도 청첩장이 뜨도록 SPA 폴백 (/신랑부 같은 경로 대응)
-      writeFileSync(join(dist, '404.html'), inviteHtml);
+      // 게임 페이지(/game/)에도 OG 태그 주입.
+      // public/game/index.html 은 정적 복사되므로 빌드 후 여기서 <head> 에 끼워 넣는다.
+      const gameIndex = join(dist, 'game', 'index.html');
+      if (existsSync(gameIndex)) {
+        const gameHtml = readFileSync(gameIndex, 'utf-8');
+        if (!gameHtml.includes('og:image')) {
+          writeFileSync(
+            gameIndex,
+            gameHtml.replace('</head>', `  ${og(`${SITE}/game/`)}\n</head>`),
+          );
+        }
+      }
 
       /** 이동용 페이지. OG 태그를 포함해 공유 시 미리보기가 뜨게 한다. */
       const redirectTo = (target: string, pageUrl: string) =>
@@ -80,12 +90,12 @@ function emitPages() {
         `<meta http-equiv="refresh" content="0; url=${target}">\n    ` +
         `<script>location.replace("${target}");</script>\n  </head><body></body></html>`;
 
-      // 옛 게임 주소(/pokemon) → /game/
-      mkdirSync(join(dist, 'pokemon'), { recursive: true });
-      writeFileSync(join(dist, 'pokemon', 'index.html'), redirectTo('/game/', `${SITE}/pokemon/`));
-
       // 루트(/) = QR 접속 → 게임으로 이동
       writeFileSync(indexPath, redirectTo('/game/', `${SITE}/`));
+
+      // 유효 경로는 /, /game, /invite 뿐이다.
+      // 404.html 을 만들지 않으므로 그 외 주소는 GitHub Pages 기본 404 가 뜬다.
+      // (이전의 /pokemon 리다이렉트와 SPA 폴백은 제거됨)
     },
   };
 }

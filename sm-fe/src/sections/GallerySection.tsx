@@ -8,11 +8,11 @@ import { GALLERY_ROW_KEYS, galleryRows, galleryThumbRows, type GalleryRowKey } f
 /** 확대 보기 대상: 어느 행의 몇 번째 사진인지. 순환은 그 행 안에서만 일어난다. */
 type Zoom = { row: GalleryRowKey; index: number };
 
-/** 행별 촬영 장소. 각 행 아래에 표시된다. */
+/** 행별 라벨(촬영 분위기를 이모지로). 각 행 아래에 표시된다. */
 const ROW_TITLES: Record<GalleryRowKey, string> = {
-  A: '올림픽공원',
-  B: '서래섬 & 동작대교',
-  C: '용산가족공원',
+  A: '☀️, 🌳',
+  B: '🌇, 🌉',
+  C: '🧱, 👰🏻‍♀️',
 };
 
 /**
