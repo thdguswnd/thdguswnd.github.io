@@ -10,9 +10,9 @@ type Zoom = { row: GalleryRowKey; index: number };
 
 /** 행별 라벨(촬영 분위기를 이모지로). 각 행 아래에 표시된다. */
 const ROW_TITLES: Record<GalleryRowKey, string> = {
-  A: '☀️, 🌳',
-  B: '🌇, 🌉',
-  C: '🧱, 👰🏻‍♀️',
+  A: '🌝🌳',
+  B: '🌅🌉',
+  C: '👰🏻‍♀️🧱',
 };
 
 /**
