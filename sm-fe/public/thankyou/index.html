@@ -68,7 +68,12 @@
     </div>
     <footer>
       <p class="up-summary" id="upSummary"></p>
-      <button class="btn-primary" id="btnStart" type="button" disabled>올리기</button>
+      <div class="up-row">
+        <input class="up-phone" id="phoneInput" type="tel" inputmode="numeric" autocomplete="tel"
+               maxlength="13" placeholder="010-0000-0000 (선택)" aria-label="휴대폰 번호 (선택)">
+        <button class="btn-primary" id="btnStart" type="button" disabled>올리기</button>
+      </div>
+      <p class="up-privacy" id="phoneNotice"></p>
     </footer>
   </div>
 </div>
