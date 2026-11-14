@@ -290,6 +290,28 @@ $('#btnHideYes').addEventListener('click', async () => {
   const entries = [];
   let uploading = false;
   const input = $('#fileInput');
+  // 전화번호 (선택): 입력하는 대로 010-1234-5678 형태로 맞추고, 이 기기에 기억해 둡니다
+  const phoneEl = $('#phoneInput');
+  const fmtPhone = d => d.length < 4 ? d : d.length < 8 ? d.slice(0, 3) + '-' + d.slice(3) : d.slice(0, 3) + '-' + d.slice(3, 7) + '-' + d.slice(7, 11);
+  function showPhoneNotice(msg, err) {
+    const n = $('#phoneNotice');
+    n.textContent = msg || C.phoneNotice || '';
+    n.classList.toggle('err', !!err);
+    phoneEl.classList.toggle('invalid', !!err);
+  }
+  // 비어 있으면 '', 올바르면 숫자 11자리, 틀리면 null
+  function readPhone() {
+    const d = phoneEl.value.replace(/\D/g, '');
+    if (!d) return '';
+    return /^010\d{8}$/.test(d) ? d : null;
+  }
+  phoneEl.addEventListener('input', () => {
+    const d = phoneEl.value.replace(/\D/g, '').slice(0, 11);
+    phoneEl.value = fmtPhone(d);
+    if (phoneEl.classList.contains('invalid') && readPhone() !== null) showPhoneNotice();
+  });
+  try { const saved = localStorage.getItem('phone'); if (saved) phoneEl.value = fmtPhone(saved); } catch (e) { /* 무시 */ }
+  showPhoneNotice();
 
   $('#btnUpload').addEventListener('click', () => { openOverlay($('#uploadOverlay')); updateUploadUI(); });
   $('#btnPick').addEventListener('click', () => input.click());
@@ -332,6 +354,7 @@ $('#btnHideYes').addEventListener('click', async () => {
     btn.disabled = uploading || ready === 0;
 btn.textContent = uploading ? '올리는 중…' : ready ? ready + '개 올리기' : '올리기';
     $('#btnPick').disabled = uploading;
+    $('#phoneInput').disabled = uploading;
     const parts = [];
     if (done) parts.push(done + '개 완료');
     if (err) parts.push(err + '개 실패');
@@ -375,10 +398,10 @@ btn.textContent = uploading ? '올리는 중…' : ready ? ready + '개 올리�
     }
   }
 
-  async function uploadOne(en) {
+  async function uploadOne(en, phone) {
     en.status = 'uploading'; en.progress = 0; drawRow(en);
     const thumb = en.kind === 'image' ? await makeThumb(en.file) : null;
-    const plan = await API.start({ name: en.file.name, type: en.file.type || 'application/octet-stream', size: en.file.size, hasThumb: !!thumb });
+    const plan = await API.start({ name: en.file.name, type: en.file.type || 'application/octet-stream', size: en.file.size, hasThumb: !!thumb, phone: phone || undefined });
     let finishBody = {};
     if (plan.original.type === 'single') {
       await putWithRetry(plan.original.url, en.file, p => { en.progress = p * 0.95; drawRow(en); });
