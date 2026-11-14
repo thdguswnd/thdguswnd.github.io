@@ -523,3 +523,38 @@ body, button, input { font-weight: normal !important; }
 .film { touch-action: none; cursor: grab; user-select: none; -webkit-user-select: none; }
 .film:active { cursor: grabbing; }
 .frame img { -webkit-user-drag: none; pointer-events: none; }   /* 사진 자체가 끌려 나오지 않게 */
+.center-mid { flex-direction: column; }
+.walker-wrap { display: flex; flex-direction: column; align-items: center; width: 100%; }
+.bubble {
+  position: relative;
+  display: flex; flex-direction: column; align-items: center;
+  padding: 4px 8px;
+  background: #fffaf0;
+  color: #3a2414;
+  font-size: 13px; line-height: 1.35; text-align: center; white-space: nowrap;
+  box-shadow:
+    0 calc(var(--px) * -1) 0 0 var(--pxd), 0 var(--px) 0 0 var(--pxd),
+    calc(var(--px) * -1) 0 0 0 var(--pxd), var(--px) 0 0 0 var(--pxd),
+    0 calc(var(--px) * 2.2) 0 0 rgba(58, 36, 20, .3);
+  z-index: 2;
+}
+.bubble .tail { position: absolute; width: calc(var(--px) * 5); height: calc(var(--px) * 5); display: block; }
+.bubble-top { margin-bottom: -6px; transform: translateX(-12%); }
+.bubble-top .tail { top: 100%; left: 26%; }
+.bubble-bottom { margin-top: -4px; transform: translateX(12%); }
+.bubble-bottom .tail { bottom: 100%; right: 26%; transform: scale(-1, -1); }
+.px-heart { width: 14px; height: 12px; vertical-align: -1px; display: inline-block; }
+#character { margin: -4% 0; }
+
+#infoBody .app-links img { width: 64px; height: 64px; margin: 0 auto; object-fit: cover; border-radius: 14px; }
+
+.bubble { visibility: hidden; opacity: 0; scale: .6; transition: none; }
+.bubble.show { visibility: visible; animation: bubble-pop .24s steps(3, end) forwards; }
+.bubble.hide { visibility: visible; animation: bubble-out .18s steps(2, end) forwards; }
+@keyframes bubble-pop { from { opacity: 0; scale: .6; } to { opacity: 1; scale: 1; } }
+@keyframes bubble-out { from { opacity: 1; scale: 1; } to { opacity: 0; scale: .8; visibility: hidden; } }
+@media (prefers-reduced-motion: reduce) {
+  .bubble.show { animation: none; opacity: 1; scale: 1; }
+  .bubble.hide { animation: none; opacity: 0; visibility: hidden; }
+}
+#character { cursor: pointer; -webkit-tap-highlight-color: transparent; }
