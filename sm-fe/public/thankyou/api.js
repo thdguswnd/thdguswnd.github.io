@@ -8,7 +8,8 @@
 // ── 실제 서버(Lambda)와 맞출 계약 ───────────────────────────
 // GET  {apiBase}/items
 //      → { open: true, items: [{ id, kind, thumb: 'abc.jpg', createdAt }] }   (숨긴 항목 제외)
-// POST {apiBase}/upload/start   { name, type, size, hasThumb }
+// POST {apiBase}/upload/start   { name, type, size, hasThumb, phone? }   phone: 숫자 11자리(010...) 또는 생략
+//      저장 이름: original/001_12345678.jpg (번호 없으면 기기별 001_nonumb000.jpg)
 //      → { id,
 //          original: { type: 'single', url }                                  (작은 파일)
 //                  | { type: 'multipart', uploadId, partSize, partUrls: [url, ...] },  (큰 파일)
@@ -52,14 +53,15 @@
       x.send(blob);
     });
   }
-// ── 실제 AWS ──────────────────────────────────────────
+
+  // ── 실제 AWS ──────────────────────────────────────────
   const AwsApi = {
     async req(method, path, body) {
       const r = await fetch(C.apiBase + path, {
         method,
         headers: Object.assign({ 'X-Device-Id': deviceId }, body ? { 'Content-Type': 'application/json' } : {}),
         body: body ? JSON.stringify(body) : undefined,
-      });
+        });
       let j = null; try { j = await r.json(); } catch (e) { /* 빈 응답 */ }
       if (!r.ok) throw apiError(r.status, j);
       return j;
@@ -87,8 +89,9 @@
       <path d="M0 82 L30 66 L52 80 L80 72 L80 100 L0 100Z" fill="hsl(${(h + 200) % 360},28%,30%)"/></svg>`;
     return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
   }
-const mockItems = [];
-  for (let i = 0; i < 9; i++) mockItems.push({ id: 'demo' + i, kind: i === 4 ? 'video' : 'image', thumbUrl: sampleScene(i), createdAt: Date.now() - i * 60000, likes: [3, 0, 1, 0, 0, 7, 0, 2, 0][i] });
+  const mockItems = [];
+  // 가짜 모드(로컬 시험)는 올라온 사진 없이 시작합니다. 실제 모드와 같은 첫 화면이 됩니다
+
   const mockLikes = {};   // 항목 ID → 좋아요를 누른 기기 ID 집합 (서버의 중복 방지 표를 흉내)
   const pending = {};
   const wait = ms => new Promise(r => setTimeout(r, ms));
