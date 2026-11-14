@@ -1,11 +1,11 @@
 // 페이지 설정. 문구와 동작은 대부분 여기만 고치면 됩니다.
 window.APP_CONFIG = {
   // 'mock' = AWS 없이 동작하는 가짜 모드(로컬 테스트용), 'aws' = 실제 업로드
-  mode: 'mock',
+  mode: 'aws',
 
   // AWS 구성 후 채울 값 (mode: 'aws'일 때만 사용)
-  apiBase: '',      // 예: https://dxxxx.cloudfront.net/api
-  thumbBase: '',    // 예: https://dxxxx.cloudfront.net/thumbs/
+  apiBase: 'https://d5hnbad7aufuv.cloudfront.net/api',
+  thumbBase: 'https://d5hnbad7aufuv.cloudfront.net/',
 
   title: '사진 남기기',
   subtitle: '오늘의 순간을 함께 모아 주세요',
