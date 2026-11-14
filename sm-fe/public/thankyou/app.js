@@ -68,7 +68,30 @@
 
   // ── 오버레이 공통 ───────────────────────────────────────
   let paused = false;
-  function openOverlay(o) { o.hidden = false; paused = o.id !== 'infoOverlay'; }
+  const BUBBLE = { gap: 600, stay: 3000 };
+  const bubbles = [document.querySelector('.bubble-top'), document.querySelector('.bubble-bottom')].filter(Boolean);
+  let bubbleTimers = [];
+  function setBubble(b, on) {
+    if (on) { b.classList.remove('hide'); b.classList.add('show'); }
+    else if (b.classList.contains('show')) { b.classList.remove('show'); b.classList.add('hide'); }
+  }
+  function stopBubbles(immediate) {
+    bubbleTimers.forEach(clearTimeout); bubbleTimers = [];
+    bubbles.forEach(b => { if (immediate) b.classList.remove('show', 'hide'); else setBubble(b, false); });
+  }
+  function playBubbles(delay) {
+    stopBubbles(true);
+    const at = (ms, fn) => bubbleTimers.push(setTimeout(fn, ms));
+    bubbles.forEach((b, i) => at(delay + i * BUBBLE.gap, () => setBubble(b, true)));
+    at(delay + (bubbles.length - 1) * BUBBLE.gap + BUBBLE.stay, () => bubbles.forEach(b => setBubble(b, false)));
+  }
+  const charEl = document.getElementById('character');
+  if (charEl) charEl.addEventListener('click', () => playBubbles(0));
+
+  function openOverlay(o) {
+    o.hidden = false; paused = o.id !== 'infoOverlay';
+    stopBubbles(true);
+  }
   function closeOverlay(o) { o.hidden = true; paused = false; }
   document.querySelectorAll('.overlay').forEach(o => {
     o.addEventListener('click', e => {
