@@ -12,12 +12,11 @@
   <!-- 왼쪽 필름 -->
   <div class="film" id="filmLeft" aria-label="업로드된 사진 (왼쪽)"></div>
 
-  <!-- 가운데: ㅇ / 캐릭터 / 아래 -->
-   <main class="center">
+  <!-- 가운데: 위 / 캐릭터 / 아래 -->
+  <main class="center">
     <div class="road" id="road" aria-hidden="true"></div>
     <section class="center-top">
-      <h1 id="title"></h1>
-      <p id="subtitle"></p>
+      <div class="event-card" id="eventCard"></div>
       <nav class="menu" id="menuTop"></nav>
     </section>
 
@@ -28,11 +27,12 @@
     </section>
 
     <section class="center-bottom">
-      <nav class="menu" id="menuBottom"></nav>
       <button class="btn-upload" id="btnUpload" type="button">
-        <span class="ico">＋</span><span>사진·영상 올리기</span>
+        <span class="ico">＋</span><span>오늘의 순간을 함께 모아 주세요</span>
       </button>
-      <p class="hint" id="windowHint"></p>
+      <p class="hint" id="windowHint" hidden></p>
+      <nav class="menu" id="menuBottom"></nav>
+      <div class="event-card event-bottom" id="eventCardBottom"></div>
     </section>
   </main>
 
@@ -56,7 +56,7 @@
       <h2 id="upTitle">사진·영상 올리기</h2>
       <button class="x" type="button" data-close aria-label="닫기">✕</button>
     </header>
-<div class="up-body">
+    <div class="up-body">
       <button class="pick" id="btnPick" type="button">
         <span class="pick-ico">📷</span>
         <strong>휴대폰에서 파일 선택</strong>
