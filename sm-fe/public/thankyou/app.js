@@ -422,24 +422,39 @@ if (thumb && plan.thumbUrl) await putWithRetry(plan.thumbUrl, thumb);
 
   async function startUpload() {
     if (uploading) return;
+    const phone = readPhone();
+    if (phone === null) {                        // 입력했는데 형식이 틀린 경우만 막습니다 (비워 두면 통과)
+      showPhoneNotice('전화번호는 010으로 시작하는 11자리로 입력해 주세요 (비워 두셔도 됩니다)', true);
+      $('#phoneInput').focus();
+      return;
+    }
+    try { localStorage.setItem('phone', phone); } catch (e) { /* 무시 */ }
+    showPhoneNotice();
     uploading = true; updateUploadUI();
     const queue = entries.filter(e => e.status === 'ready');
     let stop = null;
+    const STOP_MSG = {
+      CLOSED: '업로드 기간이 아닙니다',
+      LIMIT: '올릴 수 있는 개수를 넘었습니다',
+      BAD_PHONE: '전화번호 형식을 확인해 주세요',
+      NEED_PHONE: '전화번호를 입력한 뒤 다시 올려 주세요',
+    };
     const worker = async () => {
       while (queue.length && !stop) {
         const en = queue.shift();
-        try { await uploadOne(en); }
+        try { await uploadOne(en, phone); }
         catch (e) {
           en.status = 'error';
-          en.error = e.code === 'CLOSED' ? '업로드 기간이 아닙니다' : e.code === 'LIMIT' ? '올릴 수 있는 개수를 넘었습니다' : '실패 (다시 시도해 주세요)';
-          if (e.code === 'CLOSED' || e.code === 'LIMIT') stop = e.code;
+          en.error = STOP_MSG[e.code] || '실패 (다시 시도해 주세요)';
+          if (STOP_MSG[e.code]) stop = e.code;   // 다시 해도 같은 결과인 오류는 나머지도 멈춥니다
           drawRow(en);
         }
         updateUploadUI();
       }
     };
-    await Promise.all([worker(), worker()]);   // 동시에 2개씩
-    queue.forEach(en => { en.status = 'error'; en.error = stop === 'CLOSED' ? '업로드 기간이 아닙니다' : '올릴 수 있는 개수를 넘었습니다'; drawRow(en); });
+    await Promise.all(Array.from({ length: C.uploadConcurrency || 2 }, worker));   // 동시에 여러 개
+    queue.forEach(en => { en.status = 'error'; en.error = STOP_MSG[stop]; drawRow(en); });
+    if (stop === 'BAD_PHONE' || stop === 'NEED_PHONE') { showPhoneNotice(STOP_MSG[stop], true); $('#phoneInput').focus(); }
     uploading = false; updateUploadUI();
     const done = entries.filter(e => e.status === 'done').length;
     if (done) { toast('올렸습니다. 필름에 곧 나타납니다'); refresh(); }
