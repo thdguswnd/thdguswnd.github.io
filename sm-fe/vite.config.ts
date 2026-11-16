@@ -90,8 +90,8 @@ function emitPages() {
         `<meta http-equiv="refresh" content="0; url=${target}">\n    ` +
         `<script>location.replace("${target}");</script>\n  </head><body></body></html>`;
 
-      // 루트(/) = QR 접속 → 사진 올리기로 이동
-      writeFileSync(indexPath, redirectTo('/thankyou/', `${SITE}/`));
+      // 루트(/) = QR 접속 → 게임으로 이동
+      writeFileSync(indexPath, redirectTo('/game/', `${SITE}/`));
 
       // 유효 경로는 /, /game, /invite 뿐이다.
       // 404.html 을 만들지 않으므로 그 외 주소는 GitHub Pages 기본 404 가 뜬다.
