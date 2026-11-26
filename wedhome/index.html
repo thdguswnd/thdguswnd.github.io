@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>신혼집 가구 배치 시뮬레이터</title>
+<style>
+  * {
+    box-sizing: border-box;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+  }
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: #1e293b;
+    font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    color: #0f172a;
+  }
+
+  /* 강제 가로 화면 컨테이너 */
+  #app-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    flex-direction: row;
+    background: #f1f5f9;
+    transform-origin: top left;
+  }
+
+  /* 왼쪽 평면도 영역 (세로폭 100% 기준) */
+  #plan-section {
+    flex: 0 0 auto;
+    height: 100%;
+    aspect-ratio: 960 / 690;
+    position: relative;
+    background: #ffffff;
+    border-right: 2px solid #cbd5e1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  #floorplan-canvas-wrap {
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+
+  #floorplan-svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  /* 벽체 클릭 타겟 강조 (콘센트 모드일 때) */
+  body.outlet-mode .wall-target {
+    cursor: crosshair;
+  }
+  body.outlet-mode .wall-hit-area {
+    pointer-events: stroke;
+    cursor: crosshair;
+  }
+  .wall-hit-area {
+    fill: none;
+    stroke: transparent;
+    stroke-width: 18;
+    pointer-events: none;
+  }
+
+  #furniture-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: auto;
+  }
+  /* 콘센트 모드일 때는 가구 레이어 터치를 통과시켜 벽을 직접 클릭 가능하게 함 */
+  body.outlet-mode #furniture-layer {
+    pointer-events: none;
+  }
+
+  /* 콘센트 마커 (파란색 동그라미) */
+  .outlet-dot {
+    fill: #2563eb;
+    stroke: #ffffff;
+    stroke-width: 2.2;
+    cursor: pointer;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.45));
+  }
+  .outlet-dot:hover {
+    fill: #1d4ed8;
+    r: 8.5;
+  }
+
+  /* 콘센트 모드 상단 안내 배지 */
+  #outlet-banner {
+    display: none;
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(37, 99, 235, 0.92);
+    color: #ffffff;
+    padding: 5px 12px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    z-index: 40;
+    pointer-events: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    white-space: nowrap;
+  }
+  body.outlet-mode #outlet-banner {
+    display: block;
+  }
+
+  /* 배치된 가구 박스 */
+  .placed-item {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    border-radius: 3px;
+    cursor: grab;
+    font-weight: 700;
+    line-height: 1.15;
+    padding: 2px;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transition: background-color 0.1s, border-color 0.1s;
+  }
+  .placed-item.valid {
+    background-color: rgba(34, 197, 94, 0.72);
+    border: 2px solid #15803d;
+    color: #052e16;
+  }
+  .placed-item.overlap {
+    background-color: rgba(239, 68, 68, 0.78);
+    border: 2px solid #b91c1c;
+    color: #ffffff;
+    z-index: 20;
+  }
+  .placed-item.selected {
+    outline: 2.5px dashed #2563eb;
+    outline-offset: 1px;
+    z-index: 30;
+  }
+  .placed-item-name {
+    font-size: 10px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    max-width: 100%;
+  }
+  .placed-item-dim {
+    font-size: 8px;
+    font-weight: 500;
+    opacity: 0.9;
+  }
+
+  /* 오른쪽 컨트롤 패널 */
+  #control-section {
+    flex: 1 1 auto;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: #f8fafc;
+    overflow: hidden;
+    min-width: 240px;
+  }
+
+  .panel-header {
+    padding: 7px 10px;
+    background: #0f172a;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+  .panel-header h1 {
+    font-size: 12.5px;
+    margin: 0;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .header-actions {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+  }
+  .header-btn {
+    background: #334155;
+    color: #f8fafc;
+    border: 1px solid #475569;
+    border-radius: 5px;
+    padding: 4px 7px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .header-btn.active {
+    background: #2563eb;
+    border-color: #60a5fa;
+    color: #ffffff;
+  }
+
+  /* 선택된 가구 조작 툴바 */
+  #selected-toolbar {
+    padding: 6px 10px;
+    background: #e2e8f0;
+    border-bottom: 1px solid #cbd5e1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px;
+    flex-shrink: 0;
+    min-height: 36px;
+  }
+  #selected-info {
+    font-size: 11px;
+    font-weight: 600;
+    color: #334155;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .tool-btns {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+  .btn-sm {
+    padding: 4px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .btn-rotate { background: #2563eb; color: #fff; }
+  .btn-remove { background: #dc2626; color: #fff; }
+  .btn-sm:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* 가구 등록 폼 */
+  .add-form {
+    padding: 8px 10px;
+    background: #ffffff;
+    border-bottom: 1px solid #cbd5e1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  .form-row {
+    display: flex;
+    gap: 4px;
+  }
+  .add-form input {
+    width: 100%;
+    padding: 5px 6px;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    font-size: 12px;
+    touch-action: auto;
+    user-select: text;
+    -webkit-user-select: text;
+  }
+  .btn-add {
+    background: #059669;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  /* 저장된 가구 목록 */
+  .list-header {
+    padding: 6px 10px 4px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #475569;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  #furniture-list {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding: 4px 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    touch-action: pan-y;
+  }
+  .saved-card {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 7px 9px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+  }
+  .saved-card-info {
+    overflow: hidden;
+  }
+  .saved-card-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: #0f172a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .saved-card-sub {
+    font-size: 10.5px;
+    color: #64748b;
+    margin-top: 2px;
+  }
+  .saved-card-actions {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+  .btn-place {
+    background: #0284c7;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 5px 8px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .btn-del-saved {
+    background: #f1f5f9;
+    color: #64748b;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    padding: 5px 7px;
+    font-size: 11px;
+    cursor: pointer;
+  }
+
+  /* 모달 (축척 설정) */
+  #scale-modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.65);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-box {
+    background: #fff;
+    padding: 16px;
+    border-radius: 8px;
+    width: 280px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+  }
+  .modal-box h3 {
+    margin: 0 0 8px;
+    font-size: 14px;
+  }
+  .modal-box p {
+    margin: 0 0 10px;
+    font-size: 12px;
+    color: #475569;
+    line-height: 1.4;
+  }
+  .modal-box input {
+    width: 100%;
+    padding: 7px;
+    font-size: 13px;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    margin-bottom: 10px;
+    touch-action: auto;
+    user-select: text;
+    -webkit-user-select: text;
+  }
+  .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 6px;
+  }
+</style>
+</head>
+<body>
+
+<div id="app-wrapper">
+  <!-- 왼쪽: 가벽 철거 반영 평면도 -->
+  <div id="plan-section">
+    <div id="floorplan-canvas-wrap">
+      <div id="outlet-banner">🔌 벽(검은 선)을 터치해 콘센트 추가 · 파란 점 터치 시 삭제</div>
+
+      <!-- 기준 좌표계: 960 x 690 -->
+      <svg id="floorplan-svg" viewBox="0 0 960 690" preserveAspectRatio="none">
+        <defs>
+          <!-- 마루 패턴 -->
+          <pattern id="wood-floor" width="60" height="24" patternUnits="userSpaceOnUse">
+            <rect width="60" height="24" fill="#d99b52"/>
+            <rect x="0" y="0" width="60" height="11.5" fill="#df9f56" stroke="#c5853d" stroke-width="0.6"/>
+            <rect x="30" y="12" width="60" height="11.5" fill="#d3934a" stroke="#c5853d" stroke-width="0.6"/>
+            <rect x="-30" y="12" width="60" height="11.5" fill="#d3934a" stroke="#c5853d" stroke-width="0.6"/>
+          </pattern>
+          <!-- 침실 베이지 그라데이션 -->
+          <radialGradient id="room-grad" cx="50%" cy="50%" r="60%">
+            <stop offset="0%" stop-color="#f5ebd1"/>
+            <stop offset="100%" stop-color="#d7c9a6"/>
+          </radialGradient>
+          <!-- 발코니 타일 -->
+          <pattern id="balcony-tile" width="22" height="22" patternUnits="userSpaceOnUse">
+            <rect width="22" height="22" fill="#f3efe6" stroke="#dfd8c8" stroke-width="1"/>
+          </pattern>
+          <!-- 현관 체크 타일 -->
+          <pattern id="entrance-tile" width="20" height="20" patternUnits="userSpaceOnUse">
+            <rect width="10" height="10" fill="#e2e8f0"/>
+            <rect x="10" y="0" width="10" height="10" fill="#f8fafc"/>
+            <rect x="0" y="10" width="10" height="10" fill="#f8fafc"/>
+            <rect x="10" y="10" width="10" height="10" fill="#e2e8f0"/>
+          </pattern>
+        </defs>
+
+        <!-- 전체 배경 -->
+        <rect x="0" y="0" width="960" height="690" fill="#ffffff"/>
+
+        <!-- 1. 좌측 상단 침실 (x:70~288, y:28~338) -->
+        <rect x="70" y="28" width="218" height="310" fill="url(#room-grad)"/>
+        <text x="179" y="188" font-size="16" font-weight="700" fill="#333" text-anchor="middle">침실</text>
+
+        <!-- 2. 상단 중앙 PD/비트 공간 (x:288~446, y:28~74) -->
+        <rect x="288" y="28" width="42" height="46" fill="#fff" stroke="#111" stroke-width="2"/>
+        <line x1="288" y1="28" x2="330" y2="74" stroke="#111" stroke-width="1.2"/>
+        <line x1="330" y1="28" x2="288" y2="74" stroke="#111" stroke-width="1.2"/>
+
+        <rect x="330" y="28" width="76" height="46" fill="#fff" stroke="#111" stroke-width="2"/>
+        <line x1="330" y1="28" x2="406" y2="74" stroke="#111" stroke-width="1.2"/>
+        <line x1="406" y1="28" x2="330" y2="74" stroke="#111" stroke-width="1.2"/>
+
+        <rect x="406" y="28" width="40" height="46" fill="#fff" stroke="#111" stroke-width="2"/>
+        <line x1="406" y1="28" x2="446" y2="74" stroke="#111" stroke-width="1.2"/>
+        <line x1="446" y1="28" x2="406" y2="74" stroke="#111" stroke-width="1.2"/>
+
+        <!-- 3. 욕실 (x:288~446, y:74~260) -->
+        <rect x="288" y="74" width="158" height="186" fill="#e6f2f8"/>
+        <!-- 욕조 -->
+        <rect x="306" y="88" width="124" height="54" fill="#fff" stroke="#333" stroke-width="1.2"/>
+        <rect x="312" y="94" width="112" height="42" rx="18" fill="#fff" stroke="#333" stroke-width="1.2"/>
+        <line x1="288" y1="142" x2="446" y2="142" stroke="#333" stroke-width="1.2"/>
+        <!-- 세면대 -->
+        <path d="M 288 158 L 312 158 A 20 20 0 0 1 312 198 L 288 198 Z" fill="#fff" stroke="#333" stroke-width="1.2"/>
+        <circle cx="310" cy="178" r="12" fill="none" stroke="#333" stroke-width="1"/>
+        <circle cx="305" cy="178" r="2" fill="#333"/>
+        <!-- 양변기 -->
+        <rect x="292" y="206" width="16" height="36" fill="#fff" stroke="#333" stroke-width="1.2"/>
+        <ellipse cx="322" cy="224" rx="15" ry="12" fill="#fff" stroke="#333" stroke-width="1.2"/>
+        <text x="368" y="204" font-size="16" font-weight="700" fill="#333" text-anchor="middle">욕실</text>
+
+        <!-- 4. 팬트리 (x:288~338, y:260~338) -->
+        <rect x="288" y="260" width="50" height="78" fill="#efe9db"/>
+        <text x="313" y="305" font-size="13" font-weight="700" fill="#333" text-anchor="middle">팬트리</text>
+
+        <!-- 5. 우측 상단 안방/침실 (x:446~782, y:28~356) -->
+        <rect x="446" y="28" width="336" height="328" fill="url(#room-grad)"/>
+        <text x="614" y="198" font-size="17" font-weight="700" fill="#333" text-anchor="middle">침실</text>
+
+        <!-- 6. 통합 주방 + 거실/침실 (가벽 제거됨!) -->
+        <rect x="338" y="260" width="108" height="80" fill="url(#wood-floor)"/>
+        <rect x="184" y="338" width="264" height="320" fill="url(#wood-floor)"/>
+        <rect x="446" y="356" width="336" height="302" fill="url(#wood-floor)"/>
+
+        <!-- 주방 싱크대/가스레인지 -->
+        <rect x="186" y="604" width="190" height="52" fill="#ffffff" stroke="#222" stroke-width="1.5"/>
+        <rect x="212" y="616" width="44" height="28" rx="10" fill="none" stroke="#222" stroke-width="1.2"/>
+        <circle cx="225" cy="630" r="8" fill="none" stroke="#222" stroke-width="1.2"/>
+        <line x1="219" y1="624" x2="231" y2="636" stroke="#222" stroke-width="1"/>
+        <line x1="231" y1="624" x2="219" y2="636" stroke="#222" stroke-width="1"/>
+        <circle cx="243" cy="630" r="8" fill="none" stroke="#222" stroke-width="1.2"/>
+        <line x1="237" y1="624" x2="249" y2="636" stroke="#222" stroke-width="1"/>
+        <line x1="249" y1="624" x2="237" y2="636" stroke="#222" stroke-width="1"/>
+        <line x1="274" y1="620" x2="296" y2="620" stroke="#222" stroke-width="1.2"/>
+        <line x1="274" y1="627" x2="296" y2="627" stroke="#222" stroke-width="1.2"/>
+        <line x1="274" y1="634" x2="296" y2="634" stroke="#222" stroke-width="1.2"/>
+        <line x1="274" y1="641" x2="296" y2="641" stroke="#222" stroke-width="1.2"/>
+        <rect x="306" y="614" width="44" height="34" rx="4" fill="none" stroke="#222" stroke-width="1.2"/>
+        <circle cx="328" cy="638" r="2" fill="#222"/>
+
+        <text x="278" y="584" font-size="15" font-weight="700" fill="#333" text-anchor="middle">주방</text>
+        <text x="614" y="510" font-size="16" font-weight="700" fill="#333" text-anchor="middle">거실/침실 (가벽 철거됨)</text>
+
+        <!-- 7. 현관 -->
+        <rect x="70" y="338" width="114" height="104" fill="url(#entrance-tile)"/>
+        <text x="122" y="395" font-size="15" font-weight="700" fill="#333" text-anchor="middle">현관</text>
+
+        <!-- 8. 다용도실 -->
+        <rect x="70" y="442" width="114" height="144" fill="#e5e7eb"/>
+        <rect x="74" y="446" width="106" height="16" fill="#fff" stroke="#333" stroke-width="1"/>
+        <text x="127" y="520" font-size="14" font-weight="700" fill="#333" text-anchor="middle">다용도실</text>
+
+        <!-- 9. 좌측 하단 실외기/PD 공간 -->
+        <rect x="70" y="586" width="114" height="72" fill="#fff"/>
+        <line x1="70" y1="586" x2="184" y2="658" stroke="#222" stroke-width="1.2"/>
+        <line x1="184" y1="586" x2="70" y2="658" stroke="#222" stroke-width="1.2"/>
+
+        <!-- 10. 우측 발코니 -->
+        <rect x="782" y="28" width="116" height="76" fill="#fff"/>
+        <rect x="782" y="104" width="144" height="554" fill="url(#balcony-tile)"/>
+        <text x="854" y="390" font-size="16" font-weight="700" fill="#333" text-anchor="middle">발코니</text>
+
+        <!-- ==================== 구조 벽체 (검은색 굵은 선 + 터치 판정 영역) ==================== -->
+        <g id="walls-group">
+          <!-- 외벽 -->
+          <path class="wall-target" d="M 70 28 L 898 28 L 898 104 L 926 104 L 926 658 L 70 658 Z"
+                fill="none" stroke="#111111" stroke-width="7" stroke-linejoin="miter"/>
+          <path class="wall-hit-area" d="M 70 28 L 898 28 L 898 104 L 926 104 L 926 658 L 70 658 Z"/>
+
+          <!-- 좌측 침실 하단 벽 -->
+          <line class="wall-target" x1="70" y1="338" x2="236" y2="338" stroke="#111" stroke-width="6"/>
+          <line class="wall-hit-area" x1="70" y1="338" x2="236" y2="338"/>
+
+          <line class="wall-target" x1="268" y1="338" x2="342" y2="338" stroke="#111" stroke-width="6"/>
+          <line class="wall-hit-area" x1="268" y1="338" x2="342" y2="338"/>
+
+          <!-- 좌측 침실 우측 벽 -->
+          <line class="wall-target" x1="288" y1="28" x2="288" y2="338" stroke="#111" stroke-width="6"/>
+          <line class="wall-hit-area" x1="288" y1="28" x2="288" y2="338"/>
+
+          <!-- 욕실 하단 벽 -->
+          <line class="wall-target" x1="288" y1="260" x2="400" y2="260" stroke="#111" stroke-width="4"/>
+          <line class="wall-hit-area" x1="288" y1="260" x2="400" y2="260"/>
+
+          <line class="wall-target" x1="434" y1="260" x2="446" y2="260" stroke="#111" stroke-width="4"/>
+          <line class="wall-hit-area" x1="434" y1="260" x2="446" y2="260"/>
+
+          <!-- 팬트리 우측 벽 -->
+          <line class="wall-target" x1="338" y1="260" x2="338" y2="282" stroke="#111" stroke-width="4"/>
+          <line class="wall-hit-area" x1="338" y1="260" x2="338" y2="282"/>
+
+          <line class="wall-target" x1="338" y1="316" x2="338" y2="338" stroke="#111" stroke-width="4"/>
+          <line class="wall-hit-area" x1="338" y1="316" x2="338" y2="338"/>
+
+          <!-- 중앙 수직 내력벽 (하단 가벽 제거됨) -->
+          <line class="wall-target" x1="446" y1="28" x2="446" y2="356" stroke="#111" stroke-width="6"/>
+          <line class="wall-hit-area" x1="446" y1="28" x2="446" y2="356"/>
+
+          <!-- 우측 상단 침실(안방) 하단 벽 -->
+          <line class="wall-target" x1="482" y1="356" x2="782" y2="356" stroke="#111" stroke-width="5"/>
+          <line class="wall-hit-area" x1="482" y1="356" x2="782" y2="356"/>
+
+          <!-- 발코니 경계벽 -->
+          <line class="wall-target" x1="782" y1="28" x2="782" y2="658" stroke="#111" stroke-width="6"/>
+          <line class="wall-hit-area" x1="782" y1="28" x2="782" y2="658"/>
+
+          <!-- 현관 / 다용도실 / 하단 비트 경계벽 -->
+          <line class="wall-target" x1="70" y1="442" x2="184" y2="442" stroke="#111" stroke-width="4"/>
+          <line class="wall-hit-area" x1="70" y1="442" x2="184" y2="442"/>
+
+          <line class="wall-target" x1="70" y1="586" x2="184" y2="586" stroke="#111" stroke-width="5"/>
+          <line class="wall-hit-area" x1="70" y1="586" x2="184" y2="586"/>
+
+          <line class="wall-target" x1="184" y1="442" x2="184" y2="658" stroke="#111" stroke-width="5"/>
+          <line class="wall-hit-area" x1="184" y1="442" x2="184" y2="658"/>
+        </g>
+
+        <!-- ==================== 문(여닫이 호) 및 창문 표시 ==================== -->
+        <line x1="70" y1="376" x2="34" y2="376" stroke="#111" stroke-width="2"/>
+        <path d="M 34 376 A 36 36 0 0 0 70 412" fill="none" stroke="#111" stroke-width="1.2"/>
+
+        <line x1="268" y1="338" x2="268" y2="304" stroke="#111" stroke-width="2"/>
+        <path d="M 268 304 A 34 34 0 0 0 236 338" fill="none" stroke="#111" stroke-width="1.2"/>
+
+        <line x1="432" y1="260" x2="432" y2="228" stroke="#111" stroke-width="2"/>
+        <path d="M 432 228 A 32 32 0 0 0 400 260" fill="none" stroke="#111" stroke-width="1.2"/>
+
+        <line x1="338" y1="282" x2="372" y2="282" stroke="#111" stroke-width="2"/>
+        <path d="M 372 282 A 34 34 0 0 1 338 316" fill="none" stroke="#111" stroke-width="1.2"/>
+
+        <line x1="448" y1="356" x2="448" y2="322" stroke="#111" stroke-width="2"/>
+        <path d="M 448 322 A 34 34 0 0 1 482 356" fill="none" stroke="#111" stroke-width="1.2"/>
+
+        <!-- 창문 표시 -->
+        <rect x="67" y="130" width="6" height="110" fill="#fff" stroke="#111" stroke-width="1.2"/>
+        <line x1="70" y1="130" x2="70" y2="240" stroke="#111" stroke-width="1"/>
+        <rect x="67" y="485" width="6" height="75" fill="#fff" stroke="#111" stroke-width="1.2"/>
+        <line x1="70" y1="485" x2="70" y2="560" stroke="#111" stroke-width="1"/>
+        <rect x="779" y="130" width="6" height="170" fill="#fff" stroke="#111" stroke-width="1.2"/>
+        <line x1="782" y1="130" x2="782" y2="300" stroke="#111" stroke-width="1"/>
+        <rect x="779" y="400" width="6" height="210" fill="#fff" stroke="#111" stroke-width="1.2"/>
+        <line x1="782" y1="400" x2="782" y2="610" stroke="#111" stroke-width="1"/>
+        <rect x="923" y="140" width="6" height="470" fill="#fff" stroke="#111" stroke-width="1.2"/>
+        <line x1="926" y1="140" x2="926" y2="610" stroke="#111" stroke-width="1"/>
+
+        <!-- ==================== 콘센트 위치 마커 레이어 ==================== -->
+        <g id="outlets-layer"></g>
+      </svg>
+
+      <!-- 가구들이 배치되는 투명 오버레이 층 -->
+      <div id="furniture-layer"></div>
+    </div>
+  </div>
+
+  <!-- 오른쪽: 가구 입력 및 선택 패널 -->
+  <div id="control-section">
+    <div class="panel-header">
+      <h1>가구 배치 시뮬레이터</h1>
+      <div class="header-actions">
+        <button class="header-btn" id="outlet-mode-btn">🔌 콘센트 위치</button>
+        <button class="header-btn" id="open-scale-btn">📏 축척</button>
+      </div>
+    </div>
+
+    <!-- 선택된 가구 조작 바 -->
+    <div id="selected-toolbar">
+      <span id="selected-info">배치된 가구를 터치해 선택</span>
+      <div class="tool-btns">
+        <button class="btn-sm btn-rotate" id="rotate-btn" disabled>90° 회전</button>
+        <button class="btn-sm btn-remove" id="remove-placed-btn" disabled>배치 해제</button>
+      </div>
+    </div>
+
+    <!-- 가구/가전 등록 폼 -->
+    <div class="add-form">
+      <div class="form-row">
+        <input type="text" id="input-name" placeholder="항목명 (예: 퀸침대, 4인식탁)">
+      </div>
+      <div class="form-row">
+        <input type="number" id="input-w" placeholder="가로(cm)" inputmode="numeric">
+        <input type="number" id="input-d" placeholder="세로(cm)" inputmode="numeric">
+        <input type="number" id="input-h" placeholder="높이(cm)" inputmode="numeric">
+      </div>
+      <button class="btn-add" id="add-item-btn">+ 목록에 저장하기</button>
+    </div>
+
+    <div class="list-header">
+      <span>저장된 가구/가전 (터치하여 배치)</span>
+      <span id="scale-indicator">기준폭: 950cm</span>
+    </div>
+
+    <!-- 저장된 가구 목록 -->
+    <div id="furniture-list"></div>
+  </div>
+</div>
+
+<!-- 축척 설정 모달 -->
+<div id="scale-modal">
+  <div class="modal-box">
+    <h3>실측 도면 축척 보정</h3>
+    <p>평면도 좌측 외벽부터 우측 발코니 외벽까지의 <strong>실제 전체 가로 길이(cm)</strong>를 입력하면 가구 크기가 실제 비율에 맞춰 정확히 계산됩니다.</p>
+    <input type="number" id="scale-input" value="950" inputmode="numeric">
+    <div class="modal-actions">
+      <button class="btn-sm" id="close-scale-btn" style="background:#e2e8f0;">취소</button>
+      <button class="btn-sm btn-rotate" id="save-scale-btn">적용</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  const SVG_VIEW_W = 960;
+  const SVG_VIEW_H = 690;
+  const HOUSE_OUTER_SVG_W = 856;
+
+  // 기본 초기 목록 (침대, 냉장고, 김치냉장고, 워시타워, 스탠드형에어컨, 벽걸이에어컨)
+  const DEFAULT_SAVED_ITEMS = [
+    { id: 'def_bed', name: '침대', w: 202, d: 226, h: 110 },
+    { id: 'def_fridge', name: '냉장고', w: 91.4, d: 91.8, h: 186 },
+    { id: 'def_kimchi', name: '김치냉장고', w: 69.7, d: 69.6, h: 186 },
+    { id: 'def_wash', name: '워시타워', w: 70, d: 83, h: 189 },
+    { id: 'def_stand_ac', name: '스탠드형에어컨', w: 35, d: 29.5, h: 184 },
+    { id: 'def_wall_ac', name: '벽걸이에어컨', w: 75.4, d: 30.8, h: 18.9 }
+  ];
+
+  // 초기 배치 항목: 당장 오늘 배치할 침대 배치 정보
+  const DEFAULT_PLACED_ITEMS = [
+    {
+      uid: 'init_placed_bed',
+      name: '침대',
+      w: 202,
+      d: 226,
+      h: 110,
+      svgX: 510,
+      svgY: 70
+    }
+  ];
+
+  // 상태 데이터 (localStorage 연동)
+  let totalHouseWidthCm = Number(localStorage.getItem('sim_house_width_cm')) || 950;
+  let savedItems = JSON.parse(localStorage.getItem('sim_saved_items') || 'null') || DEFAULT_SAVED_ITEMS;
+  let placedItems = JSON.parse(localStorage.getItem('sim_placed_items') || 'null') || DEFAULT_PLACED_ITEMS;
+  let outlets = JSON.parse(localStorage.getItem('sim_outlets') || '[]');
+  let selectedPlacedId = 'init_placed_bed';
+  let isForcedPortrait = false;
+  let isOutletMode = false;
+
+  const wrapper = document.getElementById('app-wrapper');
+  const svgEl = document.getElementById('floorplan-svg');
+  const wallsGroup = document.getElementById('walls-group');
+  const outletsLayer = document.getElementById('outlets-layer');
+  const furnitureLayer = document.getElementById('furniture-layer');
+  const furnitureListEl = document.getElementById('furniture-list');
+  const selectedInfoEl = document.getElementById('selected-info');
+  const rotateBtn = document.getElementById('rotate-btn');
+  const removePlacedBtn = document.getElementById('remove-placed-btn');
+  const scaleIndicator = document.getElementById('scale-indicator');
+  const outletModeBtn = document.getElementById('outlet-mode-btn');
+
+  // 벽체 선분 목록 (클릭 시 가장 가까운 벽 중심선 좌표로 스냅하기 위함)
+  const WALL_SEGMENTS = [
+    // 외벽
+    { x1: 70, y1: 28, x2: 898, y2: 28 },
+    { x1: 898, y1: 28, x2: 898, y2: 104 },
+    { x1: 898, y1: 104, x2: 926, y2: 104 },
+    { x1: 926, y1: 104, x2: 926, y2: 658 },
+    { x1: 70, y1: 658, x2: 926, y2: 658 },
+    { x1: 70, y1: 28, x2: 70, y2: 658 },
+    // 내벽
+    { x1: 70, y1: 338, x2: 236, y2: 338 },
+    { x1: 268, y1: 338, x2: 342, y2: 338 },
+    { x1: 288, y1: 28, x2: 288, y2: 338 },
+    { x1: 288, y1: 260, x2: 400, y2: 260 },
+    { x1: 434, y1: 260, x2: 446, y2: 260 },
+    { x1: 338, y1: 260, x2: 338, y2: 282 },
+    { x1: 338, y1: 316, x2: 338, y2: 338 },
+    { x1: 446, y1: 28, x2: 446, y2: 356 },
+    { x1: 482, y1: 356, x2: 782, y2: 356 },
+    { x1: 782, y1: 28, x2: 782, y2: 658 },
+    { x1: 70, y1: 442, x2: 184, y2: 442 },
+    { x1: 70, y1: 586, x2: 184, y2: 586 },
+    { x1: 184, y1: 442, x2: 184, y2: 658 }
+  ];
+
+  function saveState() {
+    localStorage.setItem('sim_house_width_cm', String(totalHouseWidthCm));
+    localStorage.setItem('sim_saved_items', JSON.stringify(savedItems));
+    localStorage.setItem('sim_placed_items', JSON.stringify(placedItems));
+    localStorage.setItem('sim_outlets', JSON.stringify(outlets));
+  }
+
+  // 1. 강제 가로 화면 고정 로직
+  function updateOrientationLayout() {
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    if (vh > vw) {
+      isForcedPortrait = true;
+      wrapper.style.width = vh + 'px';
+      wrapper.style.height = vw + 'px';
+      wrapper.style.transform = `rotate(90deg) translate(0px, -${vw}px)`;
+    } else {
+      isForcedPortrait = false;
+      wrapper.style.width = vw + 'px';
+      wrapper.style.height = vh + 'px';
+      wrapper.style.transform = 'none';
+    }
+    renderPlacedItems();
+  }
+
+  window.addEventListener('resize', updateOrientationLayout);
+  window.addEventListener('orientationchange', () => setTimeout(updateOrientationLayout, 100));
+
+  function getLogicalPoint(clientX, clientY) {
+    if (isForcedPortrait) {
+      const vw = window.innerWidth;
+      return { x: clientY, y: vw - clientX };
+    }
+    return { x: clientX, y: clientY };
+  }
+
+  // 화면 좌표를 SVG(960x690) 좌표로 변환
+  function clientToSvgCoord(clientX, clientY) {
+    const rect = svgEl.getBoundingClientRect();
+    if (isForcedPortrait) {
+      const relX = (clientY - rect.top) / rect.height;
+      const relY = (rect.right - clientX) / rect.width;
+      return {
+        x: relX * SVG_VIEW_W,
+        y: relY * SVG_VIEW_H
+      };
+    } else {
+      const relX = (clientX - rect.left) / rect.width;
+      const relY = (clientY - rect.top) / rect.height;
+      return {
+        x: relX * SVG_VIEW_W,
+        y: relY * SVG_VIEW_H
+      };
+    }
+  }
+
+  // 점에서 선분 위 가장 가까운 점 찾기 (벽 중앙선에 깔끔하게 스냅)
+  function snapToNearestWall(px, py) {
+    let bestPt = { x: px, y: py };
+    let minDistSq = Infinity;
+
+    for (const seg of WALL_SEGMENTS) {
+      const dx = seg.x2 - seg.x1;
+      const dy = seg.y2 - seg.y1;
+      const lenSq = dx * dx + dy * dy;
+      let t = lenSq === 0 ? 0 : ((px - seg.x1) * dx + (py - seg.y1) * dy) / lenSq;
+      t = Math.max(0, Math.min(1, t));
+      const projX = seg.x1 + t * dx;
+      const projY = seg.y1 + t * dy;
+      const distSq = (px - projX) ** 2 + (py - projY) ** 2;
+      if (distSq < minDistSq) {
+        minDistSq = distSq;
+        bestPt = { x: Math.round(projX * 10) / 10, y: Math.round(projY * 10) / 10 };
+      }
+    }
+    return bestPt;
+  }
+
+  // 2. 콘센트 위치 모드 & 렌더링
+  outletModeBtn.addEventListener('click', () => {
+    isOutletMode = !isOutletMode;
+    document.body.classList.toggle('outlet-mode', isOutletMode);
+    outletModeBtn.classList.toggle('active', isOutletMode);
+    outletModeBtn.textContent = isOutletMode ? '✅ 콘센트 완료' : '🔌 콘센트 위치';
+    if (isOutletMode) {
+      selectedPlacedId = null;
+      renderPlacedItems();
+    }
+  });
+
+  function handleWallTap(e) {
+    if (!isOutletMode) return;
+    e.stopPropagation();
+    if (e.cancelable) e.preventDefault();
+
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    const rawSvg = clientToSvgCoord(clientX, clientY);
+    const snapped = snapToNearestWall(rawSvg.x, rawSvg.y);
+
+    const exists = outlets.some(o => Math.hypot(o.x - snapped.x, o.y - snapped.y) < 10);
+    if (exists) return;
+
+    outlets.push({
+      id: 'out_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5),
+      x: snapped.x,
+      y: snapped.y
+    });
+    saveState();
+    renderOutlets();
+  }
+
+  wallsGroup.addEventListener('mousedown', handleWallTap);
+  wallsGroup.addEventListener('touchstart', handleWallTap, { passive: false });
+
+  function renderOutlets() {
+    outletsLayer.innerHTML = '';
+    outlets.forEach(outlet => {
+      const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      circle.setAttribute('cx', outlet.x);
+      circle.setAttribute('cy', outlet.y);
+      circle.setAttribute('r', '7');
+      circle.setAttribute('class', 'outlet-dot');
+
+      const removeOutlet = (e) => {
+        e.stopPropagation();
+        if (e.cancelable) e.preventDefault();
+        if (isOutletMode || confirm('이 콘센트 표시를 삭제할까요?')) {
+          outlets = outlets.filter(o => o.id !== outlet.id);
+          saveState();
+          renderOutlets();
+        }
+      };
+
+      circle.addEventListener('mousedown', removeOutlet);
+      circle.addEventListener('touchstart', removeOutlet, { passive: false });
+      outletsLayer.appendChild(circle);
+    });
+  }
+
+  function cmToSvgUnits(cm) {
+    return (cm / totalHouseWidthCm) * HOUSE_OUTER_SVG_W;
+  }
+
+  // 3. 저장된 가구 목록 렌더링
+  function renderSavedList() {
+    scaleIndicator.textContent = `기준폭: ${totalHouseWidthCm}cm`;
+    furnitureListEl.innerHTML = '';
+    if (savedItems.length === 0) {
+      furnitureListEl.innerHTML = '<div style="font-size:11px; color:#94a3b8; text-align:center; padding:16px 0;">등록된 가구가 없습니다. 위에서 추가해주세요.</div>';
+      return;
+    }
+
+    savedItems.forEach(item => {
+      const card = document.createElement('div');
+      card.className = 'saved-card';
+      card.innerHTML = `
+        <div class="saved-card-info">
+          <div class="saved-card-title">${escapeHtml(item.name)}</div>
+          <div class="saved-card-sub">${item.w} × ${item.d} × H${item.h} cm</div>
+        </div>
+        <div class="saved-card-actions">
+          <button class="btn-place" data-id="${item.id}">배치</button>
+          <button class="btn-del-saved" data-id="${item.id}">삭제</button>
+        </div>
+      `;
+      furnitureListEl.appendChild(card);
+    });
+
+    furnitureListEl.querySelectorAll('.btn-place').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (isOutletMode) {
+          isOutletMode = false;
+          document.body.classList.remove('outlet-mode');
+          outletModeBtn.classList.remove('active');
+          outletModeBtn.textContent = '🔌 콘센트 위치';
+        }
+        const item = savedItems.find(i => i.id === btn.dataset.id);
+        if (!item) return;
+        const newPlaced = {
+          uid: 'p_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+          name: item.name,
+          w: item.w,
+          d: item.d,
+          h: item.h,
+          svgX: 480,
+          svgY: 450
+        };
+        placedItems.push(newPlaced);
+        selectedPlacedId = newPlaced.uid;
+        saveState();
+        renderPlacedItems();
+      });
+    });
+
+    furnitureListEl.querySelectorAll('.btn-del-saved').forEach(btn => {
+      btn.addEventListener('click', () => {
+        savedItems = savedItems.filter(i => i.id !== btn.dataset.id);
+        saveState();
+        renderSavedList();
+      });
+    });
+  }
+
+  // 4. 겹침(충돌) 판정 로직 (AABB)
+  function getOverlappingSet() {
+    const overlapIds = new Set();
+    for (let i = 0; i < placedItems.length; i++) {
+      const a = placedItems[i];
+      const aw = cmToSvgUnits(a.w);
+      const ah = cmToSvgUnits(a.d);
+      for (let j = i + 1; j < placedItems.length; j++) {
+        const b = placedItems[j];
+        const bw = cmToSvgUnits(b.w);
+        const bh = cmToSvgUnits(b.d);
+
+        const margin = 0.5;
+        const isOverlap =
+          a.svgX < b.svgX + bw - margin &&
+          a.svgX + aw > b.svgX + margin &&
+          a.svgY < b.svgY + bh - margin &&
+          a.svgY + ah > b.svgY + margin;
+
+        if (isOverlap) {
+          overlapIds.add(a.uid);
+          overlapIds.add(b.uid);
+        }
+      }
+    }
+    return overlapIds;
+  }
+
+  // 5. 평면도 위 배치된 가구 렌더링 & 드래그 처리
+  function renderPlacedItems() {
+    furnitureLayer.innerHTML = '';
+    const layerRect = furnitureLayer.getBoundingClientRect();
+    const logicalLayerW = isForcedPortrait ? layerRect.height : layerRect.width;
+    const logicalLayerH = isForcedPortrait ? layerRect.width : layerRect.height;
+    if (!logicalLayerW || !logicalLayerH) return;
+
+    const scaleX = logicalLayerW / SVG_VIEW_W;
+    const scaleY = logicalLayerH / SVG_VIEW_H;
+    const overlapSet = getOverlappingSet();
+
+    placedItems.forEach(item => {
+      const el = document.createElement('div');
+      const isOverlap = overlapSet.has(item.uid);
+      const isSelected = item.uid === selectedPlacedId;
+
+      el.className = 'placed-item ' + (isOverlap ? 'overlap' : 'valid') + (isSelected ? ' selected' : '');
+      const svgW = cmToSvgUnits(item.w);
+      const svgH = cmToSvgUnits(item.d);
+
+      el.style.left = (item.svgX * scaleX) + 'px';
+      el.style.top = (item.svgY * scaleY) + 'px';
+      el.style.width = Math.max(18, svgW * scaleX) + 'px';
+      el.style.height = Math.max(18, svgH * scaleY) + 'px';
+
+      el.innerHTML = `
+        <div class="placed-item-name">${escapeHtml(item.name)}</div>
+        <div class="placed-item-dim">${item.w}×${item.d}</div>
+      `;
+
+      const onPointerDown = (e) => {
+        if (isOutletMode) return;
+        e.stopPropagation();
+        selectedPlacedId = item.uid;
+        updateSelectedToolbar();
+
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        const startPt = getLogicalPoint(clientX, clientY);
+        const origSvgX = item.svgX;
+        const origSvgY = item.svgY;
+
+        const onPointerMove = (moveEvt) => {
+          if (moveEvt.cancelable) moveEvt.preventDefault();
+          const cx = moveEvt.touches ? moveEvt.touches[0].clientX : moveEvt.clientX;
+          const cy = moveEvt.touches ? moveEvt.touches[0].clientY : moveEvt.clientY;
+          const curPt = getLogicalPoint(cx, cy);
+
+          const dxSvg = (curPt.x - startPt.x) / scaleX;
+          const dySvg = (curPt.y - startPt.y) / scaleY;
+
+          item.svgX = Math.max(0, Math.min(SVG_VIEW_W - svgW, origSvgX + dxSvg));
+          item.svgY = Math.max(0, Math.min(SVG_VIEW_H - svgH, origSvgY + dySvg));
+          renderPlacedItems();
+        };
+
+        const onPointerUp = () => {
+          window.removeEventListener('mousemove', onPointerMove);
+          window.removeEventListener('mouseup', onPointerUp);
+          window.removeEventListener('touchmove', onPointerMove);
+          window.removeEventListener('touchend', onPointerUp);
+          saveState();
+          renderPlacedItems();
+        };
+
+        window.addEventListener('mousemove', onPointerMove);
+        window.addEventListener('mouseup', onPointerUp);
+        window.addEventListener('touchmove', onPointerMove, { passive: false });
+        window.addEventListener('touchend', onPointerUp);
+      };
+
+      el.addEventListener('mousedown', onPointerDown);
+      el.addEventListener('touchstart', onPointerDown, { passive: false });
+      furnitureLayer.appendChild(el);
+    });
+
+    updateSelectedToolbar();
+  }
+
+  function updateSelectedToolbar() {
+    const sel = placedItems.find(i => i.uid === selectedPlacedId);
+    if (sel) {
+      selectedInfoEl.textContent = `선택: ${sel.name} (${sel.w}×${sel.d}×H${sel.h}cm)`;
+      rotateBtn.disabled = false;
+      removePlacedBtn.disabled = false;
+    } else {
+      selectedInfoEl.textContent = isOutletMode ? '콘센트 모드 활성 중' : '배치된 가구를 터치해 선택';
+      rotateBtn.disabled = true;
+      removePlacedBtn.disabled = true;
+    }
+  }
+
+  furnitureLayer.addEventListener('mousedown', (e) => {
+    if (e.target === furnitureLayer) {
+      selectedPlacedId = null;
+      renderPlacedItems();
+    }
+  });
+  furnitureLayer.addEventListener('touchstart', (e) => {
+    if (e.target === furnitureLayer) {
+      selectedPlacedId = null;
+      renderPlacedItems();
+    }
+  });
+
+  rotateBtn.addEventListener('click', () => {
+    const sel = placedItems.find(i => i.uid === selectedPlacedId);
+    if (!sel) return;
+    const tmp = sel.w;
+    sel.w = sel.d;
+    sel.d = tmp;
+    saveState();
+    renderPlacedItems();
+  });
+
+  removePlacedBtn.addEventListener('click', () => {
+    if (!selectedPlacedId) return;
+    placedItems = placedItems.filter(i => i.uid !== selectedPlacedId);
+    selectedPlacedId = null;
+    saveState();
+    renderPlacedItems();
+  });
+
+  document.getElementById('add-item-btn').addEventListener('click', () => {
+    const nameInput = document.getElementById('input-name');
+    const wInput = document.getElementById('input-w');
+    const dInput = document.getElementById('input-d');
+    const hInput = document.getElementById('input-h');
+
+    const name = nameInput.value.trim();
+    const w = Number(wInput.value);
+    const d = Number(dInput.value);
+    const h = Number(hInput.value) || 0;
+
+    if (!name || w <= 0 || d <= 0) {
+      alert('항목명과 가로(cm), 세로(cm) 크기를 정확히 입력해주세요.');
+      return;
+    }
+
+    savedItems.unshift({
+      id: 'item_' + Date.now(),
+      name,
+      w,
+      d,
+      h
+    });
+
+    nameInput.value = '';
+    wInput.value = '';
+    dInput.value = '';
+    hInput.value = '';
+
+    saveState();
+    renderSavedList();
+  });
+
+  const scaleModal = document.getElementById('scale-modal');
+  const scaleInput = document.getElementById('scale-input');
+  document.getElementById('open-scale-btn').addEventListener('click', () => {
+    scaleInput.value = totalHouseWidthCm;
+    scaleModal.style.display = 'flex';
+  });
+  document.getElementById('close-scale-btn').addEventListener('click', () => {
+    scaleModal.style.display = 'none';
+  });
+  document.getElementById('save-scale-btn').addEventListener('click', () => {
+    const val = Number(scaleInput.value);
+    if (val >= 300 && val <= 3000) {
+      totalHouseWidthCm = val;
+      saveState();
+      renderSavedList();
+      renderPlacedItems();
+      scaleModal.style.display = 'none';
+    } else {
+      alert('300 ~ 3000 사이의 cm 값을 입력해주세요.');
+    }
+  });
+
+  function escapeHtml(str) {
+    return str.replace(/[&<>"']/g, m => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[m]));
+  }
+
+  // 초기 실행
+  renderSavedList();
+  renderOutlets();
+  updateOrientationLayout();
+})();
+</script>
+</body>
+</html>
