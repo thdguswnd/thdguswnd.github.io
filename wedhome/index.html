@@ -72,7 +72,7 @@
   .wall-hit-area {
     fill: none;
     stroke: transparent;
-    stroke-width: 18;
+    stroke-width: 22;
     pointer-events: none;
   }
 
@@ -89,17 +89,24 @@
     pointer-events: none;
   }
 
-  /* 콘센트 마커 (파란색 동그라미) */
-  .outlet-dot {
-    fill: #2563eb;
-    stroke: #ffffff;
-    stroke-width: 2.2;
+  /* 콘센트 그룹 마커 */
+  .outlet-group {
     cursor: pointer;
     filter: drop-shadow(0 1px 2px rgba(0,0,0,0.45));
   }
-  .outlet-dot:hover {
+  .outlet-dot {
+    fill: #2563eb;
+    stroke: #ffffff;
+    stroke-width: 2;
+  }
+  .outlet-group:hover .outlet-dot {
     fill: #1d4ed8;
-    r: 8.5;
+  }
+  .outlet-arrow {
+    fill: #fbbf24;
+    stroke: #0f172a;
+    stroke-width: 1.2;
+    stroke-linejoin: round;
   }
 
   /* 콘센트 모드 상단 안내 배지 */
@@ -109,7 +116,7 @@
     top: 8px;
     left: 50%;
     transform: translateX(-50%);
-    background: rgba(37, 99, 235, 0.92);
+    background: rgba(37, 99, 235, 0.94);
     color: #ffffff;
     padding: 5px 12px;
     border-radius: 999px;
@@ -124,7 +131,7 @@
     display: block;
   }
 
-  /* 배치된 가구 박스 */
+  /* 배치된 가구 박스 (360도 회전 지원) */
   .placed-item {
     position: absolute;
     display: flex;
@@ -137,8 +144,9 @@
     font-weight: 700;
     line-height: 1.15;
     padding: 2px;
-    overflow: hidden;
+    overflow: visible;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transform-origin: center center;
     transition: background-color 0.1s, border-color 0.1s;
   }
   .placed-item.valid {
@@ -157,6 +165,16 @@
     outline-offset: 1px;
     z-index: 30;
   }
+  .placed-item-inner {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    pointer-events: none;
+  }
   .placed-item-name {
     font-size: 10px;
     white-space: nowrap;
@@ -167,7 +185,41 @@
   .placed-item-dim {
     font-size: 8px;
     font-weight: 500;
-    opacity: 0.9;
+    opacity: 0.92;
+  }
+
+  /* 가구 상단 360도 회전 핸들 */
+  .rotate-handle {
+    display: none;
+    position: absolute;
+    top: -22px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 18px;
+    height: 18px;
+    border-radius: 999px;
+    background: #2563eb;
+    color: #ffffff;
+    border: 2px solid #ffffff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.35);
+    font-size: 11px;
+    line-height: 14px;
+    text-align: center;
+    cursor: grab;
+    z-index: 35;
+  }
+  .rotate-handle::after {
+    content: "";
+    position: absolute;
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 1.5px;
+    height: 6px;
+    background: #2563eb;
+  }
+  .placed-item.selected .rotate-handle {
+    display: block;
   }
 
   /* 오른쪽 컨트롤 패널 */
@@ -178,7 +230,7 @@
     flex-direction: column;
     background: #f8fafc;
     overflow: hidden;
-    min-width: 240px;
+    min-width: 245px;
   }
 
   .panel-header {
@@ -221,15 +273,20 @@
 
   /* 선택된 가구 조작 툴바 */
   #selected-toolbar {
-    padding: 6px 10px;
+    padding: 5px 10px;
     background: #e2e8f0;
     border-bottom: 1px solid #cbd5e1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+  .toolbar-top {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 4px;
-    flex-shrink: 0;
-    min-height: 36px;
+    min-height: 24px;
   }
   #selected-info {
     font-size: 11px;
@@ -244,8 +301,27 @@
     gap: 4px;
     flex-shrink: 0;
   }
+  .angle-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .angle-slider {
+    flex: 1;
+    height: 18px;
+    margin: 0;
+    accent-color: #2563eb;
+    touch-action: auto;
+  }
+  .angle-badge {
+    font-size: 10.5px;
+    font-weight: 700;
+    color: #1e293b;
+    min-width: 44px;
+    text-align: right;
+  }
   .btn-sm {
-    padding: 4px 8px;
+    padding: 3px 7px;
     font-size: 11px;
     font-weight: 600;
     border: none;
@@ -256,14 +332,52 @@
   .btn-remove { background: #dc2626; color: #fff; }
   .btn-sm:disabled { opacity: 0.4; cursor: not-allowed; }
 
+  /* 콘센트 편집 바 (콘센트 선택 시 표시) */
+  #outlet-toolbar {
+    display: none;
+    padding: 5px 10px;
+    background: #dbeafe;
+    border-bottom: 1px solid #93c5fd;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+  #outlet-toolbar.visible {
+    display: flex;
+  }
+  .outlet-info-text {
+    font-size: 11px;
+    font-weight: 700;
+    color: #1e3a8a;
+  }
+  .dir-btns {
+    display: flex;
+    gap: 3px;
+  }
+  .btn-dir {
+    padding: 3px 6px;
+    font-size: 10.5px;
+    font-weight: 700;
+    border: 1px solid #60a5fa;
+    background: #ffffff;
+    color: #1d4ed8;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  .btn-dir.active {
+    background: #2563eb;
+    color: #ffffff;
+  }
+
   /* 가구 등록 폼 */
   .add-form {
-    padding: 8px 10px;
+    padding: 7px 10px;
     background: #ffffff;
     border-bottom: 1px solid #cbd5e1;
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 5px;
     flex-shrink: 0;
   }
   .form-row {
@@ -285,7 +399,7 @@
     color: #fff;
     border: none;
     border-radius: 4px;
-    padding: 6px;
+    padding: 5px;
     font-size: 12px;
     font-weight: 700;
     cursor: pointer;
@@ -293,7 +407,7 @@
 
   /* 저장된 가구 목록 */
   .list-header {
-    padding: 6px 10px 4px;
+    padding: 5px 10px 3px;
     font-size: 11px;
     font-weight: 700;
     color: #475569;
@@ -308,14 +422,14 @@
     padding: 4px 10px 12px;
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 5px;
     touch-action: pan-y;
   }
   .saved-card {
     background: #ffffff;
     border: 1px solid #cbd5e1;
     border-radius: 6px;
-    padding: 7px 9px;
+    padding: 6px 9px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -335,7 +449,7 @@
   .saved-card-sub {
     font-size: 10.5px;
     color: #64748b;
-    margin-top: 2px;
+    margin-top: 1px;
   }
   .saved-card-actions {
     display: flex;
@@ -413,7 +527,7 @@
   <!-- 왼쪽: 가벽 철거 반영 평면도 -->
   <div id="plan-section">
     <div id="floorplan-canvas-wrap">
-      <div id="outlet-banner">🔌 벽(검은 선)을 터치해 콘센트 추가 · 파란 점 터치 시 삭제</div>
+      <div id="outlet-banner">🔌 벽 터치: 추가(방향 자동/선택) · 콘센트 터치: 동→서→남→북 방향전환 · 길게/삭제버튼으로 제거</div>
 
       <!-- 기준 좌표계: 960 x 690 -->
       <svg id="floorplan-svg" viewBox="0 0 960 690" preserveAspectRatio="none">
@@ -626,17 +740,35 @@
     <div class="panel-header">
       <h1>가구 배치 시뮬레이터</h1>
       <div class="header-actions">
-        <button class="header-btn" id="outlet-mode-btn">🔌 콘센트 위치</button>
+        <button class="header-btn" id="outlet-mode-btn">🔌 콘센트</button>
         <button class="header-btn" id="open-scale-btn">📏 축척</button>
       </div>
     </div>
 
-    <!-- 선택된 가구 조작 바 -->
+    <!-- 콘센트 방향 및 삭제 바 -->
+    <div id="outlet-toolbar">
+      <span class="outlet-info-text" id="outlet-selected-info">콘센트 선택됨</span>
+      <div class="dir-btns">
+        <button class="btn-dir" data-dir="E">동</button>
+        <button class="btn-dir" data-dir="W">서</button>
+        <button class="btn-dir" data-dir="S">남</button>
+        <button class="btn-dir" data-dir="N">북</button>
+        <button class="btn-sm btn-remove" id="delete-outlet-btn">삭제</button>
+      </div>
+    </div>
+
+    <!-- 선택된 가구 조작 바 (360도 회전 지원) -->
     <div id="selected-toolbar">
-      <span id="selected-info">배치된 가구를 터치해 선택</span>
-      <div class="tool-btns">
-        <button class="btn-sm btn-rotate" id="rotate-btn" disabled>90° 회전</button>
-        <button class="btn-sm btn-remove" id="remove-placed-btn" disabled>배치 해제</button>
+      <div class="toolbar-top">
+        <span id="selected-info">배치된 가구를 터치해 선택</span>
+        <div class="tool-btns">
+          <button class="btn-sm btn-rotate" id="rotate-45-btn" disabled>+15°</button>
+          <button class="btn-sm btn-remove" id="remove-placed-btn" disabled>해제</button>
+        </div>
+      </div>
+      <div class="angle-row">
+        <input type="range" class="angle-slider" id="angle-slider" min="0" max="359" value="0" disabled>
+        <span class="angle-badge" id="angle-badge">0°</span>
       </div>
     </div>
 
@@ -701,16 +833,25 @@
       d: 226,
       h: 110,
       svgX: 510,
-      svgY: 70
+      svgY: 70,
+      angle: 0
     }
   ];
+
+  const DIRS = ['E', 'W', 'S', 'N'];
+  const DIR_LABELS = { E: '동', W: '서', S: '남', N: '북' };
+  const DIR_ANGLES = { E: 0, W: 180, S: 90, N: 270 }; // +x 기준 시계방향 각도
 
   // 상태 데이터 (localStorage 연동)
   let totalHouseWidthCm = Number(localStorage.getItem('sim_house_width_cm')) || 950;
   let savedItems = JSON.parse(localStorage.getItem('sim_saved_items') || 'null') || DEFAULT_SAVED_ITEMS;
-  let placedItems = JSON.parse(localStorage.getItem('sim_placed_items') || 'null') || DEFAULT_PLACED_ITEMS;
+  let placedItems = (JSON.parse(localStorage.getItem('sim_placed_items') || 'null') || DEFAULT_PLACED_ITEMS).map(i => ({
+    ...i,
+    angle: typeof i.angle === 'number' ? ((i.angle % 360) + 360) % 360 : 0
+  }));
   let outlets = JSON.parse(localStorage.getItem('sim_outlets') || '[]');
   let selectedPlacedId = 'init_placed_bed';
+  let selectedOutletId = null;
   let isForcedPortrait = false;
   let isOutletMode = false;
 
@@ -721,34 +862,39 @@
   const furnitureLayer = document.getElementById('furniture-layer');
   const furnitureListEl = document.getElementById('furniture-list');
   const selectedInfoEl = document.getElementById('selected-info');
-  const rotateBtn = document.getElementById('rotate-btn');
+  const rotate15Btn = document.getElementById('rotate-45-btn');
   const removePlacedBtn = document.getElementById('remove-placed-btn');
+  const angleSlider = document.getElementById('angle-slider');
+  const angleBadge = document.getElementById('angle-badge');
   const scaleIndicator = document.getElementById('scale-indicator');
   const outletModeBtn = document.getElementById('outlet-mode-btn');
+  const outletToolbar = document.getElementById('outlet-toolbar');
+  const outletSelectedInfo = document.getElementById('outlet-selected-info');
+  const deleteOutletBtn = document.getElementById('delete-outlet-btn');
 
-  // 벽체 선분 목록 (클릭 시 가장 가까운 벽 중심선 좌표로 스냅하기 위함)
+  // 벽체 선분 목록 (클릭 시 가장 가까운 벽 중심선 좌표와 기본 방향 추론)
   const WALL_SEGMENTS = [
     // 외벽
-    { x1: 70, y1: 28, x2: 898, y2: 28 },
-    { x1: 898, y1: 28, x2: 898, y2: 104 },
-    { x1: 898, y1: 104, x2: 926, y2: 104 },
-    { x1: 926, y1: 104, x2: 926, y2: 658 },
-    { x1: 70, y1: 658, x2: 926, y2: 658 },
-    { x1: 70, y1: 28, x2: 70, y2: 658 },
+    { x1: 70, y1: 28, x2: 898, y2: 28, defaultDir: 'S' },
+    { x1: 898, y1: 28, x2: 898, y2: 104, defaultDir: 'W' },
+    { x1: 898, y1: 104, x2: 926, y2: 104, defaultDir: 'S' },
+    { x1: 926, y1: 104, x2: 926, y2: 658, defaultDir: 'W' },
+    { x1: 70, y1: 658, x2: 926, y2: 658, defaultDir: 'N' },
+    { x1: 70, y1: 28, x2: 70, y2: 658, defaultDir: 'E' },
     // 내벽
-    { x1: 70, y1: 338, x2: 236, y2: 338 },
-    { x1: 268, y1: 338, x2: 342, y2: 338 },
-    { x1: 288, y1: 28, x2: 288, y2: 338 },
-    { x1: 288, y1: 260, x2: 400, y2: 260 },
-    { x1: 434, y1: 260, x2: 446, y2: 260 },
-    { x1: 338, y1: 260, x2: 338, y2: 282 },
-    { x1: 338, y1: 316, x2: 338, y2: 338 },
-    { x1: 446, y1: 28, x2: 446, y2: 356 },
-    { x1: 482, y1: 356, x2: 782, y2: 356 },
-    { x1: 782, y1: 28, x2: 782, y2: 658 },
-    { x1: 70, y1: 442, x2: 184, y2: 442 },
-    { x1: 70, y1: 586, x2: 184, y2: 586 },
-    { x1: 184, y1: 442, x2: 184, y2: 658 }
+    { x1: 70, y1: 338, x2: 236, y2: 338, defaultDir: 'N' },
+    { x1: 268, y1: 338, x2: 342, y2: 338, defaultDir: 'S' },
+    { x1: 288, y1: 28, x2: 288, y2: 338, defaultDir: 'E' },
+    { x1: 288, y1: 260, x2: 400, y2: 260, defaultDir: 'S' },
+    { x1: 434, y1: 260, x2: 446, y2: 260, defaultDir: 'S' },
+    { x1: 338, y1: 260, x2: 338, y2: 282, defaultDir: 'E' },
+    { x1: 338, y1: 316, x2: 338, y2: 338, defaultDir: 'E' },
+    { x1: 446, y1: 28, x2: 446, y2: 356, defaultDir: 'E' },
+    { x1: 482, y1: 356, x2: 782, y2: 356, defaultDir: 'N' },
+    { x1: 782, y1: 28, x2: 782, y2: 658, defaultDir: 'W' },
+    { x1: 70, y1: 442, x2: 184, y2: 442, defaultDir: 'S' },
+    { x1: 70, y1: 586, x2: 184, y2: 586, defaultDir: 'N' },
+    { x1: 184, y1: 442, x2: 184, y2: 658, defaultDir: 'E' }
   ];
 
   function saveState() {
@@ -758,7 +904,6 @@
     localStorage.setItem('sim_outlets', JSON.stringify(outlets));
   }
 
-  // 1. 강제 가로 화면 고정 로직
   function updateOrientationLayout() {
     const vw = window.innerWidth;
     const vh = window.innerHeight;
@@ -787,29 +932,21 @@
     return { x: clientX, y: clientY };
   }
 
-  // 화면 좌표를 SVG(960x690) 좌표로 변환
   function clientToSvgCoord(clientX, clientY) {
     const rect = svgEl.getBoundingClientRect();
     if (isForcedPortrait) {
       const relX = (clientY - rect.top) / rect.height;
       const relY = (rect.right - clientX) / rect.width;
-      return {
-        x: relX * SVG_VIEW_W,
-        y: relY * SVG_VIEW_H
-      };
+      return { x: relX * SVG_VIEW_W, y: relY * SVG_VIEW_H };
     } else {
       const relX = (clientX - rect.left) / rect.width;
       const relY = (clientY - rect.top) / rect.height;
-      return {
-        x: relX * SVG_VIEW_W,
-        y: relY * SVG_VIEW_H
-      };
+      return { x: relX * SVG_VIEW_W, y: relY * SVG_VIEW_H };
     }
   }
 
-  // 점에서 선분 위 가장 가까운 점 찾기 (벽 중앙선에 깔끔하게 스냅)
   function snapToNearestWall(px, py) {
-    let bestPt = { x: px, y: py };
+    let bestPt = { x: px, y: py, dir: 'S' };
     let minDistSq = Infinity;
 
     for (const seg of WALL_SEGMENTS) {
@@ -823,24 +960,32 @@
       const distSq = (px - projX) ** 2 + (py - projY) ** 2;
       if (distSq < minDistSq) {
         minDistSq = distSq;
-        bestPt = { x: Math.round(projX * 10) / 10, y: Math.round(projY * 10) / 10 };
+        bestPt = {
+          x: Math.round(projX * 10) / 10,
+          y: Math.round(projY * 10) / 10,
+          dir: seg.defaultDir
+        };
       }
     }
     return bestPt;
   }
 
-  // 2. 콘센트 위치 모드 & 렌더링
+  // 콘센트 모드 토글
   outletModeBtn.addEventListener('click', () => {
     isOutletMode = !isOutletMode;
     document.body.classList.toggle('outlet-mode', isOutletMode);
     outletModeBtn.classList.toggle('active', isOutletMode);
-    outletModeBtn.textContent = isOutletMode ? '✅ 콘센트 완료' : '🔌 콘센트 위치';
+    outletModeBtn.textContent = isOutletMode ? '✅ 완료' : '🔌 콘센트';
     if (isOutletMode) {
       selectedPlacedId = null;
       renderPlacedItems();
+    } else {
+      selectedOutletId = null;
+      updateOutletToolbar();
     }
   });
 
+  // 벽 터치 시 콘센트 추가
   function handleWallTap(e) {
     if (!isOutletMode) return;
     e.stopPropagation();
@@ -851,43 +996,141 @@
     const rawSvg = clientToSvgCoord(clientX, clientY);
     const snapped = snapToNearestWall(rawSvg.x, rawSvg.y);
 
-    const exists = outlets.some(o => Math.hypot(o.x - snapped.x, o.y - snapped.y) < 10);
-    if (exists) return;
+    const existing = outlets.find(o => Math.hypot(o.x - snapped.x, o.y - snapped.y) < 11);
+    if (existing) {
+      selectedOutletId = existing.id;
+      updateOutletToolbar();
+      return;
+    }
 
-    outlets.push({
+    const newOutlet = {
       id: 'out_' + Date.now() + '_' + Math.random().toString(36).slice(2, 5),
       x: snapped.x,
-      y: snapped.y
-    });
+      y: snapped.y,
+      dir: snapped.dir
+    };
+    outlets.push(newOutlet);
+    selectedOutletId = newOutlet.id;
     saveState();
     renderOutlets();
+    updateOutletToolbar();
   }
 
   wallsGroup.addEventListener('mousedown', handleWallTap);
   wallsGroup.addEventListener('touchstart', handleWallTap, { passive: false });
 
+  function updateOutletToolbar() {
+    const sel = outlets.find(o => o.id === selectedOutletId);
+    if (!sel) {
+      outletToolbar.classList.remove('visible');
+      return;
+    }
+    outletToolbar.classList.add('visible');
+    outletSelectedInfo.textContent = `콘센트 (${DIR_LABELS[sel.dir] || '동'})`;
+    outletToolbar.querySelectorAll('.btn-dir').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.dir === sel.dir);
+    });
+  }
+
+  outletToolbar.querySelectorAll('.btn-dir').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const sel = outlets.find(o => o.id === selectedOutletId);
+      if (!sel) return;
+      sel.dir = btn.dataset.dir;
+      saveState();
+      renderOutlets();
+      updateOutletToolbar();
+    });
+  });
+
+  deleteOutletBtn.addEventListener('click', () => {
+    if (!selectedOutletId) return;
+    outlets = outlets.filter(o => o.id !== selectedOutletId);
+    selectedOutletId = null;
+    saveState();
+    renderOutlets();
+    updateOutletToolbar();
+  });
+
+  // 콘센트 렌더링 (원 + 동/서/남/북 방향 화살표, 터치 시 동→서→남→북 순환, 길게 누르면 삭제)
   function renderOutlets() {
     outletsLayer.innerHTML = '';
     outlets.forEach(outlet => {
-      const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-      circle.setAttribute('cx', outlet.x);
-      circle.setAttribute('cy', outlet.y);
-      circle.setAttribute('r', '7');
-      circle.setAttribute('class', 'outlet-dot');
+      const dir = DIRS.includes(outlet.dir) ? outlet.dir : 'E';
+      const angleDeg = DIR_ANGLES[dir];
+      const isSel = outlet.id === selectedOutletId;
 
-      const removeOutlet = (e) => {
+      const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      g.setAttribute('class', 'outlet-group');
+      g.setAttribute('transform', `translate(${outlet.x}, ${outlet.y}) rotate(${angleDeg})`);
+
+      if (isSel) {
+        const ring = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        ring.setAttribute('cx', '0');
+        ring.setAttribute('cy', '0');
+        ring.setAttribute('r', '12');
+        ring.setAttribute('fill', 'none');
+        ring.setAttribute('stroke', '#f59e0b');
+        ring.setAttribute('stroke-width', '2.2');
+        g.appendChild(ring);
+      }
+
+      const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      circle.setAttribute('cx', '0');
+      circle.setAttribute('cy', '0');
+      circle.setAttribute('r', '6.8');
+      circle.setAttribute('class', 'outlet-dot');
+      g.appendChild(circle);
+
+      // +x(동쪽) 방향을 가리키는 삼각형 화살표
+      const arrow = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+      arrow.setAttribute('points', '13,0 7.5,-3.6 7.5,3.6');
+      arrow.setAttribute('class', 'outlet-arrow');
+      g.appendChild(arrow);
+
+      let longPressTimer = null;
+      let longPressFired = false;
+
+      const onPressStart = (e) => {
         e.stopPropagation();
         if (e.cancelable) e.preventDefault();
-        if (isOutletMode || confirm('이 콘센트 표시를 삭제할까요?')) {
+        selectedOutletId = outlet.id;
+        updateOutletToolbar();
+        renderOutlets();
+
+        longPressFired = false;
+        longPressTimer = setTimeout(() => {
+          longPressFired = true;
           outlets = outlets.filter(o => o.id !== outlet.id);
+          if (selectedOutletId === outlet.id) selectedOutletId = null;
           saveState();
           renderOutlets();
-        }
+          updateOutletToolbar();
+        }, 550);
       };
 
-      circle.addEventListener('mousedown', removeOutlet);
-      circle.addEventListener('touchstart', removeOutlet, { passive: false });
-      outletsLayer.appendChild(circle);
+      const onPressEnd = (e) => {
+        e.stopPropagation();
+        if (longPressTimer) {
+          clearTimeout(longPressTimer);
+          longPressTimer = null;
+        }
+        if (longPressFired) return;
+        // 짧은 터치: 동 -> 서 -> 남 -> 북 순환
+        const curIdx = DIRS.indexOf(outlet.dir);
+        outlet.dir = DIRS[(curIdx + 1) % DIRS.length];
+        selectedOutletId = outlet.id;
+        saveState();
+        renderOutlets();
+        updateOutletToolbar();
+      };
+
+      g.addEventListener('mousedown', onPressStart);
+      g.addEventListener('mouseup', onPressEnd);
+      g.addEventListener('touchstart', onPressStart, { passive: false });
+      g.addEventListener('touchend', onPressEnd, { passive: false });
+
+      outletsLayer.appendChild(g);
     });
   }
 
@@ -895,7 +1138,7 @@
     return (cm / totalHouseWidthCm) * HOUSE_OUTER_SVG_W;
   }
 
-  // 3. 저장된 가구 목록 렌더링
+  // 저장된 가구 목록 렌더링
   function renderSavedList() {
     scaleIndicator.textContent = `기준폭: ${totalHouseWidthCm}cm`;
     furnitureListEl.innerHTML = '';
@@ -926,7 +1169,9 @@
           isOutletMode = false;
           document.body.classList.remove('outlet-mode');
           outletModeBtn.classList.remove('active');
-          outletModeBtn.textContent = '🔌 콘센트 위치';
+          outletModeBtn.textContent = '🔌 콘센트';
+          selectedOutletId = null;
+          updateOutletToolbar();
         }
         const item = savedItems.find(i => i.id === btn.dataset.id);
         if (!item) return;
@@ -937,7 +1182,8 @@
           d: item.d,
           h: item.h,
           svgX: 480,
-          svgY: 450
+          svgY: 450,
+          angle: 0
         };
         placedItems.push(newPlaced);
         selectedPlacedId = newPlaced.uid;
@@ -955,35 +1201,75 @@
     });
   }
 
-  // 4. 겹침(충돌) 판정 로직 (AABB)
+  // 회전된 사각형 꼭짓점 계산 (SAT 충돌 판정용)
+  function getRotatedCorners(item) {
+    const w = cmToSvgUnits(item.w);
+    const h = cmToSvgUnits(item.d);
+    const cx = item.svgX + w / 2;
+    const cy = item.svgY + h / 2;
+    const rad = ((item.angle || 0) * Math.PI) / 180;
+    const cos = Math.cos(rad);
+    const sin = Math.sin(rad);
+
+    const localPts = [
+      { x: -w / 2, y: -h / 2 },
+      { x: w / 2, y: -h / 2 },
+      { x: w / 2, y: h / 2 },
+      { x: -w / 2, y: h / 2 }
+    ];
+
+    return localPts.map(p => ({
+      x: cx + p.x * cos - p.y * sin,
+      y: cy + p.x * sin + p.y * cos
+    }));
+  }
+
+  function polygonsOverlap(ptsA, ptsB) {
+    const polys = [ptsA, ptsB];
+    for (const poly of polys) {
+      for (let i = 0; i < poly.length; i++) {
+        const p1 = poly[i];
+        const p2 = poly[(i + 1) % poly.length];
+        const edgeX = p2.x - p1.x;
+        const edgeY = p2.y - p1.y;
+        const axisX = -edgeY;
+        const axisY = edgeX;
+
+        let minA = Infinity, maxA = -Infinity;
+        for (const p of ptsA) {
+          const proj = p.x * axisX + p.y * axisY;
+          if (proj < minA) minA = proj;
+          if (proj > maxA) maxA = proj;
+        }
+        let minB = Infinity, maxB = -Infinity;
+        for (const p of ptsB) {
+          const proj = p.x * axisX + p.y * axisY;
+          if (proj < minB) minB = proj;
+          if (proj > maxB) maxB = proj;
+        }
+        if (maxA <= minB + 1 || maxB <= minA + 1) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
   function getOverlappingSet() {
     const overlapIds = new Set();
+    const cornersList = placedItems.map(getRotatedCorners);
     for (let i = 0; i < placedItems.length; i++) {
-      const a = placedItems[i];
-      const aw = cmToSvgUnits(a.w);
-      const ah = cmToSvgUnits(a.d);
       for (let j = i + 1; j < placedItems.length; j++) {
-        const b = placedItems[j];
-        const bw = cmToSvgUnits(b.w);
-        const bh = cmToSvgUnits(b.d);
-
-        const margin = 0.5;
-        const isOverlap =
-          a.svgX < b.svgX + bw - margin &&
-          a.svgX + aw > b.svgX + margin &&
-          a.svgY < b.svgY + bh - margin &&
-          a.svgY + ah > b.svgY + margin;
-
-        if (isOverlap) {
-          overlapIds.add(a.uid);
-          overlapIds.add(b.uid);
+        if (polygonsOverlap(cornersList[i], cornersList[j])) {
+          overlapIds.add(placedItems[i].uid);
+          overlapIds.add(placedItems[j].uid);
         }
       }
     }
     return overlapIds;
   }
 
-  // 5. 평면도 위 배치된 가구 렌더링 & 드래그 처리
+  // 평면도 위 배치된 가구 렌더링 + 이동 드래그 + 360도 회전 핸들 드래그
   function renderPlacedItems() {
     furnitureLayer.innerHTML = '';
     const layerRect = furnitureLayer.getBoundingClientRect();
@@ -999,21 +1285,75 @@
       const el = document.createElement('div');
       const isOverlap = overlapSet.has(item.uid);
       const isSelected = item.uid === selectedPlacedId;
+      const angle = item.angle || 0;
 
       el.className = 'placed-item ' + (isOverlap ? 'overlap' : 'valid') + (isSelected ? ' selected' : '');
       const svgW = cmToSvgUnits(item.w);
       const svgH = cmToSvgUnits(item.d);
+      const pxW = Math.max(18, svgW * scaleX);
+      const pxH = Math.max(18, svgH * scaleY);
 
       el.style.left = (item.svgX * scaleX) + 'px';
       el.style.top = (item.svgY * scaleY) + 'px';
-      el.style.width = Math.max(18, svgW * scaleX) + 'px';
-      el.style.height = Math.max(18, svgH * scaleY) + 'px';
+      el.style.width = pxW + 'px';
+      el.style.height = pxH + 'px';
+      el.style.transform = `rotate(${angle}deg)`;
 
       el.innerHTML = `
-        <div class="placed-item-name">${escapeHtml(item.name)}</div>
-        <div class="placed-item-dim">${item.w}×${item.d}</div>
+        <div class="rotate-handle" title="드래그하여 360도 회전">↻</div>
+        <div class="placed-item-inner">
+          <div class="placed-item-name">${escapeHtml(item.name)}</div>
+          <div class="placed-item-dim">${item.w}×${item.d} · ${angle}°</div>
+        </div>
       `;
 
+      // 360도 회전 핸들 드래그
+      const handleEl = el.querySelector('.rotate-handle');
+      const onRotateStart = (e) => {
+        if (isOutletMode) return;
+        e.stopPropagation();
+        if (e.cancelable) e.preventDefault();
+        selectedPlacedId = item.uid;
+        updateSelectedToolbar();
+
+        const boxRect = el.getBoundingClientRect();
+        const centerClientX = boxRect.left + boxRect.width / 2;
+        const centerClientY = boxRect.top + boxRect.height / 2;
+        const centerLogical = getLogicalPoint(centerClientX, centerClientY);
+
+        const onRotateMove = (moveEvt) => {
+          if (moveEvt.cancelable) moveEvt.preventDefault();
+          const cx = moveEvt.touches ? moveEvt.touches[0].clientX : moveEvt.clientX;
+          const cy = moveEvt.touches ? moveEvt.touches[0].clientY : moveEvt.clientY;
+          const curLogical = getLogicalPoint(cx, cy);
+
+          // 핸들이 기본 상태에서 위쪽(-y)에 있으므로 보정
+          const rad = Math.atan2(curLogical.y - centerLogical.y, curLogical.x - centerLogical.x) + Math.PI / 2;
+          let deg = Math.round((rad * 180) / Math.PI);
+          deg = ((deg % 360) + 360) % 360;
+          item.angle = deg;
+          renderPlacedItems();
+        };
+
+        const onRotateEnd = () => {
+          window.removeEventListener('mousemove', onRotateMove);
+          window.removeEventListener('mouseup', onRotateEnd);
+          window.removeEventListener('touchmove', onRotateMove);
+          window.removeEventListener('touchend', onRotateEnd);
+          saveState();
+          renderPlacedItems();
+        };
+
+        window.addEventListener('mousemove', onRotateMove);
+        window.addEventListener('mouseup', onRotateEnd);
+        window.addEventListener('touchmove', onRotateMove, { passive: false });
+        window.addEventListener('touchend', onRotateEnd);
+      };
+
+      handleEl.addEventListener('mousedown', onRotateStart);
+      handleEl.addEventListener('touchstart', onRotateStart, { passive: false });
+
+      // 가구 위치 이동 드래그
       const onPointerDown = (e) => {
         if (isOutletMode) return;
         e.stopPropagation();
@@ -1066,15 +1406,42 @@
   function updateSelectedToolbar() {
     const sel = placedItems.find(i => i.uid === selectedPlacedId);
     if (sel) {
-      selectedInfoEl.textContent = `선택: ${sel.name} (${sel.w}×${sel.d}×H${sel.h}cm)`;
-      rotateBtn.disabled = false;
+      const ang = sel.angle || 0;
+      selectedInfoEl.textContent = `${sel.name} (${sel.w}×${sel.d}×H${sel.h}cm)`;
+      rotate15Btn.disabled = false;
       removePlacedBtn.disabled = false;
+      angleSlider.disabled = false;
+      angleSlider.value = ang;
+      angleBadge.textContent = `${ang}°`;
     } else {
       selectedInfoEl.textContent = isOutletMode ? '콘센트 모드 활성 중' : '배치된 가구를 터치해 선택';
-      rotateBtn.disabled = true;
+      rotate15Btn.disabled = true;
       removePlacedBtn.disabled = true;
+      angleSlider.disabled = true;
+      angleSlider.value = 0;
+      angleBadge.textContent = '0°';
     }
   }
+
+  angleSlider.addEventListener('input', () => {
+    const sel = placedItems.find(i => i.uid === selectedPlacedId);
+    if (!sel) return;
+    sel.angle = Number(angleSlider.value) % 360;
+    angleBadge.textContent = `${sel.angle}°`;
+    renderPlacedItems();
+  });
+
+  angleSlider.addEventListener('change', () => {
+    saveState();
+  });
+
+  rotate15Btn.addEventListener('click', () => {
+    const sel = placedItems.find(i => i.uid === selectedPlacedId);
+    if (!sel) return;
+    sel.angle = ((sel.angle || 0) + 15) % 360;
+    saveState();
+    renderPlacedItems();
+  });
 
   furnitureLayer.addEventListener('mousedown', (e) => {
     if (e.target === furnitureLayer) {
@@ -1087,16 +1454,6 @@
       selectedPlacedId = null;
       renderPlacedItems();
     }
-  });
-
-  rotateBtn.addEventListener('click', () => {
-    const sel = placedItems.find(i => i.uid === selectedPlacedId);
-    if (!sel) return;
-    const tmp = sel.w;
-    sel.w = sel.d;
-    sel.d = tmp;
-    saveState();
-    renderPlacedItems();
   });
 
   removePlacedBtn.addEventListener('click', () => {
@@ -1171,6 +1528,7 @@
   // 초기 실행
   renderSavedList();
   renderOutlets();
+  updateOutletToolbar();
   updateOrientationLayout();
 })();
 </script>
